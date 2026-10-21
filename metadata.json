@@ -1,0 +1,6 @@
+{
+  "name": "ICON MUN — Model United Nations",
+  "description": "Scroll-driven cinematic black-and-gold Model United Nations conference website with masquerade mask video scrubbing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
