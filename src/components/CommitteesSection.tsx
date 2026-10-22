@@ -21,94 +21,89 @@ interface Committee {
 
 const COMMITTEES_DATA: Committee[] = [
   {
-    id: 'unsc',
-    code: 'UNSC',
-    name: 'United Nations Security Council',
+    id: 'council-1',
+    code: 'Council I',
+    name: 'Council I (TBA)',
     icon: <Shield className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Flashpoint Maritime Chokepoints & Sovereign Neutrality Enforcement',
-    level: 'Advanced / Crisis Mandate',
-    seats: '15 Delegations',
-    charter: 'Article 39, UN Charter · Primary responsibility for the maintenance of international peace and security.',
+    topic: 'Topic TBA — Under Secretariat Review',
+    level: 'TBA',
+    seats: 'Seats TBA',
+    charter: 'Council charter and mandate to be announced by the Secretariat.',
     focusQuestions: [
-      'How can multilateral naval inspection regimes balance commercial freedom of navigation with unilateral coastal defense declarations?',
-      'What binding sanctions thresholds prevent escalation without triggering asymmetric trade blockades?',
-      'Can permanent member vetoes be curtailed in instances of clear maritime sabotage?',
+      'Inquiries and research directives TBA.',
+      'Discussion prompts TBA.',
     ],
-    keyCountries: ['United States', 'China', 'Russia', 'United Kingdom', 'France', 'Japan'],
+    keyCountries: ['Allotments TBA'],
     backgroundGuideOverview:
-      'The Security Council convenes under emergency procedural rule 48. Tensions along critical naval straits threaten 38% of global container transit. Delegates must navigate real-time crisis directives issued by the joint command.',
+      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
   },
   {
-    id: 'unhrc',
-    code: 'UNHRC',
-    name: 'Human Rights Council',
+    id: 'council-2',
+    code: 'Council II',
+    name: 'Council II (TBA)',
     icon: <Eye className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Biometric Border Interception & Privacy in Unregistered Enclaves',
-    level: 'Intermediate / Policy Heavy',
-    seats: '36 Delegations',
-    charter: 'UNGA Resolution 60/251 · Strengthening the promotion and protection of human rights worldwide.',
+    topic: 'Topic TBA — Under Secretariat Review',
+    level: 'TBA',
+    seats: 'Seats TBA',
+    charter: 'Council charter and mandate to be announced by the Secretariat.',
     focusQuestions: [
-      'Where lies the legal threshold between sovereign border telemetry and human dignity under Article 14 of the UDHR?',
-      'Can non-state surveillance contractors be held accountable under universal jurisdiction protocols?',
-      'How can humanitarian aid corridors remain inviolable when digital tracking systems are deployed?',
+      'Inquiries and research directives TBA.',
+      'Discussion prompts TBA.',
     ],
-    keyCountries: ['Germany', 'Brazil', 'South Africa', 'India', 'Canada', 'Mexico'],
+    keyCountries: ['Allotments TBA'],
     backgroundGuideOverview:
-      'As sovereign boundaries increasingly deploy facial recognition algorithms and automated perimeter drones, refugees and asylum seekers face algorithmic denial of entry. The Council must codify the Geneva Protocol on Biometric Privacy.',
+      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
   },
   {
-    id: 'disec',
-    code: 'DISEC',
-    name: 'Disarmament & International Security (GA 1)',
+    id: 'council-3',
+    code: 'Council III',
+    name: 'Council III (TBA)',
     icon: <Lock className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Weaponization of Autonomous Cyber Vectors & Orbital ASAT Systems',
-    level: 'Intermediate / High Resolution Volume',
-    seats: '45 Delegations',
-    charter: 'Article 11, UN Charter · General principles of cooperation in the maintenance of international peace and disarmament.',
+    topic: 'Topic TBA — Under Secretariat Review',
+    level: 'TBA',
+    seats: 'Seats TBA',
+    charter: 'Council charter and mandate to be announced by the Secretariat.',
     focusQuestions: [
-      'What verification mechanisms can differentiate civilian satellite maintenance bots from dual-use orbital interceptors?',
-      'How to establish deterrence without triggering pre-emptive retaliatory kinetic strikes in low-earth orbit?',
-      'Should sovereign state attribution be mandatory before triggering mutual cyber-defense covenants?',
+      'Inquiries and research directives TBA.',
+      'Discussion prompts TBA.',
     ],
-    keyCountries: ['United States', 'Israel', 'South Korea', 'Iran', 'Turkey', 'Norway'],
+    keyCountries: ['Allotments TBA'],
     backgroundGuideOverview:
-      'With the outer space treaty nearing six decades of obsolescence, DISEC faces the reality of silent space warfare. Delegates will draft comprehensive treaties to regulate autonomous satellite constellations.',
+      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
   },
   {
-    id: 'who',
-    code: 'WHO',
-    name: 'World Health Organization Special Assembly',
+    id: 'council-4',
+    code: 'Council IV',
+    name: 'Council IV (TBA)',
     icon: <Activity className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Containment of Synthetic Bio-Threats & Genomic Intellectual Property',
-    level: 'Intermediate / Dynamic Pacing',
-    seats: '32 Delegations',
-    charter: 'Constitution of the WHO · Attainment by all peoples of the highest possible level of health.',
+    topic: 'Topic TBA — Under Secretariat Review',
+    level: 'TBA',
+    seats: 'Seats TBA',
+    charter: 'Council charter and mandate to be announced by the Secretariat.',
     focusQuestions: [
-      'How can the Pandemic Accord compel transparent genomic sequencing sharing without compromising national biosecurity?',
-      'What intellectual property waivers must take immediate effect during grade-4 regional epidemiological emergencies?',
-      'Can international sanitary cordons be enforced without violating sovereign airspace treaties?',
+      'Inquiries and research directives TBA.',
+      'Discussion prompts TBA.',
     ],
-    keyCountries: ['Switzerland', 'Australia', 'Nigeria', 'Sweden', 'Argentina', 'Egypt'],
+    keyCountries: ['Allotments TBA'],
     backgroundGuideOverview:
-      'A novel recombinant respiratory pathogen with synthetic markers emerges simultaneously in three international transit hubs. The WHO must coordinate quarantine protocols and emergency vaccine stockpiles.',
+      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
   },
   {
-    id: 'ecosoc',
-    code: 'ECOSOC',
-    name: 'Economic & Social Council',
+    id: 'council-5',
+    code: 'Council V',
+    name: 'Council V (TBA)',
     icon: <Landmark className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Sovereign Debt Default Cascades & Critical Mineral Cartelization',
-    level: 'Advanced / Bilateral Diplomacy',
-    seats: '38 Delegations',
-    charter: 'Chapter X, UN Charter · Fostering international economic, social, cultural, and health cooperation.',
+    topic: 'Topic TBA — Under Secretariat Review',
+    level: 'TBA',
+    seats: 'Seats TBA',
+    charter: 'Council charter and mandate to be announced by the Secretariat.',
     focusQuestions: [
-      'How can multilateral development banks prevent systemic contagion when multiple sovereign states default simultaneously?',
-      'What regulatory frameworks counter predatory rare-earth mineral cartels without stifling energy transition investments?',
-      'Can digital reserve assets provide stability against currency hyper-inflation in vulnerable developing markets?',
+      'Inquiries and research directives TBA.',
+      'Discussion prompts TBA.',
     ],
-    keyCountries: ['Saudi Arabia', 'Chile', 'Indonesia', 'DR Congo', 'United Kingdom', 'Germany'],
+    keyCountries: ['Allotments TBA'],
     backgroundGuideOverview:
-      'Global liquidity crunches collide with sudden export bans on lithium, cobalt, and neodymium. ECOSOC delegates will craft economic restructuring agreements and green trade protocols.',
+      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
   },
 ];
 
@@ -124,9 +119,8 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
   const stickyRef = useRef<HTMLDivElement | null>(null);
   const horizontalTrackRef = useRef<HTMLDivElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const activeLabelRef = useRef<HTMLSpanElement | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndexRef = useRef(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -140,15 +134,14 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
       if (!isMobile) {
         // Desktop: Pin for ~150vh and convert vertical scroll into horizontal movement
         const totalCards = COMMITTEES_DATA.length;
-        // Move track across screen
         const totalShiftPercent = -(totalCards - 1) * 22;
 
-        const tl = gsap.timeline({
+        gsap.timeline({
           scrollTrigger: {
             trigger: container,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 0.5, // short smoothing
+            scrub: 0.8,
             pin: sticky,
             pinSpacing: true,
             onUpdate: (self) => {
@@ -158,17 +151,17 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 totalCards - 1
               );
 
-              if (activeIndexRef.current !== idx) {
-                activeIndexRef.current = idx;
-                setActiveIndex(idx);
-              }
-
               // Update progress bar using transform ONLY
               if (progressBarRef.current) {
                 progressBarRef.current.style.transform = `scaleX(${Math.max(0.05, p)})`;
               }
 
-              // Card nearest to center scales up to 1.05 and brightens, others dim
+              // Update label without triggering React state re-render
+              if (activeLabelRef.current && COMMITTEES_DATA[idx]) {
+                activeLabelRef.current.innerText = `${COMMITTEES_DATA[idx].code} · Topic TBA`;
+              }
+
+              // Card nearest to center scales up to 1.04 and brightens
               cardRefs.current.forEach((cEl, i) => {
                 if (!cEl) return;
                 const isCenter = i === idx;
@@ -177,20 +170,17 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
               });
             },
           },
-        });
-
-        // Horizontal card track translation
-        tl.to(track, {
+        }).to(track, {
           xPercent: totalShiftPercent,
           ease: 'none',
         });
       } else {
-        // Mobile: Vertical stack, no pinning, simple entrance
+        // Mobile: Vertical stack, no pinning
         cardRefs.current.forEach((card) => {
           if (!card) return;
           gsap.fromTo(
             card,
-            { opacity: 0.4, y: 25 },
+            { opacity: 0.35, y: 25 },
             {
               opacity: 1,
               y: 0,
@@ -198,7 +188,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 trigger: card,
                 start: 'top 85%',
                 end: 'top 55%',
-                scrub: 0.5,
+                scrub: 0.8,
               },
             }
           );
@@ -218,20 +208,20 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
       {/* Pinned Viewport Container (Desktop ~150vh, Mobile natural flow) */}
       <div
         ref={stickyRef}
-        className="md:sticky md:top-0 md:h-screen w-full flex flex-col justify-between py-10 md:py-14 overflow-hidden px-6 lg:px-12"
+        className="md:sticky md:top-0 md:h-screen w-full flex flex-col justify-between py-10 md:py-14 px-4 sm:px-6 lg:px-12 md:overflow-hidden"
       >
         {/* Section Header */}
         <div className="relative z-10 text-center max-w-2xl mx-auto mb-6">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
             <span>Diplomatic Chambers</span>
             <span aria-hidden="true" className="text-[#8C6221]">·</span>
-            <span>2026 Simulation Matrix</span>
+            <span>ICON MUN 2027</span>
           </div>
           <h2 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-[0.18em] text-gold-gradient text-balance">
-            Five Councils of Power
+            Councils (TBA)
           </h2>
           <p className="mt-2 text-xs uppercase tracking-wider text-[#A89D8A] font-light">
-            Scroll through the sovereign chambers to inspect the classified dossiers.
+            All council rosters, topics, and background guides are currently To Be Announced (TBA).
           </p>
         </div>
 
@@ -246,10 +236,10 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 key={committee.id}
                 ref={(el) => { cardRefs.current[idx] = el; }}
                 onClick={() => setSelectedCommittee(committee)}
-                className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-200 w-full md:w-[400px] flex-shrink-0 flex flex-col justify-between border-[#D4AF6A]/30 bg-[#0C0C0C] will-change-transform"
+                className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 w-full md:w-[400px] flex-shrink-0 flex flex-col justify-between border-[#D4AF6A]/30 bg-[#0C0C0C] will-change-transform"
                 style={{
-                  transform: idx === activeIndex ? 'scale(1.04)' : 'scale(0.96)',
-                  opacity: idx === activeIndex ? 1 : 0.7,
+                  transform: idx === 0 ? 'scale(1.04)' : 'scale(0.96)',
+                  opacity: idx === 0 ? 1 : 0.7,
                 }}
               >
                 {/* Top Info */}
@@ -269,7 +259,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                       </div>
                     </div>
                     <span className="text-[10px] uppercase font-mono tracking-wider text-[#D4AF6A] border border-[#D4AF6A]/20 bg-[#D4AF6A]/10 px-2 py-0.5 rounded">
-                      {committee.level.split('/')[0].trim()}
+                      TBA
                     </span>
                   </div>
 
@@ -279,7 +269,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
 
                   <div className="border-t border-white/10 pt-2.5">
                     <span className="text-[10px] uppercase tracking-wider text-[#D4AF6A] block mb-1">
-                      Primary Agenda Topic
+                      Agenda Status
                     </span>
                     <p className="text-xs text-[#C4BAA8] leading-relaxed font-light line-clamp-3">
                       {committee.topic}
@@ -290,7 +280,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 {/* Bottom CTA */}
                 <div className="mt-5 border-t border-white/10 pt-3 flex items-center justify-between">
                   <span className="text-xs text-[#D4AF6A] font-medium group-hover:text-[#F3DFA2]">
-                    Inspect Dossier
+                    Inspect Dossier (TBA)
                   </span>
                   <ArrowRight className="h-4 w-4 text-[#D4AF6A] transition-transform group-hover:translate-x-1" />
                 </div>
@@ -302,9 +292,9 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
         {/* Bottom Horizontal Progress Indicator (Desktop only) */}
         <div className="relative z-10 hidden md:block max-w-md mx-auto w-full pt-2">
           <div className="flex justify-between text-[10px] uppercase tracking-widest text-[#A89D8A] mb-1 font-mono">
-            <span>Chamber 0{activeIndex + 1} / 05</span>
-            <span className="text-[#D4AF6A]">
-              {COMMITTEES_DATA[activeIndex]?.code} Active
+            <span>Chambers 01 — 05</span>
+            <span ref={activeLabelRef} className="text-[#D4AF6A]">
+              Council I · Topic TBA
             </span>
           </div>
           <div className="h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
@@ -319,17 +309,35 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
 
       {/* Committee Dossier Modal */}
       {selectedCommittee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="gold-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border-[#D4AF6A]/60 bg-[#0C0C0C] relative shadow-[0_0_60px_rgba(0,0,0,0.95)]">
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedCommittee(null);
+            }
+          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="gold-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border-[#D4AF6A]/60 bg-[#0C0C0C] relative shadow-[0_0_80px_rgba(0,0,0,0.98)]"
+          >
+            {/* Close Button */}
             <button
-              onClick={() => setSelectedCommittee(null)}
-              className="absolute top-5 right-5 p-1 rounded-full text-[#A89D8A] hover:text-white cursor-pointer"
-              aria-label="Close dossier"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedCommittee(null);
+              }}
+              className="absolute top-4 right-4 z-50 h-11 w-11 flex items-center justify-center rounded-full bg-[#181818] border border-[#D4AF6A]/50 text-[#F3DFA2] hover:text-white hover:bg-[#252525] hover:border-[#D4AF6A] transition-all cursor-pointer active:scale-90 shadow-xl"
+              aria-label="Close dossier modal"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 pointer-events-none" />
             </button>
 
-            <div className="flex items-start gap-4 mb-6 pr-8">
+            <div className="flex items-start gap-4 mb-6 pr-10">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#D4AF6A] bg-[#141414] shadow-lg">
                 {selectedCommittee.icon}
               </div>
@@ -350,7 +358,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
 
             <div className="rounded-xl border border-[#D4AF6A]/30 bg-[#141414] p-4 mb-5">
               <span className="text-[10px] uppercase tracking-wider text-[#D4AF6A] block mb-1">
-                Primary Agenda Topic
+                Agenda Topic
               </span>
               <p className="font-cinzel text-base sm:text-lg text-[#FFF3D6] font-medium leading-snug">
                 {selectedCommittee.topic}
@@ -367,7 +375,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
             <div className="mb-5">
               <h4 className="font-cinzel text-xs uppercase tracking-widest text-[#F3DFA2] mb-2 flex items-center gap-2">
                 <FileText className="h-3.5 w-3.5 text-[#D4AF6A]" />
-                Key Inquiries for Position Papers
+                Inquiries & Position Paper Directives
               </h4>
               <ul className="space-y-1.5 text-xs text-[#A89D8A]">
                 {selectedCommittee.focusQuestions.map((q, i) => (
@@ -379,30 +387,20 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
               </ul>
             </div>
 
-            <div className="mb-6 border-t border-white/10 pt-3">
-              <span className="text-[10px] uppercase tracking-wider text-[#A89D8A] block mb-2">
-                Sample Sovereign Portfolios
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {selectedCommittee.keyCountries.map((country, i) => (
-                  <span
-                    key={i}
-                    className="rounded border border-white/10 bg-[#161616] px-2.5 py-1 text-xs text-[#E6E1D8]"
-                  >
-                    {country}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-white/10 pt-4">
               <button
-                onClick={() => setSelectedCommittee(null)}
-                className="px-4 py-2 text-xs uppercase tracking-wider text-[#A89D8A] hover:text-white cursor-pointer"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedCommittee(null);
+                }}
+                className="min-h-[44px] px-4 py-2.5 text-xs uppercase tracking-wider text-[#A89D8A] hover:text-white cursor-pointer active:scale-95 flex items-center justify-center"
               >
                 Close Dossier
               </button>
               <button
+                type="button"
                 onClick={() => {
                   const code = selectedCommittee.code;
                   setSelectedCommittee(null);
@@ -410,9 +408,9 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                     onSelectCommitteeForRegister(code);
                   }
                 }}
-                className="gold-btn-primary px-6 py-2.5 text-xs font-semibold uppercase tracking-wider rounded cursor-pointer"
+                className="gold-btn-primary min-h-[44px] px-6 py-3 text-xs font-semibold uppercase tracking-wider rounded cursor-pointer active:scale-95 flex items-center justify-center"
               >
-                Apply For {selectedCommittee.code}
+                Register Interest (TBA)
               </button>
             </div>
           </div>

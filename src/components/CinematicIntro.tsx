@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
+import { Volume2, Play } from 'lucide-react';
 
 interface CinematicIntroProps {
   isHeroReady: boolean;
@@ -8,35 +9,73 @@ interface CinematicIntroProps {
 
 export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onComplete }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const logoWrapperRef = useRef<HTMLDivElement | null>(null);
-  const glintRef = useRef<HTMLDivElement | null>(null);
-  const sparklesCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const centerGlowRef = useRef<HTMLDivElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
   const [isDone, setIsDone] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
     return !!sessionStorage.getItem('icon_mun_intro_seen');
   });
 
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // Skip Intro Handler
-  const handleSkip = useCallback(() => {
-    if (timelineRef.current) {
-      timelineRef.current.kill();
-    }
-    sessionStorage.setItem('icon_mun_intro_seen', 'true');
-    setIsDone(true);
-    document.body.style.overflow = '';
-    if (onCompleteRef.current) {
-      onCompleteRef.current();
+  // Clean transition out of intro
+  const handleFinish = useCallback(() => {
+    if (containerRef.current) {
+      gsap.to(containerRef.current, {
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+        onComplete: () => {
+          sessionStorage.setItem('icon_mun_intro_seen', 'true');
+          setIsDone(true);
+          document.body.style.overflow = '';
+          if (onCompleteRef.current) {
+            onCompleteRef.current();
+          }
+        },
+      });
+    } else {
+      sessionStorage.setItem('icon_mun_intro_seen', 'true');
+      setIsDone(true);
+      document.body.style.overflow = '';
+      if (onCompleteRef.current) {
+        onCompleteRef.current();
+      }
     }
   }, []);
+
+  // Skip Intro Handler
+  const handleSkip = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    handleFinish();
+  }, [handleFinish]);
+
+  // Play video on user gesture if autoplay was blocked
+  const handleUserStart = () => {
+    const video = videoRef.current;
+    if (video) {
+      video
+        .play()
+        .then(() => {
+          setAutoplayBlocked(false);
+          setIsPlaying(true);
+        })
+        .catch(() => {
+          handleFinish();
+        });
+    } else {
+      handleFinish();
+    }
+  };
 
   useEffect(() => {
     if (isDone) {
@@ -44,211 +83,142 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
       return;
     }
 
-    // Check prefers-reduced-motion
+    // 1. Check prefers-reduced-motion or Save-Data
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mediaQuery.matches) {
-      handleSkip();
+    const hasSaveData =
+      typeof navigator !== 'undefined' &&
+      'connection' in navigator &&
+      (navigator as unknown as { connection?: { saveData?: boolean } }).connection?.saveData;
+
+    if (mediaQuery.matches || hasSaveData) {
+      sessionStorage.setItem('icon_mun_intro_seen', 'true');
+      setIsDone(true);
+      if (onCompleteRef.current) onCompleteRef.current();
       return;
     }
 
     // Lock scroll during intro
     document.body.style.overflow = 'hidden';
 
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        defaults: { ease: 'power2.out' },
-      });
-      timelineRef.current = tl;
-
-      // 1. Black screen: Faint gold glow pulses in center
-      tl.fromTo(
-        centerGlowRef.current,
-        { opacity: 0, scale: 0.7 },
-        { opacity: 0.6, scale: 1.1, duration: 1.0, yoyo: true, repeat: 1, ease: 'sine.inOut' }
-      );
-
-      // Loading progress line simulates buffer
-      if (progressBarRef.current) {
-        tl.to(progressBarRef.current, { scaleX: 1, duration: 1.4, ease: 'power1.inOut' }, 0);
+    // 2. Max 2-second fallback on slow networks so user is never trapped
+    const slowNetworkTimer = setTimeout(() => {
+      if (!isPlaying) {
+        setAutoplayBlocked(true);
       }
+    }, 2000);
 
-      // 2. Logo fades in from black and scales 0.85 to 1
-      tl.fromTo(
-        logoWrapperRef.current,
-        { opacity: 0, scale: 0.85 },
-        { opacity: 1, scale: 1.0, duration: 1.1, ease: 'power3.out' },
-        0.8
-      );
-
-      // 3. Diagonal gold light glint sweeps across the logo once
-      if (glintRef.current) {
-        tl.fromTo(
-          glintRef.current,
-          { xPercent: -120, opacity: 0 },
-          { xPercent: 140, opacity: 0.85, duration: 0.8, ease: 'power2.inOut' },
-          1.7
-        );
-      }
-
-      // 4. 30 gold sparkles burst outward from the mask's jewels and fade
-      tl.add(() => {
-        const canvas = sparklesCanvasRef.current;
-        if (!canvas) return;
-        const cCtx = canvas.getContext('2d');
-        if (!cCtx) return;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-        const sparkles = Array.from({ length: 30 }).map(() => {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = Math.random() * 5 + 2.5;
-          return {
-            x: cx + (Math.random() - 0.5) * 40,
-            y: cy - 10 + (Math.random() - 0.5) * 40,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            size: Math.random() * 2.5 + 1.2,
-            alpha: 1,
-            color: Math.random() > 0.4 ? '#FFF3D6' : '#D4AF6A',
-          };
-        });
-
-        let frame = 0;
-        const animateSparkles = () => {
-          cCtx.clearRect(0, 0, canvas.width, canvas.height);
-          sparkles.forEach((s) => {
-            s.x += s.vx;
-            s.y += s.vy;
-            s.vx *= 0.94;
-            s.vy *= 0.94;
-            s.alpha -= 0.022;
-
-            if (s.alpha > 0) {
-              cCtx.save();
-              cCtx.globalAlpha = Math.max(0, s.alpha);
-              cCtx.fillStyle = s.color;
-              cCtx.shadowColor = s.color;
-              cCtx.shadowBlur = 8;
-              cCtx.beginPath();
-              cCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-              cCtx.fill();
-              cCtx.restore();
-            }
+    // 3. Attempt autoplay with muted and inline attributes
+    const video = videoRef.current;
+    if (video) {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            clearTimeout(slowNetworkTimer);
+            setIsPlaying(true);
+            setAutoplayBlocked(false);
+          })
+          .catch(() => {
+            // Autoplay blocked by mobile browser policy
+            setAutoplayBlocked(true);
           });
-          frame++;
-          if (frame < 50) {
-            requestAnimationFrame(animateSparkles);
-          }
-        };
-        requestAnimationFrame(animateSparkles);
-      }, 2.3);
-
-      // 5. Logo holds for a beat, then scales up toward camera while fading to black
-      tl.to(
-        logoWrapperRef.current,
-        {
-          scale: 2.2,
-          opacity: 0,
-          duration: 1.1,
-          ease: 'power3.in',
-          delay: 0.5,
-        },
-        2.8
-      );
-
-      // Container fades away to reveal hero
-      tl.to(
-        containerRef.current,
-        {
-          opacity: 0,
-          duration: 0.6,
-          ease: 'power2.out',
-          onComplete: () => {
-            sessionStorage.setItem('icon_mun_intro_seen', 'true');
-            setIsDone(true);
-            document.body.style.overflow = '';
-            if (onCompleteRef.current) {
-              onCompleteRef.current();
-            }
-          },
-        },
-        3.5
-      );
-    }, containerRef);
+      }
+    }
 
     return () => {
-      ctx.revert();
+      clearTimeout(slowNetworkTimer);
       document.body.style.overflow = '';
     };
-  }, [isDone, isHeroReady, handleSkip]);
+  }, [isDone, isPlaying, handleFinish]);
+
+  // Track video time to animate bottom progress bar
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    const bar = progressBarRef.current;
+    if (video && bar && video.duration) {
+      const p = video.currentTime / video.duration;
+      bar.style.transform = `scaleX(${Math.min(1, p)})`;
+    }
+  };
 
   if (isDone) return null;
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 pointer-events-auto flex items-center justify-center bg-[#050505] overflow-hidden select-none"
+      className="fixed inset-0 z-50 pointer-events-auto flex items-center justify-center bg-[#050505] overflow-hidden select-none h-screen-dvh"
     >
-      {/* 1. Center Gold Ambient Glow */}
+      {/* Background radial glow */}
       <div
-        ref={centerGlowRef}
-        className="pointer-events-none absolute h-[400px] w-[400px] rounded-full opacity-0 will-change-transform"
+        className="pointer-events-none absolute h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full opacity-30 will-change-transform"
         style={{
-          background: 'radial-gradient(circle, rgba(212,175,106,0.3) 0%, rgba(90,15,30,0.2) 45%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(212,175,106,0.3) 0%, rgba(90,15,30,0.15) 50%, transparent 70%)',
         }}
       />
 
-      {/* Sparkles Canvas */}
-      <canvas
-        ref={sparklesCanvasRef}
-        className="pointer-events-none absolute inset-0 z-20"
-      />
-
-      {/* 2. Logo Presentation Wrapper */}
-      <div
-        ref={logoWrapperRef}
-        className="relative z-10 flex flex-col items-center justify-center p-4 max-w-sm sm:max-w-md w-full opacity-0 will-change-transform"
-      >
-        <div className="relative rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.9)] border border-[#D4AF6A]/20">
-          <img
-            src="/assets/logo.png"
-            alt="ICON MUN Official Emblem"
-            className="w-full h-auto object-contain block"
-          />
-
-          {/* 3. Diagonal Gold Glint Sweep Overlay */}
-          <div
-            ref={glintRef}
-            className="pointer-events-none absolute inset-0 -skew-x-12 will-change-transform opacity-0"
-            style={{
-              background:
-                'linear-gradient(90deg, transparent 0%, rgba(255,243,214,0.45) 50%, transparent 100%)',
-              width: '50%',
-            }}
-          />
-        </div>
-
-        <p className="mt-4 font-cinzel text-xs uppercase tracking-[0.35em] text-[#D4AF6A] drop-shadow-md">
-          The Masquerade Begins
-        </p>
+      {/* Intro Reveal Video with Mobile Fallback Source */}
+      <div className="relative z-10 w-full h-full flex items-center justify-center max-h-screen-dvh">
+        <video
+          ref={videoRef}
+          muted
+          playsInline
+          webkit-playsinline="true"
+          preload="auto"
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleFinish}
+          className="w-full h-full object-contain max-h-[92dvh] select-none pointer-events-none"
+        >
+          <source src="/assets/intro-mobile.mp4" media="(max-width: 768px)" type="video/mp4" />
+          <source src="/assets/intro.mp4" type="video/mp4" />
+          <source src="/assets/aistudio/Gold_logo_reveal_animation_20261021182732_71a5a8e9.mp4" type="video/mp4" />
+        </video>
       </div>
 
-      {/* Skip Button */}
+      {/* If Autoplay was blocked on iOS/Android: Show prominent gold "Enter" button */}
+      {autoplayBlocked && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm p-6 text-center animate-in fade-in duration-300">
+          <div className="h-16 w-16 mb-4 rounded-full border border-[#D4AF6A] bg-[#141414] flex items-center justify-center shadow-[0_0_25px_rgba(212,175,106,0.35)]">
+            <Play className="h-7 w-7 text-[#F3DFA2] ml-1" />
+          </div>
+          <h2 className="font-cinzel text-2xl sm:text-3xl font-bold uppercase tracking-[0.2em] text-gold-shimmer mb-2">
+            ICON MUN 2026
+          </h2>
+          <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-[#C4BAA8] max-w-xs mb-6 font-light">
+            Behind the Masquerade of Global Diplomacy
+          </p>
+          <button
+            onClick={handleUserStart}
+            className="gold-btn-primary px-8 py-3.5 min-h-[48px] min-w-[200px] text-xs font-bold uppercase tracking-[0.25em] rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-2xl active:scale-95"
+          >
+            <span>Enter Experience</span>
+          </button>
+        </div>
+      )}
+
+      {/* Large Clear Skip Button (Safe Area Aware & >= 44px tap target) */}
       <button
         onClick={handleSkip}
-        className="absolute top-8 right-8 z-30 rounded-full border border-[#D4AF6A]/30 bg-[#0A0A0A]/70 px-4 py-1.5 text-[11px] uppercase font-mono tracking-widest text-[#F3DFA2] backdrop-blur-md transition-all hover:border-[#D4AF6A] hover:bg-[#141414] cursor-pointer"
+        aria-label="Skip Intro"
+        className="absolute z-40 rounded-full border border-[#D4AF6A]/40 bg-[#0A0A0A]/80 px-4 py-2.5 min-h-[44px] min-w-[44px] text-xs uppercase font-mono tracking-widest text-[#F3DFA2] backdrop-blur-md transition-all hover:border-[#D4AF6A] hover:bg-[#141414] active:scale-95 cursor-pointer flex items-center justify-center"
+        style={{
+          top: 'max(1.25rem, env(safe-area-inset-top, 0px))',
+          right: 'max(1.25rem, env(safe-area-inset-right, 0px))',
+        }}
       >
-        Skip Intro →
+        <span>Skip →</span>
       </button>
 
-      {/* Thin Gold Loading Progress Line at Bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/5 z-30">
+      {/* Thin Gold Loading Progress Line at Bottom (Safe Area Aware) */}
+      <div
+        className="absolute left-0 right-0 h-[2.5px] bg-white/5 z-30"
+        style={{
+          bottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
+        }}
+      >
         <div
           ref={progressBarRef}
           className="h-full bg-gradient-to-r from-[#8C6221] via-[#D4AF6A] to-[#FFF3D6] origin-left will-change-transform"
-          style={{ transform: 'scaleX(0.15)' }}
+          style={{ transform: 'scaleX(0.05)' }}
         />
       </div>
     </div>

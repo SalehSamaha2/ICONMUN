@@ -10,11 +10,11 @@ interface GlobalScrollEffectsProps {
 
 const SECTIONS = [
   { id: 'hero-scroll-container', label: '01. The Masquerade', short: 'Hero' },
-  { id: 'about', label: '02. Diplomatic Mandate', short: 'About' },
-  { id: 'committees', label: '03. Councils of Power', short: 'Committees' },
-  { id: 'schedule', label: '04. Timeline of Statecraft', short: 'Timeline' },
+  { id: 'about', label: '02. About (TBA)', short: 'About' },
+  { id: 'committees', label: '03. Councils (TBA)', short: 'Councils' },
+  { id: 'schedule', label: '04. Timeline (TBA)', short: 'Timeline' },
   { id: 'secretariat', label: '05. High Secretariat', short: 'Secretariat' },
-  { id: 'registration', label: '06. Accreditations', short: 'Register' },
+  { id: 'registration', label: '06. Registry (TBA)', short: 'Register' },
 ];
 
 export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
@@ -85,8 +85,8 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
         />
       </div>
 
-      {/* 2. Faint Huge UN-Style Globe Fixed in Background (transform: rotate ONLY) */}
-      <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.06] select-none">
+      {/* 2. Faint Huge UN-Style Globe Fixed in Background (Desktop only to save mobile GPU/CPU) */}
+      <div className="hidden md:flex fixed inset-0 z-0 pointer-events-none items-center justify-center overflow-hidden opacity-[0.06] select-none">
         <svg
           ref={globeSvgRef}
           viewBox="0 0 1000 1000"
@@ -132,10 +132,10 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
         </svg>
       </div>
 
-      {/* 3. Fixed Dot Navigation on Right Side */}
+      {/* 3. Fixed Dot Navigation on Right Side (Desktop only; on mobile top bar serves progress) */}
       <nav
         aria-label="Section Navigation"
-        className="fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-4 py-3"
+        className="hidden md:flex fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-4 py-3"
       >
         <div className="flex flex-col items-center gap-3 rounded-full border border-[#D4AF6A]/20 bg-[#0A0A0A]/70 px-2 py-3 backdrop-blur-md shadow-2xl">
           {SECTIONS.map((sec) => {

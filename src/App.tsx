@@ -29,10 +29,10 @@ export default function App() {
   // Initialize Lenis and GSAP ScrollTrigger Synchronization
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.25,
+      duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.5,
+      syncTouch: false,
     });
     lenisRef.current = lenis;
 
@@ -46,14 +46,29 @@ export default function App() {
     };
 
     gsap.ticker.add(updateTicker);
-    gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(500, 33);
 
     // Refresh ScrollTrigger after fonts settle
     document.fonts.ready.then(() => {
       ScrollTrigger.refresh();
     });
 
+    // Debounced refresh on orientationchange and resize
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const handleDebouncedRefresh = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 200);
+    };
+
+    window.addEventListener('resize', handleDebouncedRefresh);
+    window.addEventListener('orientationchange', handleDebouncedRefresh);
+
     return () => {
+      clearTimeout(resizeTimer);
+      window.removeEventListener('resize', handleDebouncedRefresh);
+      window.removeEventListener('orientationchange', handleDebouncedRefresh);
       gsap.ticker.remove(updateTicker);
       lenis.destroy();
       ScrollTrigger.getAll().forEach((st) => st.kill());

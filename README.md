@@ -1,82 +1,86 @@
-# ICON MUN — Fast, Lightweight Scroll-Animated Cinematic Website
+# ICON MUN — Official Model United Nations Platform
 
-A single-page, fast, lightweight, and scroll-animated cinematic website for **ICON MUN**, a dark black-and-gold Model United Nations conference. Every section is choreographed directly to user scroll progress via **GSAP + ScrollTrigger** and **Lenis**.
-
----
-
-## ⚡ Performance & Page Architecture
-
-- **Total Page Length**: ~10 screen heights total.
-  - **Hero**: Pinned `250vh` (mobile `180vh`).
-  - **Committees**: Pinned `150vh` (desktop horizontal translation; mobile natural vertical stack).
-  - **Registration**: Pinned `120vh`.
-  - **About, Schedule, Secretariat, Footer**: Natural flow (~100vh each). No empty gaps.
-- **Transform & Opacity ONLY**: All scroll animations exclusively manipulate `transform` (`translate3d`, `scale`, `rotate`) and `opacity` (plus SVG `strokeDashoffset`), never `width`, `height`, `top`, `left`, `box-shadow`, or `filter: blur`.
-- **Single Shared rAF Loop**: One requestAnimationFrame loop connecting Lenis and the GSAP ticker (`gsap.ticker.add(...)`).
-- **ScrollTrigger scrub**: Set to `0.5` across all timelines for instantaneous, buttery response in both directions.
-- **Gold Dust Particles**: Single fixed canvas with 40 particles on desktop and 15 on mobile, automatically paused when the browser tab is hidden.
+A luxury, high-performance web experience for ICON MUN, featuring scroll-scrubbed masquerade animations, cinematic video reveals, fluid typography, and bespoke responsive layouts tailored for mobile, tablet, and desktop devices.
 
 ---
 
-## 🖼️ Canvas Frame Sequence (Primary Hero)
+## Mobile Architecture & Features
 
-For maximum 60fps performance and instantaneous bidirectional scrubbing with 0 decoder latency, the hero utilizes a pre-extracted **WebP Frame Sequence** drawn onto a `<canvas>` element:
-- 96 optimized WebP frames at 1280px width located in `/public/assets/frames/frame_0001.webp` through `frame_0096.webp`.
-- Frame 1 is loaded immediately for instant paint.
-- Fallback video scrubbing is automatically activated if frame images are unavailable.
+1. **Dynamic Viewport (`100dvh` with `100vh` fallback)**
+   - All full-screen hero and intro sections utilize CSS `100dvh` to prevent layout jumps and white gaps when mobile browser address bars expand or collapse during scrolling.
 
-### Frame Extraction Command (FFmpeg):
-To re-extract or replace frames from any input video:
+2. **Safe-Area Inset Handling (`viewport-fit=cover`)**
+   - Configured `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`.
+   - Utilizes `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)` for fixed navigation bars, the cinematic intro skip button, captions, floating audio toggle, and footer elements so content never collides with notches, speaker cutouts, or iOS home indicators.
 
-```bash
-ffmpeg -i mask.mp4 -vf "fps=24,scale=1280:-2" -c:v libwebp -quality 70 assets/frames/frame_%04d.webp
-```
+3. **Fluid Typography & Zero Horizontal Scroll**
+   - Headings, captions, and hero titles use CSS `clamp()` scaling. The hero `"ICON MUN"` title is guaranteed to remain on a single line even on compact 360px-wide screens without overflow.
+   - Body copy and form inputs are strictly $\ge 16\text{px}$ to eliminate iOS Safari's disruptive auto-zoom behavior on input focus.
+   - Strict `overflow-x: hidden` enforced at the viewport boundary.
 
-### Keyframe Video Re-Encoding (Fallback):
-If using the MP4 video fallback:
+4. **Touch-Optimized Interaction & 44×44px Tap Targets**
+   - Desktop custom cursor is automatically disabled on touch devices via `@media (hover: none) and (pointer: coarse)`.
+   - Interactive elements (hamburger toggle, committee modal triggers, registration buttons, audio mute toggle, drawer links) provide minimum $44 \times 44\text{px}$ touch bounding boxes with instant active state feedback.
+   - Responsive navigation menu transforms into a full-screen gold-accented mobile drawer that smoothly navigates to page sections and closes automatically.
 
-```bash
-ffmpeg -i input.mp4 -g 1 -an -movflags +faststart output.mp4
-```
-
----
-
-## 🎭 The 6 Cinematic Sections
-
-1. **Cinematic Intro**:
-   - Golden mask emblem logo (`/assets/logo.png`) with UN-style laurel wreath and soft gold radial glow.
-   - Title letters rise with a continuous gold glint shimmer and 30 jewel sparkles.
-   - Velvet curtains slide open upon hero frame 1 readiness. Includes skip button and session persistence.
-2. **Hero — The Mask Reveal (Pinned 250vh)**:
-   - WebP frame sequence scrubbed bidirectionally from `0.0 → 1.0`.
-   - Scrolling down removes the gold masquerade mask from the black mannequin; scrolling up puts it back on.
-   - Fixed HTML title in top safe zone.
-   - Three scroll-linked captions swapping in the bottom safe zone:
-     - `0–30%`: *"Every nation has a face."*
-     - `30–65%`: *"But behind every mask…"*
-     - `65–100%`: *"…is a delegate ready to lead."*
-3. **About Section**:
-   - SVG gold border frame draws around the card via `strokeDashoffset`.
-   - Direct DOM numerical stat counters (`42+ Member States`, `5 Councils`, `72H Debate`, `100% Immersion`).
-4. **Committees (Pinned 150vh Desktop)**:
-   - Desktop: Vertical scroll translates horizontally across 5 councils (UNSC, UNHRC, DISEC, WHO, ECOSOC).
-   - Card closest to center scales to `1.04` and brightens; adjacent cards dim to `0.7`.
-   - Mobile: Plain vertical stack without pinning.
-   - Interactive classified dossier modal with policy inquiries and sovereign portfolios.
-5. **Schedule Section**:
-   - Vertical gold line draws downward (`scaleY: 0 → 1`) with glowing tip node (`translate3d`).
-   - Cards slide in smoothly from alternating sides. Outlined day numbers fill with gold.
-6. **Secretariat Section**:
-   - SVG circular rings draw around high diplomats. Portraits scale `0.9 → 1.0`.
-7. **Registration (Pinned 120vh)**:
-   - Headline *"Take Off Your Mask. Take the Floor."* scales up (`0.65 → 1.0`).
-   - Rotating UN-style globe behind. "Register Now" reveals the full interactive diplomatic application modal with provisional delegate pass generation.
-8. **Footer**:
-   - Contacts rise up; giant outlined "ICON MUN" fills with gold at page terminus.
+5. **Bandwidth-Aware & Battery-Efficient Performance**
+   - **Cinematic Intro**: Delivers an optimized 720px mobile video (`/assets/intro-mobile.mp4`) with `playsInline` and `webkit-playsinline`. Includes intelligent autoplay-block detection that renders a gold **"Enter Experience"** button if mobile power-saving or autoplay policies delay playback.
+   - **Hero Scrubber**: Uses scaled 720px frame sequences (`/assets/frames-mobile/`) on mobile screens, caps `devicePixelRatio` at 2.0 to conserve GPU memory, and applies centered cover positioning focused on the masquerade mask.
+   - **Scroll & Physics**: Configured Lenis with `syncTouch: false` to allow native, fluid touch scrolling while keeping GSAP ScrollTrigger timeline sync intact via `ScrollTrigger.normalizeScroll(true)` and debounced refresh on orientation changes.
+   - **Particle Budget**: Mobile ambient particle count is restrained to 12–15 gold dust nodes with automatic canvas pausing when the browser tab is hidden or backgrounded.
 
 ---
 
-## 🎨 Asset Paths
-- **Official Crest Logo**: `/public/assets/logo.png`
-- **Hero Frame Sequence**: `/public/assets/frames/frame_0001.webp` … `frame_0096.webp`
-- **Fallback Mask Video**: `/public/assets/mask-video.mp4`
+## Mobile Testing Checklist
+
+### 1. iPhone Safari (iOS)
+- [ ] **Address Bar Behavior**: Scroll down and up continuously. Confirm that collapsing/expanding the Safari bottom tab bar or top URL bar causes zero vertical content jumping or layout shifts.
+- [ ] **Safe-Area & Notch**:
+  - Verify that the top navigation header and hamburger button clear the notch and Dynamic Island (`env(safe-area-inset-top)`).
+  - Verify that the bottom skip button, audio toggle, and footer copyright clear the iOS home indicator bar (`env(safe-area-inset-bottom)`).
+- [ ] **Autoplay & Video Inline**:
+  - Ensure the cinematic intro video plays inline without launching Apple's native full-screen video player.
+  - If low-power mode or battery saver restricts autoplay, verify that the golden **"Enter Experience"** fallback button appears and begins playback on first tap.
+- [ ] **Form Inputs & Auto-Zoom**: Tap on any input in the Delegate Registration modal. Verify that Safari does **not** perform an unwanted page zoom (input font size is $\ge 16\text{px}$).
+- [ ] **Hero Scrubbing**: Drag finger vertically across the hero section. Verify the mannequin mask smoothly lifts and returns without rubber-band stutter.
+
+### 2. Android Chrome
+- [ ] **Dynamic Viewport Height**: Scroll through the hero and verify that `100dvh` maintains exact full-height sizing when the URL toolbar scrolls away.
+- [ ] **Performance & FPS**: Check that gold ambient dust particles animate at 60fps without thermal throttling or dropped frames.
+- [ ] **Network Throttling Fallback**: On slow 3G or constrained cellular connections, verify the 2-second timeout gracefully unlocks the intro into the hero if video buffering is prolonged.
+- [ ] **Touch Target Usability**: Tap buttons and links; verify all targets respond promptly with visible feedback and no accidental double-taps.
+
+### 3. iPad / Tablets (768px – 1024px)
+- [ ] **Portrait Mode (768px)**:
+  - Secretariat grid shifts neatly into 2 columns.
+  - About section stat cards display in a balanced 2×2 layout.
+  - Committees show structured cards with visible badges and description teasers.
+- [ ] **Landscape Mode (1024px)**:
+  - Transition between hamburger navigation and expanded desktop navigation bar occurs seamlessly.
+  - Scrubbed hero canvas scales to fill viewport height with centered mannequin framing.
+
+### 4. Orientation Testing (Portrait & Landscape on Phones)
+- [ ] **Short Landscape Viewports (Height < 500px)**:
+  - Turn phone horizontally. Verify that the hero title, skip button, and intro logo scale proportionally to fit the reduced vertical height.
+  - Confirm modal dialogs remain vertically scrollable so the submit button is always reachable.
+
+---
+
+## How to Preview with Chrome DevTools Device Mode
+
+1. **Open DevTools**:
+   - In Google Chrome, press `F12` (Windows/Linux) or `Cmd + Option + I` (macOS).
+2. **Toggle Device Toolbar**:
+   - Click the **Device Toggle** icon at the top-left of DevTools, or press `Ctrl + Shift + M` / `Cmd + Shift + M`.
+3. **Select Preset Viewports or Enter Custom Dimensions**:
+   - **360 × 740 px**: Samsung Galaxy S8/S9 / standard compact Android
+   - **390 × 844 px**: iPhone 13 / 14 / 15
+   - **430 × 932 px**: iPhone 14 Pro Max / 15 Pro Max
+   - **768 × 1024 px**: iPad Mini / iPad Portrait
+   - **1440 × 900 px**: Modern Desktop Display
+4. **Simulate Touch & Orientation**:
+   - Set the throttle dropdown to **Mid-tier mobile** or **Low-tier mobile** to verify frame scrubbing and particle performance.
+   - Click the **Rotate** button in the device toolbar to test transitions between Portrait and Landscape modes.
+   - In the three-dots menu inside the device toolbar, select **"Show device frame"** to view realistic screen cutouts.
+5. **Simulate Reduced Motion & Data Saver**:
+   - Open DevTools Command Menu (`Ctrl + Shift + P` or `Cmd + Shift + P`), type `Emulate CSS prefers-reduced-motion: reduce`, and test the instant static hero mode.

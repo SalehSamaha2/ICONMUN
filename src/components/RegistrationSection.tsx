@@ -16,7 +16,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   isOpenModal,
   onCloseModal,
   onOpenModal,
-  preselectedCommittee = 'UNSC',
+  preselectedCommittee = 'TBA',
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stickyRef = useRef<HTMLDivElement | null>(null);
@@ -30,10 +30,30 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   const [institution, setInstitution] = useState('');
   const [email, setEmail] = useState('');
   const [committee, setCommittee] = useState(preselectedCommittee);
-  const [firstCountry, setFirstCountry] = useState('Switzerland');
-  const [experienceLevel, setExperienceLevel] = useState('Experienced (3+ MUNs)');
+  const [firstCountry, setFirstCountry] = useState('TBA');
+  const [experienceLevel, setExperienceLevel] = useState('TBA');
   const [statement, setStatement] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Lock body scroll and listen for Escape key when modal is open
+  useEffect(() => {
+    if (!isOpenModal) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseModal();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpenModal, onCloseModal]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -41,33 +61,33 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     if (!container || !sticky) return;
 
     const ctx = gsap.context(() => {
-      // Pinned ~120vh, scrub: 0.5, master timeline
+      // Pinned ~120vh, smooth scrub: 0.8
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 0.5,
+          scrub: 0.8,
           pin: sticky,
           pinSpacing: true,
         },
       });
 
-      // 1. Giant globe and laurel rotate and scale behind (transform & opacity only)
+      // 1. Giant globe and laurel rotate and scale behind
       if (bgGlobeRef.current) {
         tl.fromTo(
           bgGlobeRef.current,
-          { scale: 0.8, rotate: -25, opacity: 0.04 },
-          { scale: 1.25, rotate: 25, opacity: 0.15, ease: 'none' },
+          { scale: 0.85, rotate: -20, opacity: 0.04 },
+          { scale: 1.25, rotate: 20, opacity: 0.15, ease: 'none' },
           0
         );
       }
 
-      // 2. Headline scales up from small to full size (transform & opacity only - NO BLUR)
+      // 2. Headline scales up from small to full size
       if (headlineRef.current) {
         tl.fromTo(
           headlineRef.current,
-          { scale: 0.65, opacity: 0.2 },
+          { scale: 0.7, opacity: 0.2 },
           { scale: 1, opacity: 1, ease: 'power2.out' },
           0.05
         );
@@ -103,15 +123,15 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
       <div
         ref={containerRef}
         id="registration"
-        className="relative w-full bg-[#050505] h-[120vh]"
+        className="relative w-full bg-[#050505] h-[100vh] md:h-[120vh]"
       >
-        {/* Pinned Viewport Container (120vh) */}
+        {/* Pinned Viewport Container (100dvh) */}
         <div
           ref={stickyRef}
-          className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden px-6 lg:px-12"
+          className="sticky top-0 h-screen-dvh w-full flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-12"
         >
-          {/* Rotating Giant Globe & Laurel behind (Single static SVG rotating via GSAP) */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+          {/* Rotating Giant Globe & Laurel behind (Hidden on small mobile) */}
+          <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none select-none z-0">
             <svg
               ref={bgGlobeRef}
               viewBox="0 0 1000 1000"
@@ -151,16 +171,16 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
           </div>
 
           {/* Central Registration Presentation */}
-          <div className="relative z-10 max-w-4xl w-full text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#D4AF6A]/30 bg-[#D4AF6A]/10 px-4 py-1.5 text-xs uppercase tracking-[0.25em] text-[#F3DFA2] mb-6">
-              <Award className="h-4 w-4 text-[#D4AF6A]" />
-              <span>Geneva Accreditations Open · 2026</span>
+          <div className="relative z-10 max-w-4xl w-full text-center px-2 sm:px-0">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#D4AF6A]/30 bg-[#D4AF6A]/10 px-3.5 sm:px-4 py-1.5 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#F3DFA2] mb-4 sm:mb-6">
+              <Award className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-[#D4AF6A]" />
+              <span>ICON MUN 2027 · Registry TBA</span>
             </div>
 
             {/* Headline scaling from small to full size */}
             <h2
               ref={headlineRef}
-              className="font-cinzel text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold uppercase tracking-[0.16em] text-gold-shimmer will-change-transform text-balance"
+              className="font-cinzel text-[clamp(1.85rem,6vw,4.5rem)] font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] text-gold-shimmer will-change-transform text-balance leading-tight"
               style={{
                 textShadow: '0 0 35px rgba(212, 175, 106, 0.4), 0 0 70px rgba(90, 15, 30, 0.25)',
               }}
@@ -170,20 +190,21 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
               <span className="text-white">Take the Floor.</span>
             </h2>
 
-            <p className="mt-5 text-xs sm:text-sm text-[#C4BAA8] max-w-lg mx-auto font-light leading-relaxed">
-              Step into the chambers where the world’s most intractable geopolitical crises are dissected. Limited seats remain across our five sovereign councils.
+            <p className="mt-4 sm:mt-5 text-xs sm:text-base text-[#C4BAA8] max-w-lg mx-auto font-light leading-relaxed">
+              Register early interest for ICON MUN 2027. Official dates, council allotments, and conference details are To Be Announced (TBA).
             </p>
 
-            {/* Action Button fading in at end of scrub */}
+            {/* Action Button */}
             <div
               ref={buttonWrapperRef}
-              className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 will-change-transform"
+              className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 will-change-transform w-full max-w-xs sm:max-w-none mx-auto"
             >
               <button
+                type="button"
                 onClick={onOpenModal}
-                className="gold-btn-primary px-9 py-3.5 text-xs sm:text-sm font-bold uppercase tracking-[0.25em] rounded-md shadow-2xl hover:scale-105 transition-all cursor-pointer"
+                className="gold-btn-primary w-full sm:w-auto px-9 py-4 min-h-[48px] text-xs sm:text-sm font-bold uppercase tracking-[0.25em] rounded-md shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
               >
-                Register Now
+                Register Interest (TBA)
               </button>
             </div>
           </div>
@@ -192,34 +213,52 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
 
       {/* Interactive Credential Application Modal */}
       {isOpenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
-          <div className="gold-card max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[92vh] overflow-y-auto border-[#D4AF6A]/50 bg-[#0C0C0C] relative shadow-[0_0_60px_rgba(0,0,0,0.95)]">
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              onCloseModal();
+            }
+          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/95 backdrop-blur-xl animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="gold-card max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] overflow-y-auto border-[#D4AF6A]/60 bg-[#0C0C0C] relative shadow-[0_0_80px_rgba(0,0,0,0.98)]"
+          >
+            {/* Primary Close Button (X) */}
             <button
-              onClick={onCloseModal}
-              className="absolute top-6 right-6 p-1.5 text-[#A89D8A] hover:text-white transition-colors cursor-pointer"
-              aria-label="Close modal"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCloseModal();
+              }}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 h-11 w-11 flex items-center justify-center rounded-full bg-[#181818] border border-[#D4AF6A]/50 text-[#F3DFA2] hover:text-white hover:bg-[#252525] hover:border-[#D4AF6A] transition-all cursor-pointer active:scale-90 shadow-xl"
+              aria-label="Close registration modal"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 pointer-events-none" />
             </button>
 
             {!isSubmitted ? (
               <>
-                <div className="mb-6">
+                <div className="mb-6 pr-10">
                   <div className="text-[11px] uppercase tracking-[0.25em] text-[#D4AF6A] mb-1 font-medium">
-                    Official Application Portal
+                    ICON MUN 2027 Registration
                   </div>
                   <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-gold-gradient">
-                    Diplomatic Credential Application
+                    Delegate Registration (TBA)
                   </h3>
                   <p className="text-xs text-[#A89D8A] mt-1">
-                    Submit your credentials to the High Secretariat for council allotment.
+                    All conference fees, dates, and venues are To Be Announced (TBA) by the Secretariat.
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-2 font-medium">
-                      Delegation Status
+                      Delegation Status (TBA)
                     </label>
                     <div className="grid grid-cols-3 gap-3">
                       {(['single', 'double', 'head'] as const).map((type) => (
@@ -233,9 +272,9 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                               : 'border-white/10 bg-[#141414] text-[#A89D8A] hover:bg-[#1a1a1a]'
                           }`}
                         >
-                          {type === 'single' && 'Single Delegate'}
-                          {type === 'double' && 'Double Delegation'}
-                          {type === 'head' && 'Head of Delegation'}
+                          {type === 'single' && 'Single Delegate (TBA)'}
+                          {type === 'double' && 'Double Delegate (TBA)'}
+                          {type === 'head' && 'Head Delegate (TBA)'}
                         </button>
                       ))}
                     </div>
@@ -244,28 +283,28 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                        Full Name / Diplomatic Title *
+                        Full Name *
                       </label>
                       <input
                         type="text"
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="e.g. Lord Alexander Wright"
-                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
+                        placeholder="Your full name"
+                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
                       />
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                        Institution / University / Embassy *
+                        School / Institution *
                       </label>
                       <input
                         type="text"
                         required
                         value={institution}
                         onChange={(e) => setInstitution(e.target.value)}
-                        placeholder="e.g. Geneva School of Diplomacy"
-                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
+                        placeholder="Your institution name"
+                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -273,31 +312,30 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                        Official Contact Email *
+                        Contact Email *
                       </label>
                       <input
                         type="email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="delegate@diplomacy.org"
-                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
+                        placeholder="your.email@example.com"
+                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
                       />
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                        Primary Council Preference
+                        Council Preference (TBA)
                       </label>
                       <select
                         value={committee}
                         onChange={(e) => setCommittee(e.target.value)}
-                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white focus:border-[#D4AF6A] focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white focus:border-[#D4AF6A] focus:outline-none"
                       >
-                        <option value="UNSC">UNSC — United Nations Security Council</option>
-                        <option value="UNHRC">UNHRC — Human Rights Council</option>
-                        <option value="DISEC">DISEC — Disarmament & International Security</option>
-                        <option value="WHO">WHO — World Health Organization Assembly</option>
-                        <option value="ECOSOC">ECOSOC — Economic & Social Council</option>
+                        <option value="TBA">Council Allotment: TBA</option>
+                        <option value="Council I (TBA)">Council I (TBA)</option>
+                        <option value="Council II (TBA)">Council II (TBA)</option>
+                        <option value="Council III (TBA)">Council III (TBA)</option>
                       </select>
                     </div>
                   </div>
@@ -305,59 +343,63 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                        First Country Preference
+                        Country Preference (TBA)
                       </label>
                       <input
                         type="text"
                         value={firstCountry}
                         onChange={(e) => setFirstCountry(e.target.value)}
-                        placeholder="e.g. United Kingdom, France, Brazil"
-                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
+                        placeholder="Country preferences TBA"
+                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
                       />
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                        Delegate Experience Level
+                        Experience Level
                       </label>
                       <select
                         value={experienceLevel}
                         onChange={(e) => setExperienceLevel(e.target.value)}
-                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white focus:border-[#D4AF6A] focus:outline-none"
+                        className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white focus:border-[#D4AF6A] focus:outline-none"
                       >
-                        <option value="Novice (First MUN)">Novice (First MUN)</option>
-                        <option value="Intermediate (1-2 MUNs)">Intermediate (1-2 MUNs)</option>
-                        <option value="Experienced (3+ MUNs)">Experienced (3+ MUNs)</option>
-                        <option value="Veteran / Crisis Specialist">Veteran / Crisis Specialist</option>
+                        <option value="TBA">Level: TBA</option>
+                        <option value="Novice">Novice</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
                     <label className="text-xs uppercase tracking-wider text-[#C4BAA8] block mb-1.5 font-medium">
-                      Diplomatic Statement & Policy Focus (Optional)
+                      Notes or Inquiries (Optional)
                     </label>
                     <textarea
                       rows={3}
                       value={statement}
                       onChange={(e) => setStatement(e.target.value)}
-                      placeholder="Outline your strategic priorities..."
-                      className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-2.5 text-sm text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
+                      placeholder="Any questions for the Secretariat..."
+                      className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 text-base text-white placeholder-white/20 focus:border-[#D4AF6A] focus:outline-none"
                     />
                   </div>
 
-                  <div className="pt-2 flex items-center justify-end gap-3">
+                  <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
                     <button
                       type="button"
-                      onClick={onCloseModal}
-                      className="px-5 py-2.5 text-xs uppercase tracking-wider text-[#A89D8A] hover:text-white cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onCloseModal();
+                      }}
+                      className="px-5 py-3 min-h-[44px] text-xs uppercase tracking-wider text-[#A89D8A] hover:text-white cursor-pointer flex items-center justify-center active:scale-95"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="gold-btn-primary px-8 py-3 text-xs font-bold uppercase tracking-widest rounded cursor-pointer"
+                      className="gold-btn-primary px-8 py-3.5 min-h-[48px] text-xs font-bold uppercase tracking-widest rounded-lg cursor-pointer flex items-center justify-center active:scale-95 shadow-lg"
                     >
-                      Submit Credential Dossier
+                      Submit Registration (TBA)
                     </button>
                   </div>
                 </form>
@@ -369,10 +411,10 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                 </div>
 
                 <h3 className="font-cinzel text-2xl sm:text-3xl font-bold text-gold-shimmer mb-2">
-                  Dossier Formally Deposited
+                  Registration Deposited
                 </h3>
                 <p className="text-xs text-[#C4BAA8] max-w-md mx-auto mb-8 font-light">
-                  Your credentials have been submitted to the High Secretariat. Below is your provisional delegate pass:
+                  Your interest has been submitted to the High Secretariat. All official conference announcements are TBA.
                 </p>
 
                 <div className="max-w-md mx-auto rounded-2xl border-2 border-[#D4AF6A] bg-gradient-to-b from-[#161616] to-[#0A0A0A] p-6 text-left relative shadow-2xl overflow-hidden">
@@ -380,15 +422,15 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   <div className="flex justify-between items-start border-b border-white/10 pb-4 mb-4">
                     <div>
                       <div className="font-cinzel text-lg font-bold text-[#F3DFA2]">
-                        ICON MUN 2026
+                        ICON MUN 2027
                       </div>
                       <div className="text-[10px] uppercase tracking-widest text-[#D4AF6A]">
-                        Provisional Diplomatic Pass
+                        Provisional Registration Pass
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-mono text-xs text-[#D4AF6A]">#ICN-8829</div>
-                      <div className="text-[9px] uppercase tracking-wider text-white/50">Geneva Accreditations</div>
+                      <div className="font-mono text-xs text-[#D4AF6A]">#ICN-2027</div>
+                      <div className="text-[9px] uppercase tracking-wider text-white/50">All Details: TBA</div>
                     </div>
                   </div>
 
@@ -398,7 +440,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                         Delegate Name
                       </span>
                       <span className="font-medium text-sm text-white">
-                        {fullName || 'Ambassador Delegate'}
+                        {fullName || 'Delegate'}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -407,30 +449,31 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                           Council Assigned
                         </span>
                         <span className="font-medium text-xs text-[#F3DFA2]">
-                          {committee}
+                          TBA
                         </span>
                       </div>
                       <div>
                         <span className="text-[9px] uppercase tracking-wider text-[#A89D8A] block">
-                          Requested Country
+                          Dates & Venue
                         </span>
                         <span className="font-medium text-xs text-[#F3DFA2]">
-                          {firstCountry}
+                          TBA
                         </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-white/10 pt-3 flex items-center justify-between text-[10px] text-[#A89D8A]">
-                    <span>Status: Provisional Review</span>
-                    <span className="font-mono text-[#D4AF6A]">SECRETARIAT SEALED</span>
+                    <span>Status: Registry Recorded</span>
+                    <span className="font-mono text-[#D4AF6A]">TBA</span>
                   </div>
                 </div>
 
                 <div className="mt-8 flex items-center justify-center gap-4">
                   <button
+                    type="button"
                     onClick={handleReset}
-                    className="gold-btn-primary px-6 py-2 text-xs font-semibold uppercase tracking-wider rounded cursor-pointer"
+                    className="gold-btn-primary px-8 py-3 text-xs font-semibold uppercase tracking-wider rounded cursor-pointer"
                   >
                     Done
                   </button>

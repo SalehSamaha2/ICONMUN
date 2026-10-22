@@ -19,36 +19,68 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stickyRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasWrapRef = useRef<HTMLDivElement | null>(null);
   const glowRef = useRef<HTMLDivElement | null>(null);
   const videoFallbackRef = useRef<HTMLVideoElement | null>(null);
 
+  // Captions refs to animate with hardware-accelerated GSAP without triggering React re-renders
+  const caption1Ref = useRef<HTMLParagraphElement | null>(null);
+  const caption2Ref = useRef<HTMLParagraphElement | null>(null);
+  const caption3Ref = useRef<HTMLParagraphElement | null>(null);
+
   const [useVideoFallback, setUseVideoFallback] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Preloaded frame images cache
   const framesRef = useRef<HTMLImageElement[]>([]);
-  const currentFrameIndexRef = useRef(0);
+  const currentRenderFrameRef = useRef(0);
+  const targetRenderFrameRef = useRef(0);
+  const lastDrawnFrameRef = useRef(-1);
   const isFirstFrameLoadedRef = useRef(false);
 
-  // Render a specific frame onto the canvas
+  // Cached viewport sizes to avoid DOM reading during draw
+  const viewportSizeRef = useRef({ width: 0, height: 0, dpr: 1 });
+
+  // Update canvas dimensions cache
+  const updateViewportSize = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    viewportSizeRef.current = { width: w, height: h, dpr };
+
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+    }
+  }, []);
+
+  // Render a specific frame onto the canvas with centered mannequin cover
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    const img = framesRef.current[frameIdx];
+    let img = framesRef.current[frameIdx];
+    if (!img || !img.complete || img.naturalWidth === 0) {
+      img = framesRef.current[lastDrawnFrameRef.current];
+    }
     if (!img || !img.complete || img.naturalWidth === 0) return;
 
-    // Ensure canvas dimensions match viewport
-    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
+    lastDrawnFrameRef.current = frameIdx;
 
-    // Cover positioning
-    const cw = canvas.width;
-    const ch = canvas.height;
+    const { width: targetW, height: targetH, dpr } = viewportSizeRef.current;
+    if (targetW === 0 || targetH === 0) return;
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // Object-fit cover logic centered directly on the mannequin
+    const cw = targetW;
+    const ch = targetH;
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
     const r = Math.max(cw / iw, ch / ih);
@@ -58,138 +90,214 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
     const oy = (ch - nh) / 2;
 
     ctx.drawImage(img, ox, oy, nw, nh);
+    ctx.restore();
   }, []);
 
-  // Preload frame 1 immediately, then the rest in background
+  // Smooth requestAnimationFrame render loop with interpolation
   useEffect(() => {
-    const images: HTMLImageElement[] = [];
-    let loadedCount = 0;
+    let animId: number;
 
-    // Load Frame 1 first for immediate paint
+    const tick = () => {
+      if (!useVideoFallback && isFirstFrameLoadedRef.current) {
+        const target = targetRenderFrameRef.current;
+        const current = currentRenderFrameRef.current;
+        const diff = target - current;
+
+        if (Math.abs(diff) > 0.05) {
+          // Smooth buttery lerp
+          currentRenderFrameRef.current = current + diff * 0.28;
+          const frameToDraw = Math.min(
+            Math.max(Math.round(currentRenderFrameRef.current), 0),
+            TOTAL_FRAMES - 1
+          );
+
+          if (frameToDraw !== lastDrawnFrameRef.current) {
+            drawFrame(frameToDraw);
+          }
+        } else if (Math.round(current) !== lastDrawnFrameRef.current) {
+          currentRenderFrameRef.current = target;
+          drawFrame(Math.round(target));
+        }
+      }
+
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [drawFrame, useVideoFallback]);
+
+  // Progressive frame loading: load Frame 1 immediately, then rest in non-blocking batches
+  useEffect(() => {
+    updateViewportSize();
+
+    const isMobile = window.innerWidth <= 768;
+    const preferredFolder = isMobile ? '/assets/frames-mobile' : '/assets/frames';
+    const fallbackFolder = '/assets/frames';
+
+    const images: HTMLImageElement[] = new Array(TOTAL_FRAMES);
+
+    // 1. Load Frame 1 first for instantaneous paint
     const firstImg = new Image();
-    firstImg.src = '/assets/frames/frame_0001.webp';
+    firstImg.src = `${preferredFolder}/frame_001.jpg`;
     firstImg.onload = () => {
       isFirstFrameLoadedRef.current = true;
+      images[0] = firstImg;
+      framesRef.current = images;
       drawFrame(0);
       if (onHeroReady) onHeroReady();
-    };
-    firstImg.onerror = () => {
-      // If frames don't exist, switch to video fallback
-      setUseVideoFallback(true);
-      if (onHeroReady) onHeroReady();
-    };
-    images.push(firstImg);
 
-    // Preload remaining 95 frames
-    for (let i = 2; i <= TOTAL_FRAMES; i++) {
-      const img = new Image();
-      const numStr = String(i).padStart(4, '0');
-      img.src = `/assets/frames/frame_${numStr}.webp`;
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === TOTAL_FRAMES - 1) {
+      // 2. Load remaining 95 frames in small non-blocking batches
+      let currentIdx = 2;
+      const batchSize = isMobile ? 8 : 16;
+
+      const loadNextBatch = () => {
+        if (currentIdx > TOTAL_FRAMES) {
           ScrollTrigger.refresh();
+          return;
+        }
+
+        const endIdx = Math.min(currentIdx + batchSize, TOTAL_FRAMES + 1);
+        for (let i = currentIdx; i < endIdx; i++) {
+          const img = new Image();
+          const numStr = String(i).padStart(3, '0');
+          img.src = `${preferredFolder}/frame_${numStr}.jpg`;
+          img.onerror = () => {
+            img.src = `${fallbackFolder}/frame_${numStr}.jpg`;
+          };
+          images[i - 1] = img;
+        }
+
+        currentIdx = endIdx;
+        if (typeof window.requestIdleCallback === 'function') {
+          window.requestIdleCallback(loadNextBatch);
+        } else {
+          setTimeout(loadNextBatch, 20);
         }
       };
-      images.push(img);
-    }
 
+      loadNextBatch();
+    };
+
+    firstImg.onerror = () => {
+      firstImg.src = `${fallbackFolder}/frame_001.jpg`;
+      firstImg.onerror = () => {
+        setUseVideoFallback(true);
+        if (onHeroReady) onHeroReady();
+      };
+    };
+
+    images[0] = firstImg;
     framesRef.current = images;
 
     const handleResize = () => {
-      drawFrame(currentFrameIndexRef.current);
+      updateViewportSize();
+      drawFrame(Math.round(currentRenderFrameRef.current));
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [drawFrame, onHeroReady]);
 
-  // Master ScrollTrigger Timeline for Hero (Pinned 250vh desktop, 180vh mobile, scrub: 0.5)
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [drawFrame, onHeroReady, updateViewportSize]);
+
+  // Master ScrollTrigger Timeline for Hero (Pinned 180vh mobile, 250vh desktop, smooth scrub)
   useEffect(() => {
     const container = containerRef.current;
     const sticky = stickyRef.current;
     if (!container || !sticky) return;
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: container,
-        start: 'top top',
-        end: 'bottom bottom',
-        pin: sticky,
-        pinSpacing: true,
-        scrub: 0.5, // Short smoothing for instantaneous responsiveness
-        onUpdate: (self) => {
-          const p = self.progress;
-          setScrollProgress(p);
-          if (onHeroProgressChange) {
-            onHeroProgressChange(p);
-          }
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: 'top top',
+          end: 'bottom bottom',
+          pin: sticky,
+          pinSpacing: true,
+          scrub: 0.8, // Smooth scrub for buttery transition
+          onUpdate: (self) => {
+            const p = self.progress;
+            targetRenderFrameRef.current = p * (TOTAL_FRAMES - 1);
 
-          // Frame mapping
-          const targetIndex = Math.min(
-            Math.max(Math.floor(p * (TOTAL_FRAMES - 1)), 0),
-            TOTAL_FRAMES - 1
-          );
-
-          if (currentFrameIndexRef.current !== targetIndex) {
-            currentFrameIndexRef.current = targetIndex;
-            if (!useVideoFallback) {
-              drawFrame(targetIndex);
+            if (onHeroProgressChange) {
+              onHeroProgressChange(p);
             }
-          }
 
-          // Fallback video scrubbing if active
-          if (useVideoFallback && videoFallbackRef.current) {
-            const v = videoFallbackRef.current;
-            if (v.duration) {
-              v.currentTime = p * v.duration;
+            // Video fallback seeking if active
+            if (useVideoFallback && videoFallbackRef.current?.duration) {
+              videoFallbackRef.current.currentTime = p * videoFallbackRef.current.duration;
             }
-          }
+          },
         },
       });
+
+      // 1. Subtle scale and exit fade on canvas
+      if (canvasWrapRef.current) {
+        tl.fromTo(
+          canvasWrapRef.current,
+          { scale: 1 },
+          { scale: 1.05, ease: 'none', duration: 1 },
+          0
+        );
+        tl.to(
+          canvasWrapRef.current,
+          { opacity: 0, ease: 'power2.in', duration: 0.12 },
+          0.88
+        );
+      }
+
+      // 2. Glow overlay pulsing
+      if (glowRef.current) {
+        tl.fromTo(
+          glowRef.current,
+          { opacity: 0.1, scale: 0.85 },
+          { opacity: 0.65, scale: 1.15, ease: 'none', duration: 0.8 },
+          0
+        );
+      }
+
+      // 3. Captions sequence without React re-renders
+      // Caption 1: 0 - 0.28
+      if (caption1Ref.current) {
+        tl.fromTo(
+          caption1Ref.current,
+          { opacity: 1, y: 0 },
+          { opacity: 0, y: -16, ease: 'power1.inOut', duration: 0.1 },
+          0.22
+        );
+      }
+
+      // Caption 2: 0.28 - 0.65
+      if (caption2Ref.current) {
+        tl.fromTo(
+          caption2Ref.current,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, ease: 'power1.inOut', duration: 0.1 },
+          0.28
+        );
+        tl.to(
+          caption2Ref.current,
+          { opacity: 0, y: -16, ease: 'power1.inOut', duration: 0.1 },
+          0.58
+        );
+      }
+
+      // Caption 3: 0.65 - 1.0
+      if (caption3Ref.current) {
+        tl.fromTo(
+          caption3Ref.current,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, ease: 'power1.inOut', duration: 0.12 },
+          0.64
+        );
+      }
     }, container);
 
     return () => ctx.revert();
-  }, [drawFrame, onHeroProgressChange, useVideoFallback]);
-
-  // Dynamic transforms (Transform and Opacity ONLY)
-  const canvasScale = 1 + scrollProgress * 0.06; // slight scale 1 -> 1.06
-  const glowOpacity = Math.min(scrollProgress * 1.4, 0.75); // gold glow overlay fades in
-  const exitOpacity = scrollProgress > 0.88 ? Math.max(0, 1 - (scrollProgress - 0.88) / 0.12) : 1;
-
-  // Caption 1: 0–30% "Every nation has a face."
-  const getCaption1Style = () => {
-    if (scrollProgress < 0.22) return { opacity: 1, transform: 'translateY(0px)' };
-    if (scrollProgress <= 0.32) {
-      const exit = (scrollProgress - 0.22) / 0.1;
-      return { opacity: 1 - exit, transform: `translateY(-${exit * 16}px)` };
-    }
-    return { opacity: 0, transform: 'translateY(-16px)' };
-  };
-
-  // Caption 2: 30–65% "But behind every mask…"
-  const getCaption2Style = () => {
-    if (scrollProgress < 0.28) return { opacity: 0, transform: 'translateY(16px)' };
-    if (scrollProgress <= 0.38) {
-      const enter = (scrollProgress - 0.28) / 0.1;
-      return { opacity: enter, transform: `translateY(${(1 - enter) * 16}px)` };
-    }
-    if (scrollProgress <= 0.58) return { opacity: 1, transform: 'translateY(0px)' };
-    if (scrollProgress <= 0.68) {
-      const exit = (scrollProgress - 0.58) / 0.1;
-      return { opacity: 1 - exit, transform: `translateY(-${exit * 16}px)` };
-    }
-    return { opacity: 0, transform: 'translateY(-16px)' };
-  };
-
-  // Caption 3: 65–100% "…is a delegate ready to lead."
-  const getCaption3Style = () => {
-    if (scrollProgress < 0.64) return { opacity: 0, transform: 'translateY(16px)' };
-    if (scrollProgress <= 0.74) {
-      const enter = (scrollProgress - 0.64) / 0.1;
-      return { opacity: enter, transform: `translateY(${(1 - enter) * 16}px)` };
-    }
-    return { opacity: 1, transform: 'translateY(0px)' };
-  };
+  }, [onHeroProgressChange, useVideoFallback]);
 
   return (
     <div
@@ -197,31 +305,29 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
       id="hero-scroll-container"
       className="relative w-full bg-[#050505] h-[180vh] md:h-[250vh]"
     >
-      {/* Pinned Viewport Hero Section */}
+      {/* Pinned Viewport Hero Section with 100dvh fallback */}
       <div
         ref={stickyRef}
-        className="h-screen w-full overflow-hidden bg-[#050505] flex flex-col justify-between"
+        className="h-screen-dvh w-full overflow-hidden bg-[#050505] flex flex-col justify-between"
       >
-        {/* Visual Media Layer: Canvas Frame Sequence (with video fallback) */}
+        {/* Visual Media Layer: Canvas Frame Sequence */}
         <div
+          ref={canvasWrapRef}
           className="absolute inset-0 w-full h-full will-change-transform"
-          style={{
-            transform: `scale(${canvasScale})`,
-            opacity: exitOpacity,
-          }}
         >
-          {/* WebP Frame Sequence Canvas (Preferred) */}
+          {/* Canvas Frame Sequence */}
           <canvas
             ref={canvasRef}
             className="w-full h-full object-cover select-none block"
           />
 
-          {/* Fallback MP4 Video (if frames are absent) */}
+          {/* Fallback MP4 Video */}
           {useVideoFallback && (
             <video
               ref={videoFallbackRef}
               src="/assets/mask-video.mp4"
               playsInline
+              webkit-playsinline="true"
               muted
               preload="auto"
               className="absolute inset-0 w-full h-full object-cover select-none"
@@ -229,38 +335,43 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
           )}
         </div>
 
-        {/* Radial Gold Glow Overlay (Opacity Only) */}
+        {/* Radial Gold Glow Overlay */}
         <div
           ref={glowRef}
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[550px] w-[550px] rounded-full z-10 will-change-transform"
+          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[320px] sm:h-[480px] w-[320px] sm:w-[480px] rounded-full z-10 will-change-transform opacity-10"
           style={{
             background:
-              'radial-gradient(circle, rgba(212,175,106,0.35) 0%, rgba(90,15,30,0.2) 45%, transparent 70%)',
-            opacity: glowOpacity,
+              'radial-gradient(circle, rgba(212,175,106,0.3) 0%, rgba(90,15,30,0.18) 45%, transparent 70%)',
           }}
         />
 
-        {/* Soft Radial Vignette Overlay (Static, no heavy CSS animations) */}
+        {/* Soft Radial Vignette Overlay */}
         <div
           className="pointer-events-none absolute inset-0 z-15"
           style={{
             background:
-              'radial-gradient(circle at center, transparent 35%, rgba(5,5,5,0.65) 80%, #050505 100%)',
+              'radial-gradient(circle at center, transparent 35%, rgba(5,5,5,0.6) 80%, #050505 100%)',
           }}
         />
 
         {/* ================================================================= */}
         {/* SAFE ZONE 1 (TOP): SINGLE "ICON MUN" HTML TITLE                   */}
         {/* ================================================================= */}
-        <div className="relative z-20 pt-10 sm:pt-14 px-6 flex flex-col items-center justify-center text-center pointer-events-none select-none">
-          <div className="inline-flex items-center gap-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.35em] text-[#D4AF6A] mb-2 opacity-90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+        <div
+          className="relative z-20 px-4 sm:px-6 flex flex-col items-center justify-center text-center pointer-events-none select-none"
+          style={{
+            paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
+          }}
+        >
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 text-[clamp(0.6rem,2vw,0.75rem)] font-semibold uppercase tracking-[0.22em] sm:tracking-[0.35em] text-[#D4AF6A] mb-1 opacity-90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
             <span>The Premier Model United Nations</span>
             <span aria-hidden="true" className="text-[#8C6221]">·</span>
-            <span>Geneva Accords</span>
+            <span>2027 Edition · Details TBA</span>
           </div>
 
+          {/* Guaranteed single-line at 360px width with fluid clamp */}
           <h1
-            className="font-cinzel text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-[0.25em] md:tracking-[0.32em] text-gold-shimmer filter drop-shadow-[0_6px_30px_rgba(0,0,0,0.95)]"
+            className="font-cinzel text-[clamp(1.85rem,7.5vw,5rem)] font-black uppercase tracking-[0.16em] sm:tracking-[0.24em] md:tracking-[0.32em] text-gold-shimmer filter drop-shadow-[0_4px_25px_rgba(0,0,0,0.95)] whitespace-nowrap"
             style={{
               textShadow: '0 0 35px rgba(212, 175, 106, 0.4), 0 0 70px rgba(90, 15, 30, 0.25)',
             }}
@@ -268,8 +379,8 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
             ICON MUN
           </h1>
 
-          <p className="mt-2 text-xs sm:text-sm uppercase tracking-[0.3em] text-[#E6E1D8]/80 font-light max-w-md text-balance drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-            Behind The Masquerade Of Global Diplomacy
+          <p className="mt-1 text-[clamp(0.65rem,2.2vw,0.875rem)] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#E6E1D8]/80 font-light max-w-md text-balance drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hidden sm:block">
+            Official Conference Information To Be Announced (TBA)
           </p>
         </div>
 
@@ -279,59 +390,43 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
         {/* ================================================================= */}
         {/* SAFE ZONE 3 (BOTTOM): SWAPPING SCROLL-SCRUBBED CAPTIONS           */}
         {/* ================================================================= */}
-        <div className="relative z-20 pb-10 sm:pb-14 px-6 flex flex-col items-center justify-center text-center pointer-events-none select-none">
-          <div className="relative h-16 w-full max-w-xl flex items-center justify-center">
+        <div
+          className="relative z-20 px-4 sm:px-6 flex flex-col items-center justify-center text-center pointer-events-none select-none"
+          style={{
+            paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
+          }}
+        >
+          {/* Caption Box */}
+          <div className="relative min-h-[3.25rem] sm:min-h-[4rem] flex items-center justify-center w-full max-w-xl">
             {/* Caption 1: 0–30% */}
-            <div
-              className="absolute inset-x-0 will-change-transform"
-              style={getCaption1Style()}
+            <p
+              ref={caption1Ref}
+              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#FFF3D6] font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] will-change-transform"
             >
-              <p className="font-cinzel text-xl sm:text-2xl md:text-3xl text-gold-gradient font-medium tracking-[0.16em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
-                Every nation has a face.
-              </p>
-              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.25em] text-[#C4BAA8] uppercase font-light">
-                Prologue · The Diplomatic Mask
-              </span>
-            </div>
+              Every nation has a face.
+            </p>
 
             {/* Caption 2: 30–65% */}
-            <div
-              className="absolute inset-x-0 will-change-transform"
-              style={getCaption2Style()}
+            <p
+              ref={caption2Ref}
+              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#F3DFA2] font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] opacity-0 will-change-transform"
             >
-              <p className="font-cinzel text-xl sm:text-2xl md:text-3xl text-gold-gradient font-medium tracking-[0.16em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
-                But behind every mask…
-              </p>
-              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.25em] text-[#C4BAA8] uppercase font-light">
-                Movement · The Veil Dissolves
-              </span>
-            </div>
+              But behind every mask…
+            </p>
 
             {/* Caption 3: 65–100% */}
-            <div
-              className="absolute inset-x-0 will-change-transform"
-              style={getCaption3Style()}
+            <p
+              ref={caption3Ref}
+              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-gold-shimmer font-semibold leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] opacity-0 will-change-transform"
             >
-              <p className="font-cinzel text-xl sm:text-2xl md:text-3xl text-gold-gradient font-medium tracking-[0.16em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
-                …is a delegate ready to lead.
-              </p>
-              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.25em] text-[#C4BAA8] uppercase font-light">
-                Resolution · The Sovereign Mandate
-              </span>
-            </div>
+              …is a delegate ready to lead.
+            </p>
           </div>
 
-          {/* Small Scroll Prompt (Fades out quickly) */}
-          <div
-            className="flex flex-col items-center justify-center mt-2 transition-opacity duration-200"
-            style={{
-              opacity: Math.max(0, 1 - scrollProgress * 15),
-            }}
-          >
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-[#D4AF6A] font-medium">
-              <span>Scroll to Scrub Mask</span>
-              <ChevronDown className="h-3 w-3 animate-bounce text-[#F3DFA2]" />
-            </div>
+          {/* Scroll Down Indicator */}
+          <div className="mt-2 sm:mt-3 flex flex-col items-center gap-1 text-[#D4AF6A]/70 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] font-mono">
+            <span className="hidden sm:inline">Scroll To Reveal</span>
+            <ChevronDown className="h-4 w-4 animate-bounce text-[#D4AF6A]" />
           </div>
         </div>
       </div>

@@ -1,41 +1,47 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import secGenImg from '../assets/images/secgen_portrait_1792582505295.jpg';
-import deputySecGenImg from '../assets/images/deputy_secgen_portrait_1792582506082.jpg';
-import usgImg from '../assets/images/usg_portrait_1792582505888.jpg';
+import { UserCheck, Sparkles } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface SecretariatMember {
   name: string;
   role: string;
-  image: string;
+  image?: string;
   quote: string;
   bio: string;
+  isConfirmed?: boolean;
+  objectPosition?: string;
 }
 
 const SECRETARIAT_TEAM: SecretariatMember[] = [
   {
-    name: 'His Excellency Marcus Vance',
+    name: 'Laila Mohammad',
     role: 'Secretary-General',
-    image: secGenImg,
-    quote: 'True power in diplomacy is not loudest at the podium, but most resolute behind closed doors.',
-    bio: 'Former senior advisor at the Geneva Peace Institute; presiding over his eighth international model assembly with emphasis on crisis realism.',
+    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_3.09.45_PM_b7951032.jpeg',
+    quote: 'I hope we can support each other, share our ideas, and make ICON MUN 2027 a successful and unforgettable experience for everyone!! 🤍',
+    bio: 'hiii everyoneeee!! my name is laila mohammad, and im the secretary-general of icon mun 2027!! im so happy to be part of this journey and to work with such an amazing team. i hope we can support each other, share our ideas, and make icon mun 2027 a successful and unforgettable experience for everyone!! 🤍',
+    isConfirmed: true,
+    objectPosition: 'center 60%',
   },
   {
-    name: 'Ambassador Elena Rostova',
+    name: 'Laya Shahwan',
     role: 'Deputy Secretary-General',
-    image: deputySecGenImg,
-    quote: 'When the mask of consensus falls, the authentic architecture of statecraft begins.',
-    bio: 'Specialist in multilateral treaty law and international trade negotiations; oversees committee substance and resolution jurisprudence.',
+    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_5.27.20_PM_1145c352.jpeg',
+    quote: 'I’m really happy to be working with my team to create the best and memorable MUN!!',
+    bio: 'hellooo everyone, my name is laya shahwan and i’m the deputy secretary-general of icon mun 2027! i’m really happy to be working with my team to create the best and memorable mun!!',
+    isConfirmed: true,
+    objectPosition: '50% 35%',
   },
   {
-    name: 'Julian Sterling, KC',
-    role: 'Under-Secretary-General of Crisis Operations',
-    image: usgImg,
-    quote: 'Every crisis is a crucible: it separates ceremonial delegates from genuine leaders.',
-    bio: 'Directs the 24-person Crisis Directorate; architect of real-time multi-theatre intelligence scenarios and emergency directives.',
+    name: 'Lara Alabsi',
+    role: 'Under-Secretary-General',
+    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_3.25.06_PM_bb8c5329.jpeg',
+    quote: 'Excited to meet you all and make this MUN one to remember, pls don’t make me regret being nice!',
+    bio: 'hiii everyone im lara, your amazing, goated USG!! if you don’t know me yet give it a week, i talk enough for that to change. excited to meet you all and make this MUN one to remember, pls don’t make me regret being nice',
+    isConfirmed: true,
+    objectPosition: 'center 32%',
   },
 ];
 
@@ -47,7 +53,7 @@ export const SecretariatSection: React.FC = () => {
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      // 1. Portrait SVG rings draw themselves (scrub: 0.5)
+      // 1. Portrait SVG rings draw themselves (smooth scrub)
       const rings = container.querySelectorAll('.portrait-stroke-ring');
       rings.forEach((ring) => {
         gsap.fromTo(
@@ -60,27 +66,27 @@ export const SecretariatSection: React.FC = () => {
               trigger: ring,
               start: 'top 85%',
               end: 'top 50%',
-              scrub: 0.5,
+              scrub: 0.8,
             },
           }
         );
       });
 
-      // 2. Circular portraits scale up from 0.9 to 1 (Transform & Opacity ONLY)
-      const portraits = container.querySelectorAll('.secretariat-portrait-img');
-      portraits.forEach((img) => {
+      // 2. Circular portraits scale up smoothly
+      const portraits = container.querySelectorAll('.secretariat-portrait-container');
+      portraits.forEach((el) => {
         gsap.fromTo(
-          img,
-          { scale: 0.9, opacity: 0.35 },
+          el,
+          { scale: 0.88, opacity: 0.4 },
           {
             scale: 1,
             opacity: 1,
             ease: 'power2.out',
             scrollTrigger: {
-              trigger: img,
+              trigger: el,
               start: 'top 85%',
               end: 'top 50%',
-              scrub: 0.5,
+              scrub: 0.8,
             },
           }
         );
@@ -91,7 +97,7 @@ export const SecretariatSection: React.FC = () => {
       cards.forEach((col) => {
         gsap.fromTo(
           col,
-          { opacity: 0.4, y: 30 },
+          { opacity: 0.3, y: 30 },
           {
             opacity: 1,
             y: 0,
@@ -100,7 +106,7 @@ export const SecretariatSection: React.FC = () => {
               trigger: col,
               start: 'top 88%',
               end: 'top 60%',
-              scrub: 0.5,
+              scrub: 0.8,
             },
           }
         );
@@ -114,34 +120,36 @@ export const SecretariatSection: React.FC = () => {
     <section
       ref={containerRef}
       id="secretariat"
-      className="relative py-24 px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
     >
       <div className="mx-auto max-w-6xl relative z-10">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
             <span>Leadership Council</span>
             <span aria-hidden="true" className="text-[#8C6221]">·</span>
-            <span>Geneva Directorate</span>
+            <span>ICON MUN 2027</span>
           </div>
-          <h2 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-[0.18em] text-gold-gradient text-balance">
+          <h2 className="font-cinzel text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] text-gold-gradient text-balance">
             The High Secretariat
           </h2>
           <p className="mt-2 text-xs uppercase tracking-wider text-[#A89D8A] font-light">
-            Guiding international law, procedural excellence, and sovereign integrity.
+            Guiding diplomatic integrity, procedural excellence, and memorable assembly.
           </p>
           <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-[#D4AF6A] to-transparent" />
         </div>
 
         {/* Circular Portraits with Gold Ring Borders */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
           {SECRETARIAT_TEAM.map((member, idx) => (
             <div
               key={idx}
-              className="secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-200 hover:border-[#D4AF6A]/60 bg-[#0C0C0C] will-change-transform"
+              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-[#D4AF6A]/70 bg-[#0C0C0C] will-change-transform ${
+                member.isConfirmed ? 'border-[#D4AF6A]/50 shadow-[0_0_30px_rgba(212,175,106,0.12)]' : 'border-white/10'
+              }`}
             >
               {/* Circular Portrait with SVG Ring that draws on scroll */}
-              <div className="relative mb-5 h-44 w-44 flex items-center justify-center">
+              <div className="secretariat-portrait-container relative mb-5 h-44 w-44 flex items-center justify-center will-change-transform">
                 {/* SVG Ring with Stroke Animation Scrubbed */}
                 <svg className="absolute inset-0 h-full w-full pointer-events-none -rotate-90">
                   <circle
@@ -149,7 +157,7 @@ export const SecretariatSection: React.FC = () => {
                     cy="88"
                     r="84"
                     fill="none"
-                    stroke="#D4AF6A"
+                    stroke={member.isConfirmed ? '#D4AF6A' : 'rgba(212, 175, 106, 0.4)'}
                     strokeWidth="2"
                     strokeDasharray="600"
                     strokeDashoffset="600"
@@ -160,28 +168,55 @@ export const SecretariatSection: React.FC = () => {
                 {/* Secondary subtle halo */}
                 <div className="absolute inset-1 rounded-full border border-dashed border-[#D4AF6A]/20 pointer-events-none" />
 
-                {/* Scaled Circular Image */}
-                <div className="relative h-36 w-36 rounded-full overflow-hidden border border-[#D4AF6A]/40 shadow-xl bg-[#111]">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="secretariat-portrait-img h-full w-full object-cover will-change-transform"
-                    loading="lazy"
-                  />
+                {/* Circular Image or TBA Placeholder */}
+                <div className="relative h-36 w-36 rounded-full overflow-hidden border border-[#D4AF6A]/40 shadow-xl bg-[#111] flex items-center justify-center">
+                  {member.image ? (
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      style={{ objectPosition: member.objectPosition || 'center' }}
+                      className="h-full w-full object-cover scale-105 transition-transform duration-500 group-hover:scale-110 will-change-transform"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-[#D4AF6A]/60 p-4">
+                      <UserCheck className="h-10 w-10 text-[#D4AF6A]/40 mb-1" />
+                      <span className="font-cinzel text-xs font-bold uppercase tracking-widest text-[#D4AF6A]">
+                        TBA
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
                 </div>
+
+                {member.isConfirmed && (
+                  <div className="absolute bottom-1 right-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-[#D4AF6A] bg-[#0A0A0A] shadow-md text-[#F3DFA2]">
+                    <Sparkles className="h-3.5 w-3.5 text-[#D4AF6A]" />
+                  </div>
+                )}
               </div>
 
-              {/* Title */}
+              {/* Title & Name */}
               <div className="w-full">
                 <h3 className="font-cinzel text-base sm:text-lg font-bold text-[#FFF6D6] mb-1">
                   {member.name}
                 </h3>
               </div>
 
-              <p className="text-[11px] uppercase tracking-[0.2em] font-medium text-[#D4AF6A] mb-3">
-                {member.role}
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] font-medium text-[#D4AF6A]">
+                  {member.role}
+                </p>
+                {member.isConfirmed ? (
+                  <span className="rounded border border-[#D4AF6A]/40 bg-[#D4AF6A]/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-[#F3DFA2]">
+                    Confirmed
+                  </span>
+                ) : (
+                  <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-[#A89D8A]">
+                    TBA
+                  </span>
+                )}
+              </div>
 
               {/* Quote */}
               <blockquote className="text-xs italic text-[#C4BAA8] leading-relaxed mb-3 font-light border-y border-white/5 py-2.5 w-full">
@@ -189,7 +224,7 @@ export const SecretariatSection: React.FC = () => {
               </blockquote>
 
               {/* Bio */}
-              <p className="text-[11px] text-[#A89D8A] leading-relaxed font-light">
+              <p className="text-[11px] text-[#A89D8A] leading-relaxed font-light mt-auto">
                 {member.bio}
               </p>
             </div>

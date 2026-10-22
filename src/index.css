@@ -1,10 +1,62 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+  }
+
+  html, body {
     background-color: #050505;
     color: #E6E1D8;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Minimum body text 16px to prevent mobile iOS auto-zoom and maintain readability */
+  p, input, select, textarea, button {
+    font-size: clamp(1rem, 1.05vw, 1.125rem);
+  }
+}
+
+/* Fullscreen dvh with 100vh fallback */
+.h-screen-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.min-h-screen-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Safe area padding utilities */
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+}
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pl-safe {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+}
+
+.pr-safe {
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+/* Touch device active states */
+@media (hover: none) and (pointer: coarse) {
+  .gold-btn:active,
+  .gold-btn-primary:active {
+    transform: scale(0.97);
+    filter: brightness(1.1);
   }
 }
 

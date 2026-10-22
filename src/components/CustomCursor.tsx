@@ -4,8 +4,17 @@ export const CustomCursor: React.FC = () => {
   const dotRef = useRef<HTMLDivElement | null>(null);
   const ringRef = useRef<HTMLDivElement | null>(null);
 
+  const [isTouchDevice, setIsTouchDevice] = React.useState(false);
+
   useEffect(() => {
-    if (typeof window === 'undefined' || window.matchMedia('(pointer: coarse)').matches) {
+    if (typeof window === 'undefined') return;
+    const isTouch =
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
+      window.matchMedia('(pointer: coarse)').matches ||
+      'ontouchstart' in window;
+    
+    if (isTouch) {
+      setIsTouchDevice(true);
       return;
     }
 
@@ -94,8 +103,10 @@ export const CustomCursor: React.FC = () => {
     };
   }, []);
 
+  if (isTouchDevice) return null;
+
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
+    <div className="hidden md:block pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden="true">
       {/* Outer trailing ring */}
       <div
         ref={ringRef}

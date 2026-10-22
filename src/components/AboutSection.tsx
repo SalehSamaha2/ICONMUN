@@ -9,10 +9,6 @@ export const AboutSection: React.FC = () => {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const headingRef = useRef<HTMLDivElement | null>(null);
   const borderPathRef = useRef<SVGRectElement | null>(null);
-  const stat1Ref = useRef<HTMLDivElement | null>(null);
-  const stat2Ref = useRef<HTMLDivElement | null>(null);
-  const stat3Ref = useRef<HTMLDivElement | null>(null);
-  const stat4Ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -20,21 +16,13 @@ export const AboutSection: React.FC = () => {
     if (!section || !card) return;
 
     const ctx = gsap.context(() => {
-      const statsObj = { states: 0, councils: 0, hours: 0, immersion: 0 };
-
-      // ONE Master Timeline with scrub: 0.5
+      // Master Timeline with smooth scrub: 0.8
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: 'top 75%',
           end: 'bottom 85%',
-          scrub: 0.5,
-          onUpdate: () => {
-            if (stat1Ref.current) stat1Ref.current.innerText = `${Math.round(statsObj.states)}+`;
-            if (stat2Ref.current) stat2Ref.current.innerText = `${Math.round(statsObj.councils)}`;
-            if (stat3Ref.current) stat3Ref.current.innerText = `${Math.round(statsObj.hours)}H`;
-            if (stat4Ref.current) stat4Ref.current.innerText = `${Math.round(statsObj.immersion)}%`;
-          },
+          scrub: 0.8,
         },
       });
 
@@ -51,7 +39,7 @@ export const AboutSection: React.FC = () => {
       // 2. Card container unmasks with subtle scale
       tl.fromTo(
         card,
-        { opacity: 0.2, scale: 0.96 },
+        { opacity: 0.25, scale: 0.96 },
         { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' },
         0.1
       );
@@ -65,20 +53,6 @@ export const AboutSection: React.FC = () => {
           0.1
         );
       }
-
-      // 4. Stats count up and down with scroll
-      tl.to(
-        statsObj,
-        {
-          states: 42,
-          councils: 5,
-          hours: 72,
-          immersion: 100,
-          duration: 1,
-          ease: 'none',
-        },
-        0.2
-      );
     }, section);
 
     return () => ctx.revert();
@@ -88,17 +62,17 @@ export const AboutSection: React.FC = () => {
     <section
       ref={sectionRef}
       id="about"
-      className="relative py-24 px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
-        <div ref={headingRef} className="text-center max-w-2xl mx-auto mb-12 will-change-transform">
+        <div ref={headingRef} className="text-center max-w-2xl mx-auto mb-10 md:mb-12 will-change-transform">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
             <span>Diplomatic Mandate</span>
             <span aria-hidden="true" className="text-[#8C6221]">·</span>
-            <span>Geneva Accords</span>
+            <span>ICON MUN 2027</span>
           </div>
-          <h2 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-[0.18em] text-gold-gradient text-balance">
+          <h2 className="font-cinzel text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] text-gold-gradient text-balance">
             Behind The Masquerade
           </h2>
           <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-[#D4AF6A] to-transparent" />
@@ -107,7 +81,7 @@ export const AboutSection: React.FC = () => {
         {/* Gold Bordered Card with SVG Stroke Draw */}
         <div
           ref={cardRef}
-          className="relative rounded-2xl p-8 sm:p-12 lg:p-16 bg-[#0A0A0A]/90 backdrop-blur-sm shadow-2xl will-change-transform"
+          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-[#0A0A0A]/90 backdrop-blur-sm shadow-2xl will-change-transform"
         >
           {/* SVG Frame Drawing on Scroll */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-2xl" fill="none">
@@ -138,63 +112,51 @@ export const AboutSection: React.FC = () => {
                 />
               </div>
               <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.25em] text-[#D4AF6A]">
-                Vincit Qui Se Vincit
+                ICON MUN 2027
               </p>
             </div>
 
             {/* Narrative Prose */}
             <div className="lg:col-span-8 space-y-4">
               <p className="text-sm sm:text-base leading-relaxed text-[#C4BAA8] font-light">
-                ICON MUN strips away diplomatic platitudes. In world politics, every state wears a public mask of neutrality, courtesy, and caution.
+                Welcome to ICON MUN 2027. In world diplomacy, every sovereign delegation brings ambition, perspective, and dedication to the floor.
               </p>
               <p className="text-sm sm:text-base leading-relaxed text-[#C4BAA8] font-light">
-                Yet inside closed deliberation chambers, decisive global realities are forged by leaders with conviction. Over three rigorous days, delegates navigate real-time intelligence directives and bilateral treaties.
+                Official conference guidelines, council configurations, and procedural announcements are currently being codified by the High Secretariat. All conference information is To Be Announced (TBA).
               </p>
 
-              {/* Scrubbed Stats */}
+              {/* Status and Information Cards: Explicitly TBA */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/10 text-center">
                 <div className="space-y-1">
-                  <div
-                    ref={stat1Ref}
-                    className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono tabular-nums"
-                  >
-                    0+
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                    2027
                   </div>
                   <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
-                    Member States
+                    Edition
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div
-                    ref={stat2Ref}
-                    className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono tabular-nums"
-                  >
-                    0
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                    TBA
                   </div>
                   <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
                     Councils
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div
-                    ref={stat3Ref}
-                    className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono tabular-nums"
-                  >
-                    0H
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                    TBA
                   </div>
                   <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
-                    Debate
+                    Dates
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div
-                    ref={stat4Ref}
-                    className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono tabular-nums"
-                  >
-                    0%
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                    TBA
                   </div>
                   <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
-                    Immersion
+                    Venue
                   </div>
                 </div>
               </div>

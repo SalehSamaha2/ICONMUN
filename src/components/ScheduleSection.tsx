@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Clock, MapPin } from 'lucide-react';
+import { Clock, MapPin, CalendarDays } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,86 +22,70 @@ const SCHEDULE_GROUPS: ScheduleGroup[] = [
   {
     dayNumber: 1,
     dayLabel: 'DAY 01',
-    dayTheme: 'The Diplomatic Masquerade & Roll Call',
+    dayTheme: 'Opening & Committee Sessions · TBA',
     events: [
       {
-        time: '14:00 – 16:30',
-        title: 'Diplomatic Accreditations & Delegate Badging',
-        location: 'Palais Foyer',
-        description: 'Collection of official credential badges, council placards, and classified briefing folders.',
+        time: 'TBA',
+        title: 'Check-In & Accreditation',
+        location: 'Venue: TBA',
+        description: 'Delegate badge and materials distribution. Timetable To Be Announced.',
+        badge: 'TBA',
       },
       {
-        time: '17:00 – 18:30',
-        title: 'Opening Plenary & Keynote Address',
-        location: 'Grand Sovereign Hall',
-        description: 'Address by the Secretary-General on statecraft, followed by declaration of session opening.',
-        badge: 'Ceremonial',
+        time: 'TBA',
+        title: 'Opening Ceremony',
+        location: 'Hall: TBA',
+        description: 'Opening address by the High Secretariat. Timetable To Be Announced.',
+        badge: 'TBA',
       },
       {
-        time: '19:00 – 21:30',
-        title: 'Committee Session I: Agenda Setting & Roll Call',
-        location: 'Respective Council Chambers',
-        description: 'Setting of the agenda, opening speeches, and establishment of initial caucusing blocs.',
-      },
-      {
-        time: '22:00 – 23:30',
-        title: 'Masquerade Welcome Reception',
-        location: 'The Obsidian Atrium',
-        description: 'Informal bilateral mixer in black-tie masquerade attire. Unmoderated networking.',
-        badge: 'Social Event',
+        time: 'TBA',
+        title: 'Committee Session I',
+        location: 'Chambers: TBA',
+        description: 'Initial roll call and debate. Timetable To Be Announced.',
+        badge: 'TBA',
       },
     ],
   },
   {
     dayNumber: 2,
     dayLabel: 'DAY 02',
-    dayTheme: 'Clandestine Directives & Flashpoint Crisis',
+    dayTheme: 'Substantive Debate & Directives · TBA',
     events: [
       {
-        time: '09:00 – 12:30',
-        title: 'Committee Session II: Moderated Caucus & Directives',
-        location: 'Respective Council Chambers',
-        description: 'Substantive debates on agenda sub-topics. Introduction of preliminary working papers.',
+        time: 'TBA',
+        title: 'Committee Session II',
+        location: 'Chambers: TBA',
+        description: 'Working papers and moderated caucusing. Timetable To Be Announced.',
+        badge: 'TBA',
       },
       {
-        time: '14:00 – 18:00',
-        title: 'Committee Session III: Flashpoint Crisis Infiltration',
-        location: 'Council Chambers & Situation Rooms',
-        description: 'Unannounced geopolitical crisis event delivered by Crisis Directorate. Emergency caucusing.',
-        badge: 'Crisis Active',
-      },
-      {
-        time: '20:00 – 00:00',
-        title: 'Midnight Working Papers & Caucusing',
-        location: 'Delegates Library & Diplomatic Suites',
-        description: 'Collaborative treaty drafting, sponsor signatory collation, and back-channel negotiation.',
+        time: 'TBA',
+        title: 'Committee Session III',
+        location: 'Chambers: TBA',
+        description: 'Directives and crisis developments. Timetable To Be Announced.',
+        badge: 'TBA',
       },
     ],
   },
   {
     dayNumber: 3,
     dayLabel: 'DAY 03',
-    dayTheme: 'Treaty Codification & Plenary Voting',
+    dayTheme: 'Resolutions & Closing Ceremony · TBA',
     events: [
       {
-        time: '09:30 – 13:00',
-        title: 'Committee Session IV: Draft Resolution Amendments',
-        location: 'Respective Council Chambers',
-        description: 'Debating friendly and unfriendly amendments. Line-by-line scrutiny of draft resolutions.',
+        time: 'TBA',
+        title: 'Committee Session IV',
+        location: 'Chambers: TBA',
+        description: 'Resolution amendments and voting. Timetable To Be Announced.',
+        badge: 'TBA',
       },
       {
-        time: '14:30 – 16:30',
-        title: 'Plenary Voting Procedure & Final Accords',
-        location: 'Grand Sovereign Hall',
-        description: 'Roll call voting on all sponsored resolutions. Official deposit of signed treaties.',
-        badge: 'Voting Mandate',
-      },
-      {
-        time: '17:30 – 19:30',
-        title: 'Closing Ceremony & Diplomatic Awards',
-        location: 'Grand Sovereign Hall',
-        description: 'Presentation of Best Delegate, Outstanding Delegation, and Diplomacy Gavel honors.',
-        badge: 'Awards',
+        time: 'TBA',
+        title: 'Closing Plenary & Awards',
+        location: 'Hall: TBA',
+        description: 'Closing address and delegate commendations. Timetable To Be Announced.',
+        badge: 'TBA',
       },
     ],
   },
@@ -121,7 +105,7 @@ export const ScheduleSection: React.FC = () => {
     if (!container || !trackWrapper || !line || !dot) return;
 
     const ctx = gsap.context(() => {
-      // 1. Vertical gold line draws downward with scroll (scrub: 0.5)
+      // 1. Vertical gold line draws downward with smooth scrub
       gsap.fromTo(
         line,
         { scaleY: 0 },
@@ -133,11 +117,10 @@ export const ScheduleSection: React.FC = () => {
             trigger: trackWrapper,
             start: 'top 70%',
             end: 'bottom 80%',
-            scrub: 0.5,
+            scrub: 0.8,
             onUpdate: (self) => {
               const h = trackWrapper.offsetHeight;
               const yVal = self.progress * h;
-              // Animate ONLY transform and opacity
               dot.style.transform = `translate3d(0, ${yVal}px, 0)`;
               dot.style.opacity = self.progress > 0.02 && self.progress < 0.98 ? '1' : '0.2';
             },
@@ -145,14 +128,14 @@ export const ScheduleSection: React.FC = () => {
         }
       );
 
-      // 2. Day huge outlined numbers fill with gold as they cross screen center
+      // 2. Day huge outlined numbers fill with gold
       const dayHeadings = container.querySelectorAll('.day-heading-outline');
       dayHeadings.forEach((heading) => {
         gsap.fromTo(
           heading,
           {
             backgroundPosition: '0% 100%',
-            opacity: 0.4,
+            opacity: 0.35,
           },
           {
             backgroundPosition: '0% 0%',
@@ -162,18 +145,18 @@ export const ScheduleSection: React.FC = () => {
               trigger: heading,
               start: 'top 80%',
               end: 'top 35%',
-              scrub: 0.5,
+              scrub: 0.8,
             },
           }
         );
       });
 
-      // 3. Event cards slide in from alternating sides
+      // 3. Event cards slide in smoothly
       const leftCards = container.querySelectorAll('.schedule-card-left');
       leftCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { x: -50, opacity: 0.2 },
+          { x: -35, opacity: 0.2 },
           {
             x: 0,
             opacity: 1,
@@ -182,7 +165,7 @@ export const ScheduleSection: React.FC = () => {
               trigger: card,
               start: 'top 85%',
               end: 'top 55%',
-              scrub: 0.5,
+              scrub: 0.8,
             },
           }
         );
@@ -192,7 +175,7 @@ export const ScheduleSection: React.FC = () => {
       rightCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { x: 50, opacity: 0.2 },
+          { x: 35, opacity: 0.2 },
           {
             x: 0,
             opacity: 1,
@@ -201,7 +184,7 @@ export const ScheduleSection: React.FC = () => {
               trigger: card,
               start: 'top 85%',
               end: 'top 55%',
-              scrub: 0.5,
+              scrub: 0.8,
             },
           }
         );
@@ -215,19 +198,23 @@ export const ScheduleSection: React.FC = () => {
     <section
       ref={containerRef}
       id="schedule"
-      className="relative py-24 px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
             <span>Conference Itinerary</span>
             <span aria-hidden="true" className="text-[#8C6221]">·</span>
-            <span>Three Days of Statecraft</span>
+            <span>ICON MUN 2027</span>
           </div>
-          <h2 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-[0.18em] text-gold-gradient text-balance">
-            The Timeline of Power
+          <h2 className="font-cinzel text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] text-gold-gradient text-balance">
+            Timeline (TBA)
           </h2>
+          <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#D4AF6A]/30 bg-[#D4AF6A]/10 px-3.5 py-1 text-[11px] font-mono uppercase tracking-wider text-[#F3DFA2]">
+            <CalendarDays className="h-3.5 w-3.5 text-[#D4AF6A]" />
+            <span>Dates & Timetable: To Be Announced (TBA)</span>
+          </div>
           <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-[#D4AF6A] to-transparent" />
         </div>
 
@@ -255,7 +242,7 @@ export const ScheduleSection: React.FC = () => {
               {/* Huge Outlined Day Number */}
               <div className="text-center mb-8 select-none">
                 <span
-                  className="day-heading-outline font-cinzel text-5xl sm:text-7xl md:text-8xl font-black uppercase tracking-[0.12em] inline-block"
+                  className="day-heading-outline font-cinzel text-[clamp(2.75rem,8vw,5.5rem)] font-black uppercase tracking-[0.12em] inline-block"
                   style={{
                     WebkitTextStroke: '1px rgba(212, 175, 106, 0.4)',
                     backgroundImage: 'linear-gradient(to top, #D4AF6A 50%, transparent 50%)',
@@ -288,15 +275,15 @@ export const ScheduleSection: React.FC = () => {
                         <div className="h-1.5 w-1.5 rounded-full bg-[#F3DFA2]" />
                       </div>
 
-                      {/* Card (Slides in from Left or Right) */}
+                      {/* Card (All on right of line on mobile; alternating on desktop) */}
                       <div
-                        className={`ml-10 md:ml-0 md:w-1/2 ${
+                        className={`ml-8 sm:ml-10 md:ml-0 w-[calc(100%-2.25rem)] sm:w-[calc(100%-2.75rem)] md:w-1/2 ${
                           isLeft
                             ? 'schedule-card-left md:pr-10 md:text-right'
                             : 'schedule-card-right md:pl-10 md:text-left'
-                        } w-full will-change-transform`}
+                        } will-change-transform`}
                       >
-                        <div className="gold-card rounded-xl p-5 transition-all duration-200 hover:border-[#D4AF6A]/60 bg-[#0C0C0C]">
+                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-[#D4AF6A]/60 bg-[#0C0C0C]">
                           <div
                             className={`flex flex-wrap items-center gap-2.5 text-xs text-[#D4AF6A] mb-1.5 ${
                               isLeft ? 'md:justify-end' : 'md:justify-start'
@@ -307,7 +294,7 @@ export const ScheduleSection: React.FC = () => {
                               {event.time}
                             </span>
                             {event.badge && (
-                              <span className="rounded border border-[#5A0F1E] bg-[#5A0F1E]/20 px-1.5 py-0.5 text-[9px] uppercase font-mono text-[#F3DFA2]">
+                              <span className="rounded border border-[#D4AF6A]/30 bg-[#D4AF6A]/10 px-1.5 py-0.5 text-[9px] uppercase font-mono text-[#F3DFA2]">
                                 {event.badge}
                               </span>
                             )}
