@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Award, CheckCircle2, X } from 'lucide-react';
+import { useSiteData } from '../lib/SiteData';
+import { getSupabase } from '../lib/supabase';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,6 +20,8 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   onOpenModal,
   preselectedCommittee = 'TBA',
 }) => {
+  const { committees, settings } = useSiteData();
+  const registrationOpen = !['false', 'no', '0', 'closed'].includes((settings.registration_open || 'true').toLowerCase());
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stickyRef = useRef<HTMLDivElement | null>(null);
   const headlineRef = useRef<HTMLHeadingElement | null>(null);
@@ -34,6 +38,16 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   const [experienceLevel, setExperienceLevel] = useState('TBA');
   const [statement, setStatement] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [honeypot, setHoneypot] = useState(''); // hidden field: real people never fill it
+
+  // Pre-select the council the visitor clicked (matched by code, e.g. "Council II")
+  useEffect(() => {
+    if (!isOpenModal) return;
+    setSubmitError('');
+    setCommittee(committees.some((c) => c.code === preselectedCommittee) ? preselectedCommittee : 'TBA');
+  }, [isOpenModal, preselectedCommittee, committees]);
 
   // Lock body scroll and listen for Escape key when modal is open
   useEffect(() => {
@@ -107,14 +121,58 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     return () => ctx.revert();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email) return;
-    setIsSubmitted(true);
+    if (isSending || !fullName.trim() || !email.trim()) return;
+    setSubmitError('');
+
+    // Bots fill hidden fields; pretend success and drop it.
+    if (honeypot) {
+      setIsSubmitted(true);
+      return;
+    }
+
+    const clientP = getSupabase();
+    if (!clientP) {
+      setSubmitError('Registration is not available yet. Please try again later.');
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const sb = await clientP;
+      const { error } = await sb.from('applications').insert({
+        delegation_type: delegationType,
+        full_name: fullName.trim(),
+        institution: institution.trim(),
+        email: email.trim(),
+        committee,
+        first_country: firstCountry.trim() || 'TBA',
+        experience_level: experienceLevel,
+        statement: statement.trim(),
+      });
+      if (error) {
+        const msg = error.message || '';
+        if (/closed/i.test(msg)) setSubmitError('Registration is currently closed.');
+        else if (/already been used/i.test(msg)) setSubmitError('This email has already been used for several applications.');
+        else if (/Too many/i.test(msg)) setSubmitError('We are receiving many applications right now. Please try again in a few minutes.');
+        else setSubmitError('Something went wrong. Please check your details and try again.');
+        return;
+      }
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError('Could not reach the registry. Please check your connection and try again.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleReset = () => {
     setIsSubmitted(false);
+    setFullName('');
+    setInstitution('');
+    setEmail('');
+    setStatement('');
     onCloseModal();
   };
 
@@ -333,9 +391,11 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                         className="w-full rounded-lg border border-white/10 bg-[#141414] px-4 py-3 min-h-[44px] text-base text-white focus:border-[#D4AF6A] focus:outline-none"
                       >
                         <option value="TBA">Council Allotment: TBA</option>
-                        <option value="Council I (TBA)">Council I (TBA)</option>
-                        <option value="Council II (TBA)">Council II (TBA)</option>
-                        <option value="Council III (TBA)">Council III (TBA)</option>
+                        {committees.map((c) => (
+                          <option key={c.id} value={c.code}>
+                            {c.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -383,6 +443,35 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                     />
                   </div>
 
+                  {/* Honeypot: invisible to people, tempting to bots */}
+                  <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                    <label>
+                      Website
+                      <input
+                        type="text"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                      />
+                    </label>
+                  </div>
+
+                  <p className="text-[11px] leading-relaxed text-[#8E8678]">
+                    Your details are stored securely and are visible only to the ICON MUN organisers, who use them to contact you about the conference.
+                  </p>
+
+                  {!registrationOpen && (
+                    <p role="alert" className="rounded-lg border border-[#D4AF6A]/40 bg-[#D4AF6A]/10 px-4 py-3 text-sm text-[#F3DFA2]">
+                      Registration is currently closed.
+                    </p>
+                  )}
+                  {submitError && (
+                    <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                      {submitError}
+                    </p>
+                  )}
+
                   <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
                     <button
                       type="button"
@@ -397,9 +486,10 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                     </button>
                     <button
                       type="submit"
-                      className="gold-btn-primary px-8 py-3.5 min-h-[48px] text-xs font-bold uppercase tracking-widest rounded-lg cursor-pointer flex items-center justify-center active:scale-95 shadow-lg"
+                      disabled={isSending || !registrationOpen}
+                      className="gold-btn-primary px-8 py-3.5 min-h-[48px] text-xs font-bold uppercase tracking-widest rounded-lg cursor-pointer flex items-center justify-center active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Submit Registration (TBA)
+                      {isSending ? 'Sending…' : 'Submit Registration (TBA)'}
                     </button>
                   </div>
                 </form>

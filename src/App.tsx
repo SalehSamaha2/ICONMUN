@@ -15,6 +15,8 @@ import { CustomCursor } from './components/CustomCursor';
 import { AudioAmbience } from './components/AudioAmbience';
 import { GlobalScrollEffects } from './components/GlobalScrollEffects';
 import { GoldDustCanvas } from './components/GoldDustCanvas';
+import { PerfHUD } from './components/PerfHUD';
+import { SiteDataProvider } from './lib/SiteData';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -45,7 +47,8 @@ export default function App() {
       lenis.raf(time * 1000);
     };
 
-    gsap.ticker.add(updateTicker);
+    // prioritize=true: Lenis updates the scroll position BEFORE anything else in the frame
+    gsap.ticker.add(updateTicker, false, true);
     gsap.ticker.lagSmoothing(500, 33);
 
     // Refresh ScrollTrigger after fonts settle
@@ -117,6 +120,7 @@ export default function App() {
   }, []);
 
   return (
+    <SiteDataProvider>
     <div className="relative min-h-screen bg-[#050505] text-[#E6E1D8] selection:bg-[#D4AF6A]/20 selection:text-[#F3DFA2] overflow-x-hidden">
       {/* 1. Cinematic Intro (plays once, curtain splits on hero readiness) */}
       <CinematicIntro
@@ -164,6 +168,10 @@ export default function App() {
 
       {/* 9. Scroll-Scrubbed Footer */}
       <FooterSection />
+
+      {/* Dev-only FPS meter: open the site with ?perf */}
+      {typeof window !== 'undefined' && window.location.search.includes('perf') && <PerfHUD />}
     </div>
+    </SiteDataProvider>
   );
 }

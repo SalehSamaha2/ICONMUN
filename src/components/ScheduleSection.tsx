@@ -2,96 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Clock, MapPin, CalendarDays } from 'lucide-react';
+import { useSiteData } from '../lib/SiteData';
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface ScheduleGroup {
-  dayNumber: number;
-  dayLabel: string;
-  dayTheme: string;
-  events: Array<{
-    time: string;
-    title: string;
-    location: string;
-    description: string;
-    badge?: string;
-  }>;
-}
-
-const SCHEDULE_GROUPS: ScheduleGroup[] = [
-  {
-    dayNumber: 1,
-    dayLabel: 'DAY 01',
-    dayTheme: 'Opening & Committee Sessions · TBA',
-    events: [
-      {
-        time: 'TBA',
-        title: 'Check-In & Accreditation',
-        location: 'Venue: TBA',
-        description: 'Delegate badge and materials distribution. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-      {
-        time: 'TBA',
-        title: 'Opening Ceremony',
-        location: 'Hall: TBA',
-        description: 'Opening address by the High Secretariat. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-      {
-        time: 'TBA',
-        title: 'Committee Session I',
-        location: 'Chambers: TBA',
-        description: 'Initial roll call and debate. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-    ],
-  },
-  {
-    dayNumber: 2,
-    dayLabel: 'DAY 02',
-    dayTheme: 'Substantive Debate & Directives · TBA',
-    events: [
-      {
-        time: 'TBA',
-        title: 'Committee Session II',
-        location: 'Chambers: TBA',
-        description: 'Working papers and moderated caucusing. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-      {
-        time: 'TBA',
-        title: 'Committee Session III',
-        location: 'Chambers: TBA',
-        description: 'Directives and crisis developments. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-    ],
-  },
-  {
-    dayNumber: 3,
-    dayLabel: 'DAY 03',
-    dayTheme: 'Resolutions & Closing Ceremony · TBA',
-    events: [
-      {
-        time: 'TBA',
-        title: 'Committee Session IV',
-        location: 'Chambers: TBA',
-        description: 'Resolution amendments and voting. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-      {
-        time: 'TBA',
-        title: 'Closing Plenary & Awards',
-        location: 'Hall: TBA',
-        description: 'Closing address and delegate commendations. Timetable To Be Announced.',
-        badge: 'TBA',
-      },
-    ],
-  },
-];
-
 export const ScheduleSection: React.FC = () => {
+  const { schedule: SCHEDULE_GROUPS } = useSiteData();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const trackWrapperRef = useRef<HTMLDivElement | null>(null);
   const lineRef = useRef<HTMLDivElement | null>(null);
@@ -192,7 +108,7 @@ export const ScheduleSection: React.FC = () => {
     }, container);
 
     return () => ctx.revert();
-  }, []);
+  }, [SCHEDULE_GROUPS]);
 
   return (
     <section
@@ -238,7 +154,7 @@ export const ScheduleSection: React.FC = () => {
           </div>
 
           {SCHEDULE_GROUPS.map((group) => (
-            <div key={group.dayNumber} className="relative pt-4">
+            <div key={group.id} className="relative pt-4">
               {/* Huge Outlined Day Number */}
               <div className="text-center mb-8 select-none">
                 <span

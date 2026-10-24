@@ -29,6 +29,26 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
 
   useEffect(() => {
     let lastScroll = window.scrollY;
+    let lastSectionCheck = 0;
+    let trailingTimer: ReturnType<typeof setTimeout> | undefined;
+
+    // getBoundingClientRect forces layout, so this runs throttled (see below), not every scroll tick
+    const updateActiveSection = () => {
+      for (let i = SECTIONS.length - 1; i >= 0; i--) {
+        const sec = SECTIONS[i];
+        const el = document.getElementById(sec.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.45) {
+            if (activeSectionRef.current !== sec.id) {
+              activeSectionRef.current = sec.id;
+              setActiveSection(sec.id);
+            }
+            break;
+          }
+        }
+      }
+    };
 
     // Use GSAP ScrollTrigger so it shares the single Lenis/GSAP loop
     const trigger = ScrollTrigger.create({
@@ -51,25 +71,20 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
           globeSvgRef.current.style.transform = `rotate(${globeAngleRef.current}deg)`;
         }
 
-        // 3. Track active section
-        for (let i = SECTIONS.length - 1; i >= 0; i--) {
-          const sec = SECTIONS[i];
-          const el = document.getElementById(sec.id);
-          if (el) {
-            const rect = el.getBoundingClientRect();
-            if (rect.top <= window.innerHeight * 0.45) {
-              if (activeSectionRef.current !== sec.id) {
-                activeSectionRef.current = sec.id;
-                setActiveSection(sec.id);
-              }
-              break;
-            }
-          }
+        // 3. Track active section: at most ~8x/sec while scrolling, plus one final check
+        // after scrolling stops so the dots never end up stale.
+        const now = performance.now();
+        if (now - lastSectionCheck >= 120) {
+          lastSectionCheck = now;
+          updateActiveSection();
         }
+        clearTimeout(trailingTimer);
+        trailingTimer = setTimeout(updateActiveSection, 150);
       },
     });
 
     return () => {
+      clearTimeout(trailingTimer);
       trigger.kill();
     };
   }, []);

@@ -23,6 +23,12 @@
   }
 }
 
+/* Lenis smooth-scroll requirements (native scroll-behavior:smooth fights Lenis and causes jitter) */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: clip; }
+
 /* Fullscreen dvh with 100vh fallback */
 .h-screen-dvh {
   height: 100vh;
@@ -189,3 +195,7 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 175, 106, 0.6);
 }
+
+/* Admin panel animations */
+@keyframes slideIn { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

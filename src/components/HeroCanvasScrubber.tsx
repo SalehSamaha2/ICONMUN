@@ -30,165 +30,220 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
 
   const [useVideoFallback, setUseVideoFallback] = useState(false);
 
-  // Preloaded frame images cache
+  // Preloaded + pre-decoded frame images
   const framesRef = useRef<HTMLImageElement[]>([]);
+  const readyRef = useRef<Uint8Array>(new Uint8Array(TOTAL_FRAMES));
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const currentRenderFrameRef = useRef(0);
   const targetRenderFrameRef = useRef(0);
-  const lastDrawnFrameRef = useRef(-1);
+  const drawnSourceRef = useRef(-1); // frame index actually painted last
+  const viewDirtyRef = useRef(true); // true after resize -> force a repaint
   const isFirstFrameLoadedRef = useRef(false);
+  const nativeSizeRef = useRef({ w: 0, h: 0 });
 
   // Cached viewport sizes to avoid DOM reading during draw
   const viewportSizeRef = useRef({ width: 0, height: 0, dpr: 1 });
 
-  // Update canvas dimensions cache
+  // Update canvas dimensions cache.
+  // The backing store is capped to the source frame's native resolution: drawing a
+  // 1280px frame into a 2880px retina canvas only burns GPU time for no extra detail.
   const updateViewportSize = useCallback(() => {
     if (typeof window === 'undefined') return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const { w: iw, h: ih } = nativeSizeRef.current;
+    if (iw > 0 && ih > 0) {
+      const cover = Math.max(w / iw, h / ih); // css px per source px
+      dpr = Math.max(0.5, Math.min(dpr, 1 / cover));
+    }
+
     viewportSizeRef.current = { width: w, height: h, dpr };
 
     const canvas = canvasRef.current;
     if (canvas) {
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
+      viewDirtyRef.current = true;
     }
   }, []);
 
-  // Render a specific frame onto the canvas with centered mannequin cover
+  // Nearest frame that is fully loaded + decoded (so a not-yet-loaded frame never
+  // makes the hero freeze or flash; it shows the closest available one instead).
+  const pickReadyFrame = (idx: number) => {
+    const ready = readyRef.current;
+    if (ready[idx]) return idx;
+    for (let d = 1; d < TOTAL_FRAMES; d++) {
+      if (idx - d >= 0 && ready[idx - d]) return idx - d;
+      if (idx + d < TOTAL_FRAMES && ready[idx + d]) return idx + d;
+    }
+    return -1;
+  };
+
+  // Render a specific frame onto the canvas with centered cover fit
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: false });
-    if (!ctx) return;
 
-    let img = framesRef.current[frameIdx];
-    if (!img || !img.complete || img.naturalWidth === 0) {
-      img = framesRef.current[lastDrawnFrameRef.current];
+    const src = pickReadyFrame(frameIdx);
+    if (src < 0) return;
+    // Nothing new to paint
+    if (src === drawnSourceRef.current && !viewDirtyRef.current) return;
+
+    const img = framesRef.current[src];
+    if (!img || img.naturalWidth === 0) return;
+
+    if (!ctxRef.current) {
+      ctxRef.current = canvas.getContext('2d', { alpha: false });
     }
-    if (!img || !img.complete || img.naturalWidth === 0) return;
-
-    lastDrawnFrameRef.current = frameIdx;
+    const ctx = ctxRef.current;
+    if (!ctx) return;
 
     const { width: targetW, height: targetH, dpr } = viewportSizeRef.current;
     if (targetW === 0 || targetH === 0) return;
 
-    ctx.save();
-    ctx.scale(dpr, dpr);
+    drawnSourceRef.current = src;
+    viewDirtyRef.current = false;
 
     // Object-fit cover logic centered directly on the mannequin
-    const cw = targetW;
-    const ch = targetH;
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
-    const r = Math.max(cw / iw, ch / ih);
+    const r = Math.max(targetW / iw, targetH / ih);
     const nw = iw * r;
     const nh = ih * r;
-    const ox = (cw - nw) / 2;
-    const oy = (ch - nh) / 2;
+    const ox = (targetW - nw) / 2;
+    const oy = (targetH - nh) / 2;
 
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.drawImage(img, ox, oy, nw, nh);
-    ctx.restore();
   }, []);
 
-  // Smooth requestAnimationFrame render loop with interpolation
+  // Render loop. It runs on GSAP's ticker, AFTER Lenis has updated the scroll position
+  // in the same frame (App registers Lenis with priority), so there is no one-frame lag.
+  // The easing is frame-rate independent (same feel at 60Hz, 120Hz or a laggy frame).
   useEffect(() => {
-    let animId: number;
+    const tick = (_time: number, deltaTime: number) => {
+      if (useVideoFallback || !isFirstFrameLoadedRef.current) return;
 
-    const tick = () => {
-      if (!useVideoFallback && isFirstFrameLoadedRef.current) {
-        const target = targetRenderFrameRef.current;
-        const current = currentRenderFrameRef.current;
-        const diff = target - current;
+      const target = targetRenderFrameRef.current;
+      const current = currentRenderFrameRef.current;
+      const diff = target - current;
 
-        if (Math.abs(diff) > 0.05) {
-          // Smooth buttery lerp
-          currentRenderFrameRef.current = current + diff * 0.28;
-          const frameToDraw = Math.min(
-            Math.max(Math.round(currentRenderFrameRef.current), 0),
-            TOTAL_FRAMES - 1
-          );
-
-          if (frameToDraw !== lastDrawnFrameRef.current) {
-            drawFrame(frameToDraw);
-          }
-        } else if (Math.round(current) !== lastDrawnFrameRef.current) {
-          currentRenderFrameRef.current = target;
-          drawFrame(Math.round(target));
-        }
+      if (Math.abs(diff) > 0.05) {
+        const dt = Math.min(Math.max(deltaTime || 16.7, 1), 50);
+        const k = 1 - Math.pow(1 - 0.28, dt / 16.667);
+        currentRenderFrameRef.current = current + diff * k;
+      } else {
+        currentRenderFrameRef.current = target;
       }
 
-      animId = requestAnimationFrame(tick);
+      const frameToDraw = Math.min(
+        Math.max(Math.round(currentRenderFrameRef.current), 0),
+        TOTAL_FRAMES - 1
+      );
+      drawFrame(frameToDraw);
     };
 
-    animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
+    gsap.ticker.add(tick);
+    return () => gsap.ticker.remove(tick);
   }, [drawFrame, useVideoFallback]);
 
-  // Progressive frame loading: load Frame 1 immediately, then rest in non-blocking batches
+  // Frame loading: frame 1 first for an instant paint, then the rest through a small
+  // download pool. Every frame is decode()d before it counts as ready, so the first
+  // time it is drawn during scroll there is no JPEG-decode hitch.
   useEffect(() => {
     updateViewportSize();
 
+    let cancelled = false;
     const isMobile = window.innerWidth <= 768;
     const preferredFolder = isMobile ? '/assets/frames-mobile' : '/assets/frames';
     const fallbackFolder = '/assets/frames';
 
     const images: HTMLImageElement[] = new Array(TOTAL_FRAMES);
+    framesRef.current = images;
+    readyRef.current = new Uint8Array(TOTAL_FRAMES);
+    drawnSourceRef.current = -1;
+    viewDirtyRef.current = true;
 
-    // 1. Load Frame 1 first for instantaneous paint
-    const firstImg = new Image();
-    firstImg.src = `${preferredFolder}/frame_001.jpg`;
-    firstImg.onload = () => {
-      isFirstFrameLoadedRef.current = true;
-      images[0] = firstImg;
-      framesRef.current = images;
-      drawFrame(0);
-      if (onHeroReady) onHeroReady();
+    const frameUrl = (folder: string, n: number) =>
+      `${folder}/frame_${String(n).padStart(3, '0')}.jpg`;
 
-      // 2. Load remaining 95 frames in small non-blocking batches
-      let currentIdx = 2;
-      const batchSize = isMobile ? 8 : 16;
+    // Resolve once the image is decoded (or give up on decode and still resolve)
+    const loadImage = (n: number, folder: string) =>
+      new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.onload = () => {
+          if (typeof img.decode === 'function') {
+            img.decode().then(() => resolve(img), () => resolve(img));
+          } else {
+            resolve(img);
+          }
+        };
+        img.onerror = () => reject(new Error(`frame ${n} failed`));
+        img.src = frameUrl(folder, n);
+      });
 
-      const loadNextBatch = () => {
-        if (currentIdx > TOTAL_FRAMES) {
-          ScrollTrigger.refresh();
-          return;
-        }
-
-        const endIdx = Math.min(currentIdx + batchSize, TOTAL_FRAMES + 1);
-        for (let i = currentIdx; i < endIdx; i++) {
-          const img = new Image();
-          const numStr = String(i).padStart(3, '0');
-          img.src = `${preferredFolder}/frame_${numStr}.jpg`;
-          img.onerror = () => {
-            img.src = `${fallbackFolder}/frame_${numStr}.jpg`;
-          };
-          images[i - 1] = img;
-        }
-
-        currentIdx = endIdx;
-        if (typeof window.requestIdleCallback === 'function') {
-          window.requestIdleCallback(loadNextBatch);
-        } else {
-          setTimeout(loadNextBatch, 20);
-        }
-      };
-
-      loadNextBatch();
+    const loadWithFallback = async (n: number) => {
+      try {
+        return await loadImage(n, preferredFolder);
+      } catch (e) {
+        if (preferredFolder === fallbackFolder) throw e;
+        return await loadImage(n, fallbackFolder);
+      }
     };
 
-    firstImg.onerror = () => {
-      firstImg.src = `${fallbackFolder}/frame_001.jpg`;
-      firstImg.onerror = () => {
+    const startRemaining = () => {
+      const queue: number[] = [];
+      for (let n = 2; n <= TOTAL_FRAMES; n++) queue.push(n);
+      const MAX_PARALLEL = isMobile ? 4 : 6;
+      let active = 0;
+      let finished = 0;
+
+      const pump = () => {
+        while (!cancelled && active < MAX_PARALLEL && queue.length) {
+          const n = queue.shift()!;
+          active++;
+          loadWithFallback(n)
+            .then((img) => {
+              if (cancelled) return;
+              images[n - 1] = img;
+              readyRef.current[n - 1] = 1;
+            })
+            .catch(() => {
+              /* a missing frame is skipped; nearest ready frame is shown instead */
+            })
+            .finally(() => {
+              active--;
+              finished++;
+              if (finished === TOTAL_FRAMES - 1 && !cancelled) ScrollTrigger.refresh();
+              pump();
+            });
+        }
+      };
+      pump();
+    };
+
+    loadWithFallback(1)
+      .then((img) => {
+        if (cancelled) return;
+        images[0] = img;
+        readyRef.current[0] = 1;
+        nativeSizeRef.current = { w: img.naturalWidth, h: img.naturalHeight };
+        isFirstFrameLoadedRef.current = true;
+        updateViewportSize(); // re-run now that the native size is known
+        drawFrame(0);
+        if (onHeroReady) onHeroReady();
+        startRemaining();
+      })
+      .catch(() => {
+        if (cancelled) return;
         setUseVideoFallback(true);
         if (onHeroReady) onHeroReady();
-      };
-    };
-
-    images[0] = firstImg;
-    framesRef.current = images;
+      });
 
     const handleResize = () => {
       updateViewportSize();
@@ -198,6 +253,7 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
     return () => {
+      cancelled = true;
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };

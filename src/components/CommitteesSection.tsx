@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Shield, Eye, Lock, Activity, Landmark, ArrowRight, X, FileText } from 'lucide-react';
+import { useSiteData } from '../lib/SiteData';
+import type { IconKey } from '../data/defaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,93 +21,13 @@ interface Committee {
   backgroundGuideOverview: string;
 }
 
-const COMMITTEES_DATA: Committee[] = [
-  {
-    id: 'council-1',
-    code: 'Council I',
-    name: 'Council I (TBA)',
-    icon: <Shield className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Topic TBA — Under Secretariat Review',
-    level: 'TBA',
-    seats: 'Seats TBA',
-    charter: 'Council charter and mandate to be announced by the Secretariat.',
-    focusQuestions: [
-      'Inquiries and research directives TBA.',
-      'Discussion prompts TBA.',
-    ],
-    keyCountries: ['Allotments TBA'],
-    backgroundGuideOverview:
-      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
-  },
-  {
-    id: 'council-2',
-    code: 'Council II',
-    name: 'Council II (TBA)',
-    icon: <Eye className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Topic TBA — Under Secretariat Review',
-    level: 'TBA',
-    seats: 'Seats TBA',
-    charter: 'Council charter and mandate to be announced by the Secretariat.',
-    focusQuestions: [
-      'Inquiries and research directives TBA.',
-      'Discussion prompts TBA.',
-    ],
-    keyCountries: ['Allotments TBA'],
-    backgroundGuideOverview:
-      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
-  },
-  {
-    id: 'council-3',
-    code: 'Council III',
-    name: 'Council III (TBA)',
-    icon: <Lock className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Topic TBA — Under Secretariat Review',
-    level: 'TBA',
-    seats: 'Seats TBA',
-    charter: 'Council charter and mandate to be announced by the Secretariat.',
-    focusQuestions: [
-      'Inquiries and research directives TBA.',
-      'Discussion prompts TBA.',
-    ],
-    keyCountries: ['Allotments TBA'],
-    backgroundGuideOverview:
-      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
-  },
-  {
-    id: 'council-4',
-    code: 'Council IV',
-    name: 'Council IV (TBA)',
-    icon: <Activity className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Topic TBA — Under Secretariat Review',
-    level: 'TBA',
-    seats: 'Seats TBA',
-    charter: 'Council charter and mandate to be announced by the Secretariat.',
-    focusQuestions: [
-      'Inquiries and research directives TBA.',
-      'Discussion prompts TBA.',
-    ],
-    keyCountries: ['Allotments TBA'],
-    backgroundGuideOverview:
-      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
-  },
-  {
-    id: 'council-5',
-    code: 'Council V',
-    name: 'Council V (TBA)',
-    icon: <Landmark className="h-7 w-7 text-[#D4AF6A]" />,
-    topic: 'Topic TBA — Under Secretariat Review',
-    level: 'TBA',
-    seats: 'Seats TBA',
-    charter: 'Council charter and mandate to be announced by the Secretariat.',
-    focusQuestions: [
-      'Inquiries and research directives TBA.',
-      'Discussion prompts TBA.',
-    ],
-    keyCountries: ['Allotments TBA'],
-    backgroundGuideOverview:
-      'The official background guide and rules of procedure are currently being prepared by the High Secretariat for ICON MUN 2027.',
-  },
-];
+const ICONS: Record<IconKey, React.ReactNode> = {
+  shield: <Shield className="h-7 w-7 text-[#D4AF6A]" />,
+  eye: <Eye className="h-7 w-7 text-[#D4AF6A]" />,
+  lock: <Lock className="h-7 w-7 text-[#D4AF6A]" />,
+  activity: <Activity className="h-7 w-7 text-[#D4AF6A]" />,
+  landmark: <Landmark className="h-7 w-7 text-[#D4AF6A]" />,
+};
 
 interface CommitteesSectionProps {
   onSelectCommitteeForRegister?: (code: string) => void;
@@ -114,6 +36,13 @@ interface CommitteesSectionProps {
 export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
   onSelectCommitteeForRegister,
 }) => {
+  const { committees } = useSiteData();
+  const COMMITTEES_DATA: Committee[] = useMemo(
+    () => committees.map((c) => ({ ...c, icon: ICONS[c.iconKey] ?? ICONS.shield })),
+    [committees]
+  );
+  const committeesRef = useRef<Committee[]>(COMMITTEES_DATA);
+  committeesRef.current = COMMITTEES_DATA;
   const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stickyRef = useRef<HTMLDivElement | null>(null);
@@ -133,7 +62,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
     const ctx = gsap.context(() => {
       if (!isMobile) {
         // Desktop: Pin for ~150vh and convert vertical scroll into horizontal movement
-        const totalCards = COMMITTEES_DATA.length;
+        const totalCards = committeesRef.current.length;
         const totalShiftPercent = -(totalCards - 1) * 22;
 
         gsap.timeline({
@@ -157,8 +86,9 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
               }
 
               // Update label without triggering React state re-render
-              if (activeLabelRef.current && COMMITTEES_DATA[idx]) {
-                activeLabelRef.current.innerText = `${COMMITTEES_DATA[idx].code} · Topic TBA`;
+              const active = committeesRef.current[idx];
+              if (activeLabelRef.current && active) {
+                activeLabelRef.current.innerText = `${active.code} · ${active.topic.startsWith('Topic TBA') ? 'Topic TBA' : active.topic}`;
               }
 
               // Card nearest to center scales up to 1.04 and brightens
@@ -197,7 +127,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
     }, container);
 
     return () => ctx.revert();
-  }, []);
+  }, [COMMITTEES_DATA.length]);
 
   return (
     <div

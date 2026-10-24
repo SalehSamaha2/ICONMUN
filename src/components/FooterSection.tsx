@@ -2,10 +2,23 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Mail, MapPin, Phone, Instagram, Linkedin, Twitter, Send } from 'lucide-react';
+import { useSiteData } from '../lib/SiteData';
+import { safeUrl } from '../lib/supabase';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Social links: real https link (opens in a new tab) when set in the admin, otherwise the old placeholder.
+const socialProps = (value: string | undefined, fallback: string) => {
+  const url = safeUrl(value);
+  return url
+    ? { href: url, target: '_blank', rel: 'noopener noreferrer' }
+    : { href: fallback };
+};
+
 export const FooterSection: React.FC = () => {
+  const { settings } = useSiteData();
+  const rawEmail = (settings.contact_email || '').trim();
+  const contactEmail = /^[^@\s<>"]+@[^@\s<>"]+\.[^@\s<>"]+$/.test(rawEmail) ? rawEmail : '';
   const footerRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const giantLogoRef = useRef<HTMLHeadingElement | null>(null);
@@ -86,28 +99,28 @@ export const FooterSection: React.FC = () => {
 
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="#social-instagram"
+                {...socialProps(settings.instagram_url, "#social-instagram")}
                 aria-label="Instagram"
                 className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#D4AF6A]/30 bg-[#0C0C0C] text-[#D4AF6A] transition-all hover:border-[#D4AF6A] hover:bg-[#D4AF6A]/10 hover:text-[#FFF3D6] active:scale-95"
               >
                 <Instagram className="h-4 w-4" />
               </a>
               <a
-                href="#social-linkedin"
+                {...socialProps(settings.linkedin_url, "#social-linkedin")}
                 aria-label="LinkedIn"
                 className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#D4AF6A]/30 bg-[#0C0C0C] text-[#D4AF6A] transition-all hover:border-[#D4AF6A] hover:bg-[#D4AF6A]/10 hover:text-[#FFF3D6] active:scale-95"
               >
                 <Linkedin className="h-4 w-4" />
               </a>
               <a
-                href="#social-twitter"
+                {...socialProps(settings.twitter_url, "#social-twitter")}
                 aria-label="X / Twitter"
                 className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#D4AF6A]/30 bg-[#0C0C0C] text-[#D4AF6A] transition-all hover:border-[#D4AF6A] hover:bg-[#D4AF6A]/10 hover:text-[#FFF3D6] active:scale-95"
               >
                 <Twitter className="h-4 w-4" />
               </a>
               <a
-                href="#social-telegram"
+                {...socialProps(settings.telegram_url, "#social-telegram")}
                 aria-label="Telegram"
                 className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#D4AF6A]/30 bg-[#0C0C0C] text-[#D4AF6A] transition-all hover:border-[#D4AF6A] hover:bg-[#D4AF6A]/10 hover:text-[#FFF3D6] active:scale-95"
               >
@@ -158,15 +171,19 @@ export const FooterSection: React.FC = () => {
             <div className="space-y-2.5 text-xs sm:text-sm text-[#8E8678]">
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-[#D4AF6A] shrink-0 mt-0.5" />
-                <span>Venue & Location: TBA</span>
+                <span>Venue & Location: {settings.venue?.trim() || 'TBA'}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 text-[#D4AF6A] shrink-0" />
-                <span>Email: TBA</span>
+                {contactEmail ? (
+                  <span>Email: <a href={`mailto:${contactEmail}`} className="hover:text-[#F3DFA2] transition-colors">{contactEmail}</a></span>
+                ) : (
+                  <span>Email: TBA</span>
+                )}
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-[#D4AF6A] shrink-0" />
-                <span>Phone / Contact: TBA</span>
+                <span>Phone / Contact: {settings.contact_phone?.trim() || 'TBA'}</span>
               </div>
             </div>
           </div>

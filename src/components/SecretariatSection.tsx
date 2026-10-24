@@ -2,50 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { UserCheck, Sparkles } from 'lucide-react';
+import { useSiteData } from '../lib/SiteData';
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface SecretariatMember {
-  name: string;
-  role: string;
-  image?: string;
-  quote: string;
-  bio: string;
-  isConfirmed?: boolean;
-  objectPosition?: string;
-}
-
-const SECRETARIAT_TEAM: SecretariatMember[] = [
-  {
-    name: 'Laila Mohammad',
-    role: 'Secretary-General',
-    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_3.09.45_PM_b7951032.jpeg',
-    quote: 'I hope we can support each other, share our ideas, and make ICON MUN 2027 a successful and unforgettable experience for everyone!! 🤍',
-    bio: 'hiii everyoneeee!! my name is laila mohammad, and im the secretary-general of icon mun 2027!! im so happy to be part of this journey and to work with such an amazing team. i hope we can support each other, share our ideas, and make icon mun 2027 a successful and unforgettable experience for everyone!! 🤍',
-    isConfirmed: true,
-    objectPosition: 'center 60%',
-  },
-  {
-    name: 'Laya Shahwan',
-    role: 'Deputy Secretary-General',
-    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_5.27.20_PM_1145c352.jpeg',
-    quote: 'I’m really happy to be working with my team to create the best and memorable MUN!!',
-    bio: 'hellooo everyone, my name is laya shahwan and i’m the deputy secretary-general of icon mun 2027! i’m really happy to be working with my team to create the best and memorable mun!!',
-    isConfirmed: true,
-    objectPosition: '50% 35%',
-  },
-  {
-    name: 'Lara Alabsi',
-    role: 'Under-Secretary-General',
-    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_3.25.06_PM_bb8c5329.jpeg',
-    quote: 'Excited to meet you all and make this MUN one to remember, pls don’t make me regret being nice!',
-    bio: 'hiii everyone im lara, your amazing, goated USG!! if you don’t know me yet give it a week, i talk enough for that to change. excited to meet you all and make this MUN one to remember, pls don’t make me regret being nice',
-    isConfirmed: true,
-    objectPosition: 'center 32%',
-  },
-];
-
 export const SecretariatSection: React.FC = () => {
+  const { secretariat: SECRETARIAT_TEAM } = useSiteData();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -114,7 +76,7 @@ export const SecretariatSection: React.FC = () => {
     }, container);
 
     return () => ctx.revert();
-  }, []);
+  }, [SECRETARIAT_TEAM]);
 
   return (
     <section
@@ -143,7 +105,7 @@ export const SecretariatSection: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
           {SECRETARIAT_TEAM.map((member, idx) => (
             <div
-              key={idx}
+              key={member.id}
               className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-[#D4AF6A]/70 bg-[#0C0C0C] will-change-transform ${
                 member.isConfirmed ? 'border-[#D4AF6A]/50 shadow-[0_0_30px_rgba(212,175,106,0.12)]' : 'border-white/10'
               }`}
