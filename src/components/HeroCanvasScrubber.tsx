@@ -359,12 +359,13 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
     <div
       ref={containerRef}
       id="hero-scroll-container"
-      className="relative w-full bg-[#050505] h-[180vh] md:h-[250vh]"
+      data-theme="dark"
+      className="relative w-full bg-paper h-[180vh] md:h-[250vh]"
     >
       {/* Pinned Viewport Hero Section with 100dvh fallback */}
       <div
         ref={stickyRef}
-        className="h-screen-dvh w-full overflow-hidden bg-[#050505] flex flex-col justify-between"
+        className="h-screen-dvh w-full overflow-hidden bg-paper flex flex-col justify-between"
       >
         {/* Visual Media Layer: Canvas Frame Sequence */}
         <div
@@ -397,7 +398,7 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
           className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[320px] sm:h-[480px] w-[320px] sm:w-[480px] rounded-full z-10 will-change-transform opacity-10"
           style={{
             background:
-              'radial-gradient(circle, rgba(212,175,106,0.3) 0%, rgba(90,15,30,0.18) 45%, transparent 70%)',
+              'radial-gradient(circle, rgba(231,219,195,0.3) 0%, rgba(60,52,40,0.18) 45%, transparent 70%)',
           }}
         />
 
@@ -419,9 +420,9 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
             paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
           }}
         >
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 text-[clamp(0.6rem,2vw,0.75rem)] font-semibold uppercase tracking-[0.22em] sm:tracking-[0.35em] text-[#D4AF6A] mb-1 opacity-90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 text-[clamp(0.6rem,2vw,0.75rem)] font-semibold uppercase tracking-[0.22em] sm:tracking-[0.35em] text-gold mb-1 opacity-90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
             <span>The Premier Model United Nations</span>
-            <span aria-hidden="true" className="text-[#8C6221]">·</span>
+            <span aria-hidden="true" className="text-golddeep">·</span>
             <span>2027 Edition · Details TBA</span>
           </div>
 
@@ -429,13 +430,13 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
           <h1
             className="font-cinzel text-[clamp(1.85rem,7.5vw,5rem)] font-black uppercase tracking-[0.16em] sm:tracking-[0.24em] md:tracking-[0.32em] text-gold-shimmer filter drop-shadow-[0_4px_25px_rgba(0,0,0,0.95)] whitespace-nowrap"
             style={{
-              textShadow: '0 0 35px rgba(212, 175, 106, 0.4), 0 0 70px rgba(90, 15, 30, 0.25)',
+              textShadow: '0 0 35px rgba(231, 219, 195, 0.4), 0 0 70px rgba(60, 52, 40, 0.25)',
             }}
           >
             ICON MUN
           </h1>
 
-          <p className="mt-1 text-[clamp(0.65rem,2.2vw,0.875rem)] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#E6E1D8]/80 font-light max-w-md text-balance drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hidden sm:block">
+          <p className="mt-1 text-[clamp(0.65rem,2.2vw,0.875rem)] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-ink/80 font-light max-w-md text-balance drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] hidden sm:block">
             Official Conference Information To Be Announced (TBA)
           </p>
         </div>
@@ -457,7 +458,7 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
             {/* Caption 1: 0–30% */}
             <p
               ref={caption1Ref}
-              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#FFF3D6] font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] will-change-transform"
+              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-inkstrong font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] will-change-transform"
             >
               Every nation has a face.
             </p>
@@ -465,7 +466,7 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
             {/* Caption 2: 30–65% */}
             <p
               ref={caption2Ref}
-              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#F3DFA2] font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] opacity-0 will-change-transform"
+              className="absolute font-cinzel text-[clamp(0.85rem,3.2vw,1.4rem)] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-accent font-medium leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] opacity-0 will-change-transform"
             >
               But behind every mask…
             </p>
@@ -480,9 +481,9 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
           </div>
 
           {/* Scroll Down Indicator */}
-          <div className="mt-2 sm:mt-3 flex flex-col items-center gap-1 text-[#D4AF6A]/70 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] font-mono">
+          <div className="mt-2 sm:mt-3 flex flex-col items-center gap-1 text-gold/70 text-[9px] sm:text-[10px] uppercase tracking-[0.3em] font-mono">
             <span className="hidden sm:inline">Scroll To Reveal</span>
-            <ChevronDown className="h-4 w-4 animate-bounce text-[#D4AF6A]" />
+            <ChevronDown className="h-4 w-4 animate-bounce text-gold" />
           </div>
         </div>
       </div>

@@ -92,20 +92,20 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
   return (
     <>
       {/* 1. Thin Fixed Gold Progress Bar at Top (transform: scaleX ONLY) */}
-      <div className="fixed top-0 left-0 right-0 h-[2.5px] z-50 pointer-events-none bg-white/5">
+      <div className="fixed top-0 left-0 right-0 h-[2.5px] z-50 pointer-events-none bg-ink/5">
         <div
           ref={progressBarRef}
-          className="h-full w-full bg-gradient-to-r from-[#8C6221] via-[#D4AF6A] to-[#FFF3D6] shadow-[0_0_12px_rgba(212,175,106,0.8)] origin-left will-change-transform"
+          className="h-full w-full bg-gradient-to-r from-golddeep via-gold to-inkstrong shadow-[0_0_12px_rgba(231,219,195,0.8)] origin-left will-change-transform"
           style={{ transform: 'scaleX(0)' }}
         />
       </div>
 
       {/* 2. Faint Huge UN-Style Globe Fixed in Background (Desktop only to save mobile GPU/CPU) */}
-      <div className="hidden md:flex fixed inset-0 z-0 pointer-events-none items-center justify-center overflow-hidden opacity-[0.06] select-none">
+      <div className="hidden md:flex fixed inset-0 z-0 pointer-events-none items-center justify-center overflow-hidden opacity-[0.07] select-none">
         <svg
           ref={globeSvgRef}
           viewBox="0 0 1000 1000"
-          className="w-[1200px] h-[1200px] max-w-none text-[#D4AF6A] will-change-transform"
+          className="w-[1200px] h-[1200px] max-w-none text-gold will-change-transform"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.2"
@@ -152,7 +152,7 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
         aria-label="Section Navigation"
         className="hidden md:flex fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-4 py-3"
       >
-        <div className="flex flex-col items-center gap-3 rounded-full border border-[#D4AF6A]/20 bg-[#0A0A0A]/70 px-2 py-3 backdrop-blur-md shadow-2xl">
+        <div className="flex flex-col items-center gap-3 rounded-full border border-gold/20 bg-paper/70 px-2 py-3 backdrop-blur-md shadow-2xl">
           {SECTIONS.map((sec) => {
             const isActive = activeSection === sec.id;
             const isHovered = hoveredDot === sec.id;
@@ -160,7 +160,7 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
             return (
               <div key={sec.id} className="relative flex items-center justify-end group">
                 <div
-                  className={`pointer-events-none absolute right-7 whitespace-nowrap rounded border border-[#D4AF6A]/30 bg-[#0F0F0F]/95 px-2.5 py-1 text-[10px] uppercase font-mono tracking-wider text-[#F3DFA2] shadow-xl backdrop-blur-md transition-all duration-200 ${
+                  className={`pointer-events-none absolute right-7 whitespace-nowrap rounded border border-gold/30 bg-surface/95 px-2.5 py-1 text-[10px] uppercase font-mono tracking-wider text-accent shadow-xl backdrop-blur-md transition-all duration-200 ${
                     isHovered
                       ? 'opacity-100 translate-x-0'
                       : 'opacity-0 translate-x-2'
@@ -177,14 +177,14 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
                   className="relative flex h-5 w-5 items-center justify-center cursor-pointer focus:outline-none"
                 >
                   {isActive && (
-                    <span className="absolute inset-0 rounded-full border border-[#D4AF6A] animate-ping opacity-60" />
+                    <span className="absolute inset-0 rounded-full border border-gold animate-ping opacity-60" />
                   )}
 
                   <span
                     className={`rounded-full transition-all duration-300 ${
                       isActive
-                        ? 'h-2.5 w-2.5 bg-[#FFF3D6] shadow-[0_0_10px_#F3DFA2]'
-                        : 'h-1.5 w-1.5 bg-[#D4AF6A]/40 group-hover:bg-[#D4AF6A] group-hover:scale-125'
+                        ? 'h-2.5 w-2.5 bg-inkstrong shadow-[0_0_10px_#F3EAD6]'
+                        : 'h-1.5 w-1.5 bg-gold/40 group-hover:bg-gold group-hover:scale-125'
                     }`}
                   />
                 </button>

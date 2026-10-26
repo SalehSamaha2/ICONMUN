@@ -114,43 +114,43 @@ export const ScheduleSection: React.FC = () => {
     <section
       ref={containerRef}
       id="schedule"
-      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-paper text-ink overflow-hidden"
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
-          <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
+          <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-gold mb-2">
             <span>Conference Itinerary</span>
-            <span aria-hidden="true" className="text-[#8C6221]">·</span>
+            <span aria-hidden="true" className="text-golddeep">·</span>
             <span>ICON MUN 2027</span>
           </div>
           <h2 className="font-cinzel text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] text-gold-gradient text-balance">
             Timeline (TBA)
           </h2>
-          <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#D4AF6A]/30 bg-[#D4AF6A]/10 px-3.5 py-1 text-[11px] font-mono uppercase tracking-wider text-[#F3DFA2]">
-            <CalendarDays className="h-3.5 w-3.5 text-[#D4AF6A]" />
+          <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1 text-[11px] font-mono uppercase tracking-wider text-accent">
+            <CalendarDays className="h-3.5 w-3.5 text-gold" />
             <span>Dates & Timetable: To Be Announced (TBA)</span>
           </div>
-          <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-[#D4AF6A] to-transparent" />
+          <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-gold to-transparent" />
         </div>
 
         {/* Schedule Groups Container with Track */}
         <div ref={trackWrapperRef} className="space-y-16 relative">
           {/* Central Track Gray Base */}
-          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-white/10 pointer-events-none" />
+          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-ink/10 pointer-events-none" />
 
           {/* Scrubbed Drawing Gold Line (ScaleY) */}
           <div
             ref={lineRef}
-            className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-[#FFF3D6] via-[#D4AF6A] to-[#8C6221] shadow-[0_0_12px_rgba(212,175,106,0.9)] will-change-transform pointer-events-none"
+            className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-inkstrong via-gold to-golddeep shadow-[0_0_12px_rgba(231,219,195,0.9)] will-change-transform pointer-events-none"
           />
 
           {/* Tip Dot (TranslateY Only) */}
           <div
             ref={dotRef}
-            className="absolute left-4 md:left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[#D4AF6A]/20 pointer-events-none will-change-transform"
+            className="absolute left-4 md:left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-gold/20 pointer-events-none will-change-transform"
           >
-            <div className="h-2.5 w-2.5 rounded-full bg-[#FFF3D6] shadow-[0_0_10px_#F3DFA2]" />
+            <div className="h-2.5 w-2.5 rounded-full bg-inkstrong shadow-[0_0_10px_#F3EAD6]" />
           </div>
 
           {SCHEDULE_GROUPS.map((group) => (
@@ -160,8 +160,8 @@ export const ScheduleSection: React.FC = () => {
                 <span
                   className="day-heading-outline font-cinzel text-[clamp(2.75rem,8vw,5.5rem)] font-black uppercase tracking-[0.12em] inline-block"
                   style={{
-                    WebkitTextStroke: '1px rgba(212, 175, 106, 0.4)',
-                    backgroundImage: 'linear-gradient(to top, #D4AF6A 50%, transparent 50%)',
+                    WebkitTextStroke: '1px rgba(231, 219, 195, 0.4)',
+                    backgroundImage: 'linear-gradient(to top, #E7DBC3 50%, transparent 50%)',
                     backgroundSize: '100% 200%',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -169,7 +169,7 @@ export const ScheduleSection: React.FC = () => {
                 >
                   {group.dayLabel}
                 </span>
-                <p className="font-cinzel text-xs sm:text-sm uppercase tracking-[0.25em] text-[#D4AF6A] -mt-2">
+                <p className="font-cinzel text-xs sm:text-sm uppercase tracking-[0.25em] text-gold -mt-2">
                   {group.dayTheme}
                 </p>
               </div>
@@ -187,8 +187,8 @@ export const ScheduleSection: React.FC = () => {
                       }`}
                     >
                       {/* Node Circle */}
-                      <div className="absolute left-4 md:left-1/2 -translate-x-1/2 z-15 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#D4AF6A] bg-[#0A0A0A]">
-                        <div className="h-1.5 w-1.5 rounded-full bg-[#F3DFA2]" />
+                      <div className="absolute left-4 md:left-1/2 -translate-x-1/2 z-15 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-gold bg-paper">
+                        <div className="h-1.5 w-1.5 rounded-full bg-accent" />
                       </div>
 
                       {/* Card (All on right of line on mobile; alternating on desktop) */}
@@ -199,37 +199,37 @@ export const ScheduleSection: React.FC = () => {
                             : 'schedule-card-right md:pl-10 md:text-left'
                         } will-change-transform`}
                       >
-                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-[#D4AF6A]/60 bg-[#0C0C0C]">
+                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-gold/60 bg-surface">
                           <div
-                            className={`flex flex-wrap items-center gap-2.5 text-xs text-[#D4AF6A] mb-1.5 ${
+                            className={`flex flex-wrap items-center gap-2.5 text-xs text-gold mb-1.5 ${
                               isLeft ? 'md:justify-end' : 'md:justify-start'
                             }`}
                           >
                             <span className="flex items-center gap-1 font-mono tabular-nums">
-                              <Clock className="h-3 w-3 text-[#D4AF6A]" />
+                              <Clock className="h-3 w-3 text-gold" />
                               {event.time}
                             </span>
                             {event.badge && (
-                              <span className="rounded border border-[#D4AF6A]/30 bg-[#D4AF6A]/10 px-1.5 py-0.5 text-[9px] uppercase font-mono text-[#F3DFA2]">
+                              <span className="rounded border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[9px] uppercase font-mono text-accent">
                                 {event.badge}
                               </span>
                             )}
                           </div>
 
-                          <h3 className="font-cinzel text-sm sm:text-base font-semibold text-white mb-1.5">
+                          <h3 className="font-cinzel text-sm sm:text-base font-semibold text-inkstrong mb-1.5">
                             {event.title}
                           </h3>
 
-                          <p className="text-xs text-[#C4BAA8] leading-relaxed mb-2.5 font-light">
+                          <p className="text-xs text-ink2 leading-relaxed mb-2.5 font-light">
                             {event.description}
                           </p>
 
                           <div
-                            className={`flex items-center gap-1.5 text-xs text-[#A89D8A] ${
+                            className={`flex items-center gap-1.5 text-xs text-ink3 ${
                               isLeft ? 'md:justify-end' : 'md:justify-start'
                             }`}
                           >
-                            <MapPin className="h-3 w-3 text-[#D4AF6A]" />
+                            <MapPin className="h-3 w-3 text-gold" />
                             <span>{event.location}</span>
                           </div>
                         </div>

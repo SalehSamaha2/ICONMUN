@@ -53,16 +53,16 @@ export const CustomCursor: React.FC = () => {
         if (ringRef.current) {
           ringRef.current.style.width = '48px';
           ringRef.current.style.height = '48px';
-          ringRef.current.style.borderColor = '#F3DFA2';
-          ringRef.current.style.backgroundColor = 'rgba(212, 175, 106, 0.12)';
-          ringRef.current.style.boxShadow = '0 0 16px rgba(212, 175, 106, 0.4)';
+          ringRef.current.style.borderColor = '#F3EAD6';
+          ringRef.current.style.backgroundColor = 'rgba(231, 219, 195, 0.12)';
+          ringRef.current.style.boxShadow = '0 0 16px rgba(231, 219, 195, 0.4)';
         }
       } else if (!interactive && isHovered) {
         isHovered = false;
         if (ringRef.current) {
           ringRef.current.style.width = '28px';
           ringRef.current.style.height = '28px';
-          ringRef.current.style.borderColor = 'rgba(212, 175, 106, 0.6)';
+          ringRef.current.style.borderColor = 'rgba(231, 219, 195, 0.6)';
           ringRef.current.style.backgroundColor = 'transparent';
           ringRef.current.style.boxShadow = 'none';
         }
@@ -110,12 +110,12 @@ export const CustomCursor: React.FC = () => {
       {/* Outer trailing ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 rounded-full border border-[rgba(212,175,106,0.6)] w-7 h-7 will-change-transform opacity-0 transition-[width,height,border-color,background-color] duration-200"
+        className="fixed top-0 left-0 rounded-full border border-[rgba(231,219,195,0.6)] w-7 h-7 will-change-transform opacity-0 transition-[width,height,border-color,background-color] duration-200"
       />
       {/* Inner sharp gold point */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 rounded-full bg-[#F3DFA2] w-1.5 h-1.5 shadow-[0_0_6px_#F3DFA2] will-change-transform opacity-0"
+        className="fixed top-0 left-0 rounded-full bg-accent w-1.5 h-1.5 shadow-[0_0_6px_#F3EAD6] will-change-transform opacity-0"
       />
     </div>
   );

@@ -58,9 +58,10 @@ export const Navigation: React.FC<NavigationProps> = ({
   return (
     <>
       <header
+        data-theme="dark"
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 pt-[env(safe-area-inset-top,0px)] ${
           showBrandLogo || isMobileMenuOpen
-            ? 'bg-[#050505]/95 border-b border-[#D4AF6A]/20 backdrop-blur-md shadow-lg'
+            ? 'bg-paper/95 border-b border-gold/20 backdrop-blur-md shadow-lg'
             : 'bg-transparent pointer-events-none'
         }`}
       >
@@ -76,15 +77,15 @@ export const Navigation: React.FC<NavigationProps> = ({
               }`}
             >
               {/* Logo Mask Motif */}
-              <div className="h-8 w-8 rounded-full overflow-hidden border border-[#D4AF6A]/60 shadow-[0_0_10px_rgba(212,175,106,0.3)] bg-black shrink-0">
+              <div className="h-11 w-11 shrink-0 rounded-full bg-[#E7DBC3] flex items-center justify-center">
                 <img
-                  src="/assets/logo.png"
-                  alt="ICON MUN Emblem"
-                  className="h-full w-full object-cover scale-125"
+                  src="/brand/logo-mark.webp"
+                  alt="ICON MUN emblem"
+                  className="h-[86%] w-[86%] object-contain"
                   loading="lazy"
                 />
               </div>
-              <span className="font-cinzel text-base sm:text-xl font-bold uppercase tracking-[0.22em] text-[#F3DFA2] whitespace-nowrap">
+              <span className="font-cinzel text-base sm:text-xl font-bold uppercase tracking-[0.22em] text-accent whitespace-nowrap">
                 ICON MUN
               </span>
             </a>
@@ -93,30 +94,30 @@ export const Navigation: React.FC<NavigationProps> = ({
           {/* Zone 2: Desktop 4–5 single-line navigation links */}
           <nav
             className={`hidden md:flex items-center gap-8 text-xs uppercase tracking-[0.2em] font-medium transition-all duration-300 ${
-              showBrandLogo ? 'text-[#C4BAA8]' : 'text-[#C4BAA8]/75 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]'
+              showBrandLogo ? 'text-ink2' : 'text-ink2/75 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]'
             }`}
           >
             <a
               href="#about"
-              className="hover:text-[#F3DFA2] transition-colors whitespace-nowrap shrink-0 py-2"
+              className="hover:text-accent transition-colors whitespace-nowrap shrink-0 py-2"
             >
               About
             </a>
             <a
               href="#committees"
-              className="hover:text-[#F3DFA2] transition-colors whitespace-nowrap shrink-0 py-2"
+              className="hover:text-accent transition-colors whitespace-nowrap shrink-0 py-2"
             >
               Councils (TBA)
             </a>
             <a
               href="#schedule"
-              className="hover:text-[#F3DFA2] transition-colors whitespace-nowrap shrink-0 py-2"
+              className="hover:text-accent transition-colors whitespace-nowrap shrink-0 py-2"
             >
               Timeline (TBA)
             </a>
             <a
               href="#secretariat"
-              className="hover:text-[#F3DFA2] transition-colors whitespace-nowrap shrink-0 py-2"
+              className="hover:text-accent transition-colors whitespace-nowrap shrink-0 py-2"
             >
               Secretariat
             </a>
@@ -138,7 +139,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={isMobileMenuOpen}
-              className="md:hidden flex h-11 w-11 items-center justify-center rounded-lg border border-[#D4AF6A]/30 bg-[#0C0C0C]/80 text-[#F3DFA2] transition-all hover:border-[#D4AF6A] hover:bg-[#141414] active:scale-95 cursor-pointer"
+              className="md:hidden flex h-11 w-11 items-center justify-center rounded-lg border border-gold/30 bg-surface/80 text-accent transition-all hover:border-gold hover:bg-surface2 active:scale-95 cursor-pointer"
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -149,19 +150,19 @@ export const Navigation: React.FC<NavigationProps> = ({
       {/* Full-Screen Mobile Navigation Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 md:hidden flex flex-col justify-between bg-[#050505]/98 backdrop-blur-2xl text-[#E6E1D8] pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] px-6 overflow-y-auto min-h-screen-dvh"
+          className="fixed inset-0 z-50 md:hidden flex flex-col justify-between bg-paper/98 backdrop-blur-2xl text-ink pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] px-6 overflow-y-auto min-h-screen-dvh"
         >
           {/* Header Row in Mobile Menu */}
-          <div className="flex items-center justify-between border-b border-[#D4AF6A]/20 pb-4">
+          <div className="flex items-center justify-between border-b border-gold/20 pb-4">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full overflow-hidden border border-[#D4AF6A]/60 shadow-[0_0_12px_rgba(212,175,106,0.3)] bg-black shrink-0">
+              <div className="h-11 w-11 shrink-0 rounded-full bg-[#E7DBC3] flex items-center justify-center">
                 <img
-                  src="/assets/logo.png"
-                  alt="ICON MUN Emblem"
-                  className="h-full w-full object-cover scale-125"
+                  src="/brand/logo-mark.webp"
+                  alt="ICON MUN emblem"
+                  className="h-[86%] w-[86%] object-contain"
                 />
               </div>
-              <span className="font-cinzel text-lg font-bold uppercase tracking-[0.22em] text-[#F3DFA2]">
+              <span className="font-cinzel text-lg font-bold uppercase tracking-[0.22em] text-accent">
                 ICON MUN
               </span>
             </div>
@@ -170,7 +171,7 @@ export const Navigation: React.FC<NavigationProps> = ({
               type="button"
               onClick={() => setIsMobileMenuOpen(false)}
               aria-label="Close menu"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#D4AF6A]/30 bg-[#141414] text-[#F3DFA2] active:scale-95 cursor-pointer"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/30 bg-surface2 text-accent active:scale-95 cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -189,16 +190,16 @@ export const Navigation: React.FC<NavigationProps> = ({
                 key={item.id}
                 href={`#${item.id}`}
                 onClick={(e) => handleMobileNavClick(e, item.id)}
-                className="flex items-center justify-between min-h-[52px] px-4 py-3 rounded-xl border border-white/5 bg-[#0C0C0C]/60 font-cinzel text-lg tracking-[0.15em] text-[#E6E1D8] hover:text-[#F3DFA2] hover:border-[#D4AF6A]/40 active:bg-[#D4AF6A]/10 transition-all cursor-pointer"
+                className="flex items-center justify-between min-h-[52px] px-4 py-3 rounded-xl border border-ink/5 bg-surface/60 font-cinzel text-lg tracking-[0.15em] text-ink hover:text-accent hover:border-gold/40 active:bg-gold/10 transition-all cursor-pointer"
               >
                 <span>{item.label}</span>
-                <span className="text-xs text-[#D4AF6A] font-mono">→</span>
+                <span className="text-xs text-gold font-mono">→</span>
               </a>
             ))}
           </nav>
 
           {/* Bottom Action Area */}
-          <div className="space-y-4 pt-4 border-t border-[#D4AF6A]/20">
+          <div className="space-y-4 pt-4 border-t border-gold/20">
             <button
               type="button"
               onClick={() => {
@@ -209,7 +210,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             >
               Register Interest (TBA)
             </button>
-            <p className="text-center text-[10px] uppercase tracking-[0.25em] text-[#A89D8A]">
+            <p className="text-center text-[10px] uppercase tracking-[0.25em] text-ink3">
               ICON MUN 2027 · Premier Model UN
             </p>
           </div>

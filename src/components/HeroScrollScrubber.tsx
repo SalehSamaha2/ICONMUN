@@ -256,12 +256,12 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
     <div
       ref={containerRef}
       id="hero-scroll-container"
-      className="relative w-full bg-[#050505] h-[300vh] md:h-[500vh]"
+      className="relative w-full bg-paper h-[300vh] md:h-[500vh]"
     >
       {/* Pinned Viewport Container */}
       <div
         ref={stickyRef}
-        className="sticky top-0 h-screen w-full overflow-hidden bg-[#050505] flex flex-col justify-between"
+        className="sticky top-0 h-screen w-full overflow-hidden bg-paper flex flex-col justify-between"
       >
         {/* Subtle Film Grain Layer */}
         <div className="film-grain pointer-events-none absolute inset-0 z-20 opacity-30" />
@@ -281,7 +281,7 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
           ref={headGlowRef}
           className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[550px] w-[550px] rounded-full z-10 transition-transform duration-75"
           style={{
-            background: 'radial-gradient(circle, rgba(212,175,106,0.35) 0%, rgba(90,15,30,0.2) 45%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(231,219,195,0.35) 0%, rgba(60,52,40,0.2) 45%, transparent 70%)',
             opacity: glowOpacity,
             transform: `translate(-50%, -50%) scale(${1 + scrollProgress * 0.35})`,
           }}
@@ -289,7 +289,7 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
 
         {/* End of Hero Transition: Video blurs and darkens into pure black */}
         <div
-          className="pointer-events-none absolute inset-0 z-25 bg-[#050505] transition-opacity duration-100"
+          className="pointer-events-none absolute inset-0 z-25 bg-paper transition-opacity duration-100"
           style={{
             opacity: endDarkenOpacity,
           }}
@@ -333,22 +333,22 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
         {/* SAFE ZONE 1 (TOP): SINGLE "ICON MUN" TITLE (Fixed safe zone, no overlap) */}
         {/* ========================================================================= */}
         <div className="relative z-30 pt-10 sm:pt-14 px-6 flex flex-col items-center justify-center text-center pointer-events-none select-none">
-          <div className="inline-flex items-center gap-3 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.35em] text-[#D4AF6A] mb-2 opacity-90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+          <div className="inline-flex items-center gap-3 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.35em] text-gold mb-2 opacity-90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
             <span>The Premier Model United Nations</span>
-            <span aria-hidden="true" className="text-[#8C6221]">·</span>
+            <span aria-hidden="true" className="text-golddeep">·</span>
             <span>Geneva Accords</span>
           </div>
 
           <h1
             className="font-cinzel text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-[0.25em] md:tracking-[0.32em] text-gold-shimmer filter drop-shadow-[0_6px_30px_rgba(0,0,0,0.95)]"
             style={{
-              textShadow: '0 0 40px rgba(212, 175, 106, 0.4), 0 0 80px rgba(90, 15, 30, 0.3)',
+              textShadow: '0 0 40px rgba(231, 219, 195, 0.4), 0 0 80px rgba(60, 52, 40, 0.3)',
             }}
           >
             ICON MUN
           </h1>
 
-          <p className="mt-2 text-xs sm:text-sm uppercase tracking-[0.3em] text-[#E6E1D8]/80 font-light max-w-md text-balance drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+          <p className="mt-2 text-xs sm:text-sm uppercase tracking-[0.3em] text-ink/80 font-light max-w-md text-balance drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             Behind The Masquerade Of Global Diplomacy
           </p>
         </div>
@@ -369,7 +369,7 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
               <p className="font-cinzel text-xl sm:text-2xl md:text-3xl text-gold-gradient font-medium tracking-[0.18em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                 Every nation has a face.
               </p>
-              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.28em] text-[#C4BAA8] uppercase font-light">
+              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.28em] text-ink2 uppercase font-light">
                 Movement I · The Diplomatic Mask
               </span>
             </div>
@@ -382,7 +382,7 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
               <p className="font-cinzel text-xl sm:text-2xl md:text-3xl text-gold-gradient font-medium tracking-[0.18em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                 But behind every mask…
               </p>
-              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.28em] text-[#C4BAA8] uppercase font-light">
+              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.28em] text-ink2 uppercase font-light">
                 Movement II · The Veil Dissolves
               </span>
             </div>
@@ -395,7 +395,7 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
               <p className="font-cinzel text-xl sm:text-2xl md:text-3xl text-gold-gradient font-medium tracking-[0.18em] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                 …is a delegate ready to lead.
               </p>
-              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.28em] text-[#C4BAA8] uppercase font-light">
+              <span className="block mt-1 text-[10px] sm:text-xs tracking-[0.28em] text-ink2 uppercase font-light">
                 Movement III · The Sovereign Mandate
               </span>
             </div>
@@ -408,12 +408,12 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
               opacity: Math.max(0, 1 - scrollProgress * 12),
             }}
           >
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-[#D4AF6A] font-medium">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-gold font-medium">
               <span>Scroll to Scrub Mask</span>
-              <ChevronDown className="h-3 w-3 animate-bounce text-[#F3DFA2]" />
+              <ChevronDown className="h-3 w-3 animate-bounce text-accent" />
             </div>
-            <div className="mt-1 h-6 w-[1.5px] overflow-hidden bg-white/10">
-              <div className="h-1/2 w-full bg-gradient-to-b from-[#F3DFA2] to-[#B8893C] animate-[moveDown_1.8s_ease-in-out_infinite]" />
+            <div className="mt-1 h-6 w-[1.5px] overflow-hidden bg-ink/10">
+              <div className="h-1/2 w-full bg-gradient-to-b from-accent to-goldmid animate-[moveDown_1.8s_ease-in-out_infinite]" />
             </div>
           </div>
         </div>
@@ -423,24 +423,24 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
           <button
             onClick={() => setShowSettings(!showSettings)}
             aria-label="Toggle cinematic controls"
-            className="flex items-center gap-1.5 rounded-full border border-[#D4AF6A]/30 bg-[#0A0A0A]/70 px-3 py-1.5 text-[11px] text-[#E6E1D8] backdrop-blur-md transition-colors hover:border-[#D4AF6A] hover:bg-[#141414] cursor-pointer"
+            className="flex items-center gap-1.5 rounded-full border border-gold/30 bg-paper/70 px-3 py-1.5 text-[11px] text-ink backdrop-blur-md transition-colors hover:border-gold hover:bg-surface2 cursor-pointer"
           >
-            <Sliders className="h-3.5 w-3.5 text-[#D4AF6A]" />
-            <span className="font-mono text-[10px] text-[#D4AF6A] tabular-nums">
+            <Sliders className="h-3.5 w-3.5 text-gold" />
+            <span className="font-mono text-[10px] text-gold tabular-nums">
               {Math.round(scrollProgress * 100)}%
             </span>
           </button>
 
           {showSettings && (
-            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-[#D4AF6A]/40 bg-[#0C0C0C]/95 p-4 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#F3DFA2]">
-                  <Sparkles className="h-3.5 w-3.5 text-[#D4AF6A]" />
+            <div className="absolute right-0 mt-2 w-72 rounded-xl border border-gold/40 bg-surface/95 p-4 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between border-b border-ink/10 pb-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-accent">
+                  <Sparkles className="h-3.5 w-3.5 text-gold" />
                   <span>Playback Engine</span>
                 </div>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="text-xs text-[#A89D8A] hover:text-white cursor-pointer"
+                  className="text-xs text-ink3 hover:text-inkstrong cursor-pointer"
                 >
                   ✕
                 </button>
@@ -454,19 +454,19 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${
                     scrubMode === 'video-optimized' && !customVideoUrl
-                      ? 'border border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#F3DFA2]'
-                      : 'border border-white/5 bg-white/5 text-[#C4BAA8] hover:bg-white/10'
+                      ? 'border border-gold bg-gold/10 text-accent'
+                      : 'border border-ink/5 bg-ink/5 text-ink2 hover:bg-ink/10'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Film className="h-3.5 w-3.5 text-[#D4AF6A]" />
+                    <Film className="h-3.5 w-3.5 text-gold" />
                     <div className="text-left">
                       <div className="font-medium">Intra-frame Video (GOP 1)</div>
-                      <div className="text-[10px] text-white/50">Optimal 60fps scrubbing</div>
+                      <div className="text-[10px] text-ink/50">Optimal 60fps scrubbing</div>
                     </div>
                   </div>
                   {scrubMode === 'video-optimized' && !customVideoUrl && (
-                    <Check className="h-3.5 w-3.5 text-[#D4AF6A]" />
+                    <Check className="h-3.5 w-3.5 text-gold" />
                   )}
                 </button>
 
@@ -477,19 +477,19 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${
                     scrubMode === 'video-original' && !customVideoUrl
-                      ? 'border border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#F3DFA2]'
-                      : 'border border-white/5 bg-white/5 text-[#C4BAA8] hover:bg-white/10'
+                      ? 'border border-gold bg-gold/10 text-accent'
+                      : 'border border-ink/5 bg-ink/5 text-ink2 hover:bg-ink/10'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Film className="h-3.5 w-3.5 text-[#A89D8A]" />
+                    <Film className="h-3.5 w-3.5 text-ink3" />
                     <div className="text-left">
                       <div className="font-medium">Original Upload File</div>
-                      <div className="text-[10px] text-white/50">Uploaded MP4</div>
+                      <div className="text-[10px] text-ink/50">Uploaded MP4</div>
                     </div>
                   </div>
                   {scrubMode === 'video-original' && !customVideoUrl && (
-                    <Check className="h-3.5 w-3.5 text-[#D4AF6A]" />
+                    <Check className="h-3.5 w-3.5 text-gold" />
                   )}
                 </button>
 
@@ -500,28 +500,28 @@ export const HeroScrollScrubber: React.FC<HeroScrollScrubberProps> = ({
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${
                     scrubMode === 'canvas-frames'
-                      ? 'border border-[#D4AF6A] bg-[#D4AF6A]/10 text-[#F3DFA2]'
-                      : 'border border-white/5 bg-white/5 text-[#C4BAA8] hover:bg-white/10'
+                      ? 'border border-gold bg-gold/10 text-accent'
+                      : 'border border-ink/5 bg-ink/5 text-ink2 hover:bg-ink/10'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Layers className="h-3.5 w-3.5 text-[#D4AF6A]" />
+                    <Layers className="h-3.5 w-3.5 text-gold" />
                     <div className="text-left">
                       <div className="font-medium">Canvas Frame Scrubber</div>
-                      <div className="text-[10px] text-white/50">
+                      <div className="text-[10px] text-ink/50">
                         {framesLoadedCount}/{TOTAL_CANVAS_FRAMES} frames
                       </div>
                     </div>
                   </div>
-                  {scrubMode === 'canvas-frames' && <Check className="h-3.5 w-3.5 text-[#D4AF6A]" />}
+                  {scrubMode === 'canvas-frames' && <Check className="h-3.5 w-3.5 text-gold" />}
                 </button>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-white/10">
-                <label className="text-[10px] uppercase tracking-wider text-[#A89D8A] block mb-1.5">
+              <div className="mt-3 pt-2 border-t border-ink/10">
+                <label className="text-[10px] uppercase tracking-wider text-ink3 block mb-1.5">
                   Test With Custom MP4
                 </label>
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-[#D4AF6A]/40 bg-[#161616] py-2 text-xs text-[#D4AF6A] hover:border-[#D4AF6A] hover:bg-[#1a1a1a]">
+                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-gold/40 bg-surface2 py-2 text-xs text-gold hover:border-gold hover:bg-surface2">
                   <Upload className="h-3.5 w-3.5" />
                   <span>Choose MP4 file</span>
                   <input

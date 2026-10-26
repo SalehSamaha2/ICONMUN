@@ -22,11 +22,11 @@ interface Committee {
 }
 
 const ICONS: Record<IconKey, React.ReactNode> = {
-  shield: <Shield className="h-7 w-7 text-[#D4AF6A]" />,
-  eye: <Eye className="h-7 w-7 text-[#D4AF6A]" />,
-  lock: <Lock className="h-7 w-7 text-[#D4AF6A]" />,
-  activity: <Activity className="h-7 w-7 text-[#D4AF6A]" />,
-  landmark: <Landmark className="h-7 w-7 text-[#D4AF6A]" />,
+  shield: <Shield className="h-7 w-7 text-gold" />,
+  eye: <Eye className="h-7 w-7 text-gold" />,
+  lock: <Lock className="h-7 w-7 text-gold" />,
+  activity: <Activity className="h-7 w-7 text-gold" />,
+  landmark: <Landmark className="h-7 w-7 text-gold" />,
 };
 
 interface CommitteesSectionProps {
@@ -133,7 +133,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
     <div
       ref={containerRef}
       id="committees"
-      className="relative w-full bg-[#050505] md:h-[150vh]"
+      className="relative w-full bg-paper md:h-[150vh]"
     >
       {/* Pinned Viewport Container (Desktop ~150vh, Mobile natural flow) */}
       <div
@@ -142,15 +142,15 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
       >
         {/* Section Header */}
         <div className="relative z-10 text-center max-w-2xl mx-auto mb-6">
-          <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
+          <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-gold mb-2">
             <span>Diplomatic Chambers</span>
-            <span aria-hidden="true" className="text-[#8C6221]">·</span>
+            <span aria-hidden="true" className="text-golddeep">·</span>
             <span>ICON MUN 2027</span>
           </div>
           <h2 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-[0.18em] text-gold-gradient text-balance">
             Councils (TBA)
           </h2>
-          <p className="mt-2 text-xs uppercase tracking-wider text-[#A89D8A] font-light">
+          <p className="mt-2 text-xs uppercase tracking-wider text-ink3 font-light">
             All council rosters, topics, and background guides are currently To Be Announced (TBA).
           </p>
         </div>
@@ -166,7 +166,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 key={committee.id}
                 ref={(el) => { cardRefs.current[idx] = el; }}
                 onClick={() => setSelectedCommittee(committee)}
-                className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 w-full md:w-[400px] flex-shrink-0 flex flex-col justify-between border-[#D4AF6A]/30 bg-[#0C0C0C] will-change-transform"
+                className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 w-full md:w-[400px] flex-shrink-0 flex flex-col justify-between border-gold/30 bg-surface will-change-transform"
                 style={{
                   transform: idx === 0 ? 'scale(1.04)' : 'scale(0.96)',
                   opacity: idx === 0 ? 1 : 0.7,
@@ -176,43 +176,43 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 <div>
                   <div className="flex items-center justify-between gap-4 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#D4AF6A]/40 bg-[#141414] shadow-lg group-hover:border-[#F3DFA2] transition-colors">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gold/40 bg-surface2 shadow-lg group-hover:border-accent transition-colors">
                         {committee.icon}
                       </div>
                       <div>
-                        <span className="font-cinzel text-xl font-bold tracking-widest text-[#F3DFA2]">
+                        <span className="font-cinzel text-xl font-bold tracking-widest text-accent">
                           {committee.code}
                         </span>
-                        <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
+                        <div className="text-[10px] uppercase tracking-wider text-ink3">
                           {committee.seats}
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] uppercase font-mono tracking-wider text-[#D4AF6A] border border-[#D4AF6A]/20 bg-[#D4AF6A]/10 px-2 py-0.5 rounded">
+                    <span className="text-[10px] uppercase font-mono tracking-wider text-gold border border-gold/20 bg-gold/10 px-2 py-0.5 rounded">
                       TBA
                     </span>
                   </div>
 
-                  <h3 className="font-cinzel text-base font-semibold text-white group-hover:text-[#F3DFA2] transition-colors mb-2.5">
+                  <h3 className="font-cinzel text-base font-semibold text-inkstrong group-hover:text-accent transition-colors mb-2.5">
                     {committee.name}
                   </h3>
 
-                  <div className="border-t border-white/10 pt-2.5">
-                    <span className="text-[10px] uppercase tracking-wider text-[#D4AF6A] block mb-1">
+                  <div className="border-t border-ink/10 pt-2.5">
+                    <span className="text-[10px] uppercase tracking-wider text-gold block mb-1">
                       Agenda Status
                     </span>
-                    <p className="text-xs text-[#C4BAA8] leading-relaxed font-light line-clamp-3">
+                    <p className="text-xs text-ink2 leading-relaxed font-light line-clamp-3">
                       {committee.topic}
                     </p>
                   </div>
                 </div>
 
                 {/* Bottom CTA */}
-                <div className="mt-5 border-t border-white/10 pt-3 flex items-center justify-between">
-                  <span className="text-xs text-[#D4AF6A] font-medium group-hover:text-[#F3DFA2]">
+                <div className="mt-5 border-t border-ink/10 pt-3 flex items-center justify-between">
+                  <span className="text-xs text-gold font-medium group-hover:text-accent">
                     Inspect Dossier (TBA)
                   </span>
-                  <ArrowRight className="h-4 w-4 text-[#D4AF6A] transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 text-gold transition-transform group-hover:translate-x-1" />
                 </div>
               </div>
             ))}
@@ -221,16 +221,16 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
 
         {/* Bottom Horizontal Progress Indicator (Desktop only) */}
         <div className="relative z-10 hidden md:block max-w-md mx-auto w-full pt-2">
-          <div className="flex justify-between text-[10px] uppercase tracking-widest text-[#A89D8A] mb-1 font-mono">
+          <div className="flex justify-between text-[10px] uppercase tracking-widest text-ink3 mb-1 font-mono">
             <span>Chambers 01 — 05</span>
-            <span ref={activeLabelRef} className="text-[#D4AF6A]">
+            <span ref={activeLabelRef} className="text-gold">
               Council I · Topic TBA
             </span>
           </div>
-          <div className="h-[2px] w-full bg-white/10 rounded-full overflow-hidden">
+          <div className="h-[2px] w-full bg-ink/10 rounded-full overflow-hidden">
             <div
               ref={progressBarRef}
-              className="h-full bg-gradient-to-r from-[#8C6221] via-[#D4AF6A] to-[#FFF3D6] origin-left will-change-transform"
+              className="h-full bg-gradient-to-r from-golddeep via-gold to-inkstrong origin-left will-change-transform"
               style={{ transform: 'scaleX(0.2)' }}
             />
           </div>
@@ -247,11 +247,11 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
               setSelectedCommittee(null);
             }
           }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-overlay backdrop-blur-xl animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="gold-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border-[#D4AF6A]/60 bg-[#0C0C0C] relative shadow-[0_0_80px_rgba(0,0,0,0.98)]"
+            className="gold-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border-gold/60 bg-surface relative shadow-[0_20px_80px_rgba(40,15,15,0.45)]"
           >
             {/* Close Button */}
             <button
@@ -261,14 +261,14 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 e.stopPropagation();
                 setSelectedCommittee(null);
               }}
-              className="absolute top-4 right-4 z-50 h-11 w-11 flex items-center justify-center rounded-full bg-[#181818] border border-[#D4AF6A]/50 text-[#F3DFA2] hover:text-white hover:bg-[#252525] hover:border-[#D4AF6A] transition-all cursor-pointer active:scale-90 shadow-xl"
+              className="absolute top-4 right-4 z-50 h-11 w-11 flex items-center justify-center rounded-full bg-surface2 border border-gold/50 text-accent hover:text-inkstrong hover:bg-surface2 hover:border-gold transition-all cursor-pointer active:scale-90 shadow-xl"
               aria-label="Close dossier modal"
             >
               <X className="h-5 w-5 pointer-events-none" />
             </button>
 
             <div className="flex items-start gap-4 mb-6 pr-10">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#D4AF6A] bg-[#141414] shadow-lg">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gold bg-surface2 shadow-lg">
                 {selectedCommittee.icon}
               </div>
               <div>
@@ -276,48 +276,48 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                   <span className="font-cinzel text-xl sm:text-2xl font-bold text-gold-gradient">
                     {selectedCommittee.code}
                   </span>
-                  <span className="text-xs uppercase tracking-widest text-[#A89D8A]">
+                  <span className="text-xs uppercase tracking-widest text-ink3">
                     · {selectedCommittee.seats}
                   </span>
                 </div>
-                <h3 className="text-sm sm:text-base font-medium text-[#E6E1D8]">
+                <h3 className="text-sm sm:text-base font-medium text-ink">
                   {selectedCommittee.name}
                 </h3>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#D4AF6A]/30 bg-[#141414] p-4 mb-5">
-              <span className="text-[10px] uppercase tracking-wider text-[#D4AF6A] block mb-1">
+            <div className="rounded-xl border border-gold/30 bg-surface2 p-4 mb-5">
+              <span className="text-[10px] uppercase tracking-wider text-gold block mb-1">
                 Agenda Topic
               </span>
-              <p className="font-cinzel text-base sm:text-lg text-[#FFF3D6] font-medium leading-snug">
+              <p className="font-cinzel text-base sm:text-lg text-inkstrong font-medium leading-snug">
                 {selectedCommittee.topic}
               </p>
             </div>
 
-            <div className="space-y-3 text-xs sm:text-sm text-[#C4BAA8] leading-relaxed mb-5 font-light">
+            <div className="space-y-3 text-xs sm:text-sm text-ink2 leading-relaxed mb-5 font-light">
               <p>{selectedCommittee.backgroundGuideOverview}</p>
-              <p className="italic text-[#A89D8A] border-l border-[#D4AF6A]/40 pl-3">
+              <p className="italic text-ink3 border-l border-gold/40 pl-3">
                 {selectedCommittee.charter}
               </p>
             </div>
 
             <div className="mb-5">
-              <h4 className="font-cinzel text-xs uppercase tracking-widest text-[#F3DFA2] mb-2 flex items-center gap-2">
-                <FileText className="h-3.5 w-3.5 text-[#D4AF6A]" />
+              <h4 className="font-cinzel text-xs uppercase tracking-widest text-accent mb-2 flex items-center gap-2">
+                <FileText className="h-3.5 w-3.5 text-gold" />
                 Inquiries & Position Paper Directives
               </h4>
-              <ul className="space-y-1.5 text-xs text-[#A89D8A]">
+              <ul className="space-y-1.5 text-xs text-ink3">
                 {selectedCommittee.focusQuestions.map((q, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-[#D4AF6A] font-mono">0{i + 1}.</span>
+                    <span className="text-gold font-mono">0{i + 1}.</span>
                     <span>{q}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-white/10 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-ink/10 pt-4">
               <button
                 type="button"
                 onClick={(e) => {
@@ -325,7 +325,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                   e.stopPropagation();
                   setSelectedCommittee(null);
                 }}
-                className="min-h-[44px] px-4 py-2.5 text-xs uppercase tracking-wider text-[#A89D8A] hover:text-white cursor-pointer active:scale-95 flex items-center justify-center"
+                className="min-h-[44px] px-4 py-2.5 text-xs uppercase tracking-wider text-ink3 hover:text-inkstrong cursor-pointer active:scale-95 flex items-center justify-center"
               >
                 Close Dossier
               </button>

@@ -1,5 +1,53 @@
 @import "tailwindcss";
 
+/* ICON MUN palette: black and champagne beige. */
+:root,
+[data-theme="dark"] {
+  --paper: #050505;
+  --surface: #0C0C0C;
+  --surface2: #141414;
+  --ink: #E6E1D8;
+  --inkstrong: #FBF6EA;
+  --ink2: #C4BAA8;
+  --ink3: #A89D8A;
+  --ink4: #8E8678;
+  --gold: #E7DBC3;
+  --goldmid: #CDBF9F;
+  --golddeep: #9A8C70;
+  --accent: #F3EAD6;
+  --overlay: rgba(0, 0, 0, 0.95);
+  --shimmer: linear-gradient(90deg, #BBAA85 0%, #E7DBC3 25%, #FFFBF0 50%, #E7DBC3 75%, #BBAA85 100%);
+  --gradient-text: linear-gradient(135deg, #FFFBF0 0%, #F3EAD6 30%, #E7DBC3 60%, #CDBF9F 90%, #9A8C70 100%);
+  --btn-bg: linear-gradient(135deg, rgba(231, 219, 195, 0.20) 0%, rgba(205, 191, 159, 0.10) 100%);
+  --btn-bg-hover: linear-gradient(135deg, rgba(231, 219, 195, 0.33) 0%, rgba(205, 191, 159, 0.18) 100%);
+  --btn-text: #FFFBF0;
+  --btn-border: #E7DBC3;
+  --btn-glow: rgba(231, 219, 195, 0.30);
+  --ghost-bg: rgba(15, 15, 15, 0.85);
+  --card-bg: rgba(12, 12, 12, 0.7);
+  --card-border: rgba(231, 219, 195, 0.2);
+  --card-border-hover: rgba(231, 219, 195, 0.5);
+  --card-shadow-hover: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 25px -5px rgba(231, 219, 195, 0.14);
+  --scroll-thumb: rgba(231, 219, 195, 0.3);
+  color: var(--ink);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-ink: var(--ink);
+  --color-inkstrong: var(--inkstrong);
+  --color-ink2: var(--ink2);
+  --color-ink3: var(--ink3);
+  --color-ink4: var(--ink4);
+  --color-gold: var(--gold);
+  --color-goldmid: var(--goldmid);
+  --color-golddeep: var(--golddeep);
+  --color-accent: var(--accent);
+  --color-overlay: var(--overlay);
+}
+
 @layer base {
   :root {
     --sat: env(safe-area-inset-top, 0px);
@@ -9,8 +57,8 @@
   }
 
   html, body {
-    background-color: #050505;
-    color: #E6E1D8;
+    background-color: var(--paper);
+    color: var(--ink);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
     max-width: 100vw;
@@ -20,6 +68,11 @@
   /* Minimum body text 16px to prevent mobile iOS auto-zoom and maintain readability */
   p, input, select, textarea, button {
     font-size: clamp(1rem, 1.05vw, 1.125rem);
+  }
+
+  ::placeholder {
+    color: var(--ink4);
+    opacity: 0.75;
   }
 }
 
@@ -72,20 +125,13 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Metallic gold gradients */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #FFF3D6 0%, #F3DFA2 30%, #D4AF6A 60%, #B8893C 90%, #8C6221 100%);
+  background: var(--gradient-text);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gold-shimmer {
-  background: linear-gradient(
-    90deg,
-    #B8893C 0%,
-    #D4AF6A 25%,
-    #FFF8E1 50%,
-    #D4AF6A 75%,
-    #B8893C 100%
-  );
+  background: var(--shimmer);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -105,31 +151,32 @@ html.lenis, html.lenis body { height: auto; }
 .gold-btn {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(212, 175, 106, 0.45);
-  background: rgba(15, 15, 15, 0.85);
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  background: var(--ghost-bg);
   backdrop-filter: blur(8px);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gold-btn:hover {
-  border-color: rgba(243, 223, 162, 0.9);
-  box-shadow: 0 0 25px rgba(212, 175, 106, 0.22), inset 0 0 12px rgba(212, 175, 106, 0.12);
+  border-color: var(--gold);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--gold) 25%, transparent);
 }
 
 .gold-btn-primary {
   position: relative;
   overflow: hidden;
-  border: 1px solid #D4AF6A;
-  background: linear-gradient(135deg, rgba(212, 175, 106, 0.22) 0%, rgba(184, 137, 60, 0.12) 100%);
-  color: #FFF6D6;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gold-btn-primary:hover {
-  border-color: #F3DFA2;
-  background: linear-gradient(135deg, rgba(212, 175, 106, 0.35) 0%, rgba(184, 137, 60, 0.2) 100%);
-  box-shadow: 0 0 30px rgba(212, 175, 106, 0.35);
+  border-color: var(--btn-border);
+  background: var(--btn-bg-hover);
+  box-shadow: 0 0 30px var(--btn-glow);
   transform: translateY(-1px);
 }
 
@@ -144,7 +191,7 @@ html.lenis, html.lenis body { height: auto; }
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 248, 225, 0.35) 50%,
+    rgba(255, 251, 240, 0.35) 50%,
     transparent 100%
   );
   transform: skewX(-20deg);
@@ -170,15 +217,15 @@ html.lenis, html.lenis body { height: auto; }
 
 /* Gold card border & glow */
 .gold-card {
-  border: 1px solid rgba(212, 175, 106, 0.2);
-  background: rgba(12, 12, 12, 0.7);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
   backdrop-filter: blur(12px);
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gold-card:hover {
-  border-color: rgba(212, 175, 106, 0.5);
-  box-shadow: 0 10px 30px -10px rgba(90, 15, 30, 0.25), 0 0 25px -5px rgba(212, 175, 106, 0.15);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--card-shadow-hover);
 }
 
 /* Scrollbar */
@@ -186,14 +233,14 @@ html.lenis, html.lenis body { height: auto; }
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: var(--paper);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 106, 0.3);
+  background: var(--scroll-thumb);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(212, 175, 106, 0.6);
+  background: rgba(231, 219, 195, 0.6);
 }
 
 /* Admin panel animations */

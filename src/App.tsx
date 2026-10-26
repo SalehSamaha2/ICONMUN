@@ -121,7 +121,7 @@ export default function App() {
 
   return (
     <SiteDataProvider>
-    <div className="relative min-h-screen bg-[#050505] text-[#E6E1D8] selection:bg-[#D4AF6A]/20 selection:text-[#F3DFA2] overflow-x-hidden">
+    <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
       {/* 1. Cinematic Intro (plays once, curtain splits on hero readiness) */}
       <CinematicIntro
         isHeroReady={isVideoReady}

@@ -62,26 +62,26 @@ export const AboutSection: React.FC = () => {
     <section
       ref={sectionRef}
       id="about"
-      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-[#050505] text-[#E6E1D8] overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-paper text-ink overflow-hidden"
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
         <div ref={headingRef} className="text-center max-w-2xl mx-auto mb-10 md:mb-12 will-change-transform">
-          <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-[#D4AF6A] mb-2">
+          <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-gold mb-2">
             <span>Diplomatic Mandate</span>
-            <span aria-hidden="true" className="text-[#8C6221]">·</span>
+            <span aria-hidden="true" className="text-golddeep">·</span>
             <span>ICON MUN 2027</span>
           </div>
           <h2 className="font-cinzel text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.16em] sm:tracking-[0.18em] text-gold-gradient text-balance">
             Behind The Masquerade
           </h2>
-          <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-[#D4AF6A] to-transparent" />
+          <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-gold to-transparent" />
         </div>
 
         {/* Gold Bordered Card with SVG Stroke Draw */}
         <div
           ref={cardRef}
-          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-[#0A0A0A]/90 backdrop-blur-sm shadow-2xl will-change-transform"
+          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-paper/90 backdrop-blur-sm shadow-2xl will-change-transform"
         >
           {/* SVG Frame Drawing on Scroll */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-2xl" fill="none">
@@ -92,7 +92,7 @@ export const AboutSection: React.FC = () => {
               width="calc(100% - 4px)"
               height="calc(100% - 4px)"
               rx="16"
-              stroke="#D4AF6A"
+              stroke="#E7DBC3"
               strokeWidth="1.5"
               strokeDasharray="2800"
               strokeDashoffset="2800"
@@ -103,59 +103,59 @@ export const AboutSection: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Logo Emblem Thumbnail */}
             <div className="lg:col-span-4 flex flex-col items-center text-center">
-              <div className="relative h-44 w-44 rounded-2xl overflow-hidden border border-[#D4AF6A]/40 shadow-xl bg-black">
+              <div className="relative h-56 w-56 sm:h-64 sm:w-64 rounded-full bg-[#E7DBC3] flex items-center justify-center shadow-[0_0_50px_rgba(231,219,195,0.14)]">
                 <img
-                  src="/assets/logo.png"
-                  alt="ICON MUN Crest"
-                  className="h-full w-full object-cover scale-110"
+                  src="/brand/logo-cutout.webp"
+                  alt="ICON MUN emblem"
+                  className="h-[84%] w-[84%] object-contain"
                   loading="lazy"
                 />
               </div>
-              <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.25em] text-[#D4AF6A]">
+              <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.25em] text-gold">
                 ICON MUN 2027
               </p>
             </div>
 
             {/* Narrative Prose */}
             <div className="lg:col-span-8 space-y-4">
-              <p className="text-sm sm:text-base leading-relaxed text-[#C4BAA8] font-light">
+              <p className="text-sm sm:text-base leading-relaxed text-ink2 font-light">
                 Welcome to ICON MUN 2027. In world diplomacy, every sovereign delegation brings ambition, perspective, and dedication to the floor.
               </p>
-              <p className="text-sm sm:text-base leading-relaxed text-[#C4BAA8] font-light">
+              <p className="text-sm sm:text-base leading-relaxed text-ink2 font-light">
                 Official conference guidelines, council configurations, and procedural announcements are currently being codified by the High Secretariat. All conference information is To Be Announced (TBA).
               </p>
 
               {/* Status and Information Cards: Explicitly TBA */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/10 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-ink/10 text-center">
                 <div className="space-y-1">
-                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-accent font-mono">
                     2027
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
+                  <div className="text-[10px] uppercase tracking-wider text-ink3">
                     Edition
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-accent font-mono">
                     TBA
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
+                  <div className="text-[10px] uppercase tracking-wider text-ink3">
                     Councils
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-accent font-mono">
                     TBA
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
+                  <div className="text-[10px] uppercase tracking-wider text-ink3">
                     Dates
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-[#F3DFA2] font-mono">
+                  <div className="font-cinzel text-2xl sm:text-3xl font-bold text-accent font-mono">
                     TBA
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider text-[#A89D8A]">
+                  <div className="text-[10px] uppercase tracking-wider text-ink3">
                     Venue
                   </div>
                 </div>

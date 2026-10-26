@@ -109,7 +109,7 @@ export const AudioAmbience: React.FC = () => {
       onClick={toggleSound}
       aria-label={isPlaying ? 'Mute diplomatic ambient tone' : 'Play diplomatic ambient tone'}
       title={isPlaying ? 'Mute Ambience' : 'Play Ambience'}
-      className="fixed z-40 flex items-center justify-center gap-2 rounded-full border border-[#D4AF6A]/30 bg-[#0A0A0A]/85 px-4 py-2.5 min-h-[44px] min-w-[44px] text-xs font-medium text-[#F3DFA2] shadow-lg backdrop-blur-md transition-all hover:border-[#D4AF6A] hover:bg-[#121212] hover:shadow-[0_0_15px_rgba(212,175,106,0.3)] active:scale-95 cursor-pointer"
+      className="fixed z-40 flex items-center justify-center gap-2 rounded-full border border-gold/30 bg-paper/85 px-4 py-2.5 min-h-[44px] min-w-[44px] text-xs font-medium text-accent shadow-lg backdrop-blur-md transition-all hover:border-gold hover:bg-surface2 hover:shadow-[0_0_15px_rgba(231,219,195,0.3)] active:scale-95 cursor-pointer"
       style={{
         bottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))',
         right: 'max(1.25rem, env(safe-area-inset-right, 0px))',
@@ -117,13 +117,13 @@ export const AudioAmbience: React.FC = () => {
     >
       {isPlaying ? (
         <>
-          <Volume2 className="h-4 w-4 animate-pulse text-[#D4AF6A]" />
-          <span className="hidden sm:inline text-[11px] uppercase tracking-wider text-[#D4AF6A]">Ambience On</span>
+          <Volume2 className="h-4 w-4 animate-pulse text-gold" />
+          <span className="hidden sm:inline text-[11px] uppercase tracking-wider text-gold">Ambience On</span>
         </>
       ) : (
         <>
-          <VolumeX className="h-4 w-4 text-[#A89D8A]" />
-          <span className="hidden sm:inline text-[11px] uppercase tracking-wider text-[#A89D8A]">Ambience Off</span>
+          <VolumeX className="h-4 w-4 text-ink3" />
+          <span className="hidden sm:inline text-[11px] uppercase tracking-wider text-ink3">Ambience Off</span>
         </>
       )}
     </button>

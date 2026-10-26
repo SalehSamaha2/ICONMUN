@@ -17,7 +17,7 @@ interface Particle {
   pulseSpeed: number;
 }
 
-const GOLD_PALETTE = ['#FFF3D6', '#F3DFA2', '#D4AF6A', '#E8C882', '#B8893C'];
+const GOLD_PALETTE = ['#FBF6EA', '#F3EAD6', '#E7DBC3', '#D9C9A8', '#BBAA85'];
 
 export const GoldDustCanvas: React.FC<GoldDustCanvasProps> = ({ className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -44,13 +44,13 @@ export const GoldDustCanvas: React.FC<GoldDustCanvasProps> = ({ className = '' }
     const particles: Particle[] = [];
 
     for (let i = 0; i < particleCount; i++) {
-      const baseAlpha = Math.random() * 0.45 + 0.2;
+      const baseAlpha = Math.random() * 0.4 + 0.25;
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
         baseVx: (Math.random() - 0.5) * 0.35,
         baseVy: -(Math.random() * 0.4 + 0.15),
-        size: Math.random() * 1.6 + 0.8,
+        size: Math.random() * 1.6 + 0.9,
         alpha: baseAlpha,
         baseAlpha,
         color: GOLD_PALETTE[Math.floor(Math.random() * GOLD_PALETTE.length)],
@@ -133,7 +133,7 @@ export const GoldDustCanvas: React.FC<GoldDustCanvasProps> = ({ className = '' }
         if (p.x < -10) p.x = width + 10;
         if (p.x > width + 10) p.x = -10;
 
-        ctx.globalAlpha = Math.max(0.1, Math.min(p.alpha, 0.9));
+        ctx.globalAlpha = Math.max(0.15, Math.min(p.alpha, 0.9));
         ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);

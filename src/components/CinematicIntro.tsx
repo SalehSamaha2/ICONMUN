@@ -62,19 +62,32 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
   // Play video on user gesture if autoplay was blocked
   const handleUserStart = () => {
     const video = videoRef.current;
-    if (video) {
-      video
-        .play()
-        .then(() => {
-          setAutoplayBlocked(false);
-          setIsPlaying(true);
-        })
-        .catch(() => {
-          handleFinish();
-        });
-    } else {
+    if (!video) {
       handleFinish();
+      return;
     }
+    // Never leave the visitor stuck: if the video can't start within 1.5s, enter the site.
+    let settled = false;
+    const bail = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      handleFinish();
+    }, 1500);
+    video
+      .play()
+      .then(() => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(bail);
+        setAutoplayBlocked(false);
+        setIsPlaying(true);
+      })
+      .catch(() => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(bail);
+        handleFinish();
+      });
   };
 
   useEffect(() => {
@@ -146,13 +159,14 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 pointer-events-auto flex items-center justify-center bg-[#050505] overflow-hidden select-none h-screen-dvh"
+      data-theme="dark"
+      className="fixed inset-0 z-50 pointer-events-auto flex items-center justify-center bg-paper overflow-hidden select-none h-screen-dvh"
     >
       {/* Background radial glow */}
       <div
         className="pointer-events-none absolute h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full opacity-30 will-change-transform"
         style={{
-          background: 'radial-gradient(circle, rgba(212,175,106,0.3) 0%, rgba(90,15,30,0.15) 50%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(231,219,195,0.3) 0%, rgba(60,52,40,0.15) 50%, transparent 70%)',
         }}
       />
 
@@ -176,14 +190,14 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
 
       {/* If Autoplay was blocked on iOS/Android: Show prominent gold "Enter" button */}
       {autoplayBlocked && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm p-6 text-center animate-in fade-in duration-300">
-          <div className="h-16 w-16 mb-4 rounded-full border border-[#D4AF6A] bg-[#141414] flex items-center justify-center shadow-[0_0_25px_rgba(212,175,106,0.35)]">
-            <Play className="h-7 w-7 text-[#F3DFA2] ml-1" />
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-overlay backdrop-blur-sm p-6 text-center animate-in fade-in duration-300">
+          <div className="h-16 w-16 mb-4 rounded-full border border-gold bg-surface2 flex items-center justify-center shadow-[0_0_25px_rgba(231,219,195,0.35)]">
+            <Play className="h-7 w-7 text-accent ml-1" />
           </div>
           <h2 className="font-cinzel text-2xl sm:text-3xl font-bold uppercase tracking-[0.2em] text-gold-shimmer mb-2">
             ICON MUN 2026
           </h2>
-          <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-[#C4BAA8] max-w-xs mb-6 font-light">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-ink2 max-w-xs mb-6 font-light">
             Behind the Masquerade of Global Diplomacy
           </p>
           <button
@@ -199,7 +213,7 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
       <button
         onClick={handleSkip}
         aria-label="Skip Intro"
-        className="absolute z-40 rounded-full border border-[#D4AF6A]/40 bg-[#0A0A0A]/80 px-4 py-2.5 min-h-[44px] min-w-[44px] text-xs uppercase font-mono tracking-widest text-[#F3DFA2] backdrop-blur-md transition-all hover:border-[#D4AF6A] hover:bg-[#141414] active:scale-95 cursor-pointer flex items-center justify-center"
+        className="absolute z-40 rounded-full border border-gold/40 bg-paper/80 px-4 py-2.5 min-h-[44px] min-w-[44px] text-xs uppercase font-mono tracking-widest text-accent backdrop-blur-md transition-all hover:border-gold hover:bg-surface2 active:scale-95 cursor-pointer flex items-center justify-center"
         style={{
           top: 'max(1.25rem, env(safe-area-inset-top, 0px))',
           right: 'max(1.25rem, env(safe-area-inset-right, 0px))',
@@ -210,14 +224,14 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
 
       {/* Thin Gold Loading Progress Line at Bottom (Safe Area Aware) */}
       <div
-        className="absolute left-0 right-0 h-[2.5px] bg-white/5 z-30"
+        className="absolute left-0 right-0 h-[2.5px] bg-ink/5 z-30"
         style={{
           bottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
         }}
       >
         <div
           ref={progressBarRef}
-          className="h-full bg-gradient-to-r from-[#8C6221] via-[#D4AF6A] to-[#FFF3D6] origin-left will-change-transform"
+          className="h-full bg-gradient-to-r from-golddeep via-gold to-inkstrong origin-left will-change-transform"
           style={{ transform: 'scaleX(0.05)' }}
         />
       </div>

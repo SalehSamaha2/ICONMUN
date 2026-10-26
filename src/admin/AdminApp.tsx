@@ -45,7 +45,7 @@ const Backdrop: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 const Brand: React.FC<{ small?: boolean }> = ({ small }) => (
   <div className="flex items-center gap-3">
-    <div className={cx('flex items-center justify-center rounded-lg border border-[#D4AF6A]/50 bg-gradient-to-b from-[#1a1407] to-[#0b0905] font-cinzel font-black text-[#F3DFA2]', small ? 'h-9 w-9 text-sm' : 'h-12 w-12 text-lg')}>IM</div>
+    <span className={cx('flex items-center justify-center rounded-xl bg-[#E7DBC3]', small ? 'h-10 w-10' : 'h-14 w-14')}><img src="/brand/logo-mark.webp" alt="" className={small ? 'h-9 w-9 object-contain' : 'h-12 w-12 object-contain'} /></span>
     <div>
       <div className={cx('font-cinzel font-bold tracking-[0.22em] text-[#FFF3D6]', small ? 'text-sm' : 'text-lg')}>ICON MUN</div>
       <div className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF6A]">Organiser console</div>
