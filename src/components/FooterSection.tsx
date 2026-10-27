@@ -78,7 +78,7 @@ export const FooterSection: React.FC = () => {
     <footer
       data-theme="dark"
       ref={footerRef}
-      className="relative bg-paper text-ink3 border-t border-gold/20 pt-16 pb-[max(2rem,env(safe-area-inset-bottom,0px))] px-4 sm:px-6 lg:px-12 overflow-hidden"
+      className="relative bg-transparent text-ink2 border-t border-gold/25 pt-16 pb-[max(2rem,env(safe-area-inset-bottom,0px))] px-4 sm:px-6 lg:px-12 overflow-hidden"
     >
       <div className="mx-auto max-w-7xl relative z-10">
         {/* Content Columns (Rise up with scroll) */}

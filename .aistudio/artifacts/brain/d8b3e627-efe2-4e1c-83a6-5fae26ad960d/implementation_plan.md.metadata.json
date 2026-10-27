@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan to eliminate page scroll jumping and snapping by removing all invasive ScrollTrigger DOM pinning/pinSpacing, switching Councils to a natural fluid layout, and stabilizing scroll tracking.",
+  "updatedAt":  "2026-10-27T17:28:04.709344192Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

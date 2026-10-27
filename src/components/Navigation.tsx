@@ -61,7 +61,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         data-theme="dark"
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 pt-[env(safe-area-inset-top,0px)] ${
           showBrandLogo || isMobileMenuOpen
-            ? 'bg-paper/95 border-b border-gold/20 backdrop-blur-md shadow-lg'
+            ? 'bg-transparent border-b border-gold/25 shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
             : 'bg-transparent pointer-events-none'
         }`}
       >
