@@ -21,30 +21,24 @@ export const ScheduleSection: React.FC = () => {
     if (!container || !trackWrapper || !line || !dot) return;
 
     const ctx = gsap.context(() => {
-      // 1. Vertical gold line draws downward with smooth scrub
+      // 1. Vertical gold line draws downward smoothly once
       gsap.fromTo(
         line,
         { scaleY: 0 },
         {
           scaleY: 1,
-          ease: 'none',
+          duration: 1.2,
+          ease: 'power2.out',
           transformOrigin: 'top center',
           scrollTrigger: {
             trigger: trackWrapper,
-            start: 'top 70%',
-            end: 'bottom 80%',
-            scrub: 0.8,
-            onUpdate: (self) => {
-              const h = trackWrapper.offsetHeight;
-              const yVal = self.progress * h;
-              dot.style.transform = `translate3d(0, ${yVal}px, 0)`;
-              dot.style.opacity = self.progress > 0.02 && self.progress < 0.98 ? '1' : '0.2';
-            },
+            start: 'top 75%',
+            once: true,
           },
         }
       );
 
-      // 2. Day huge outlined numbers fill with gold
+      // 2. Day huge outlined numbers fill with gold once
       const dayHeadings = container.querySelectorAll('.day-heading-outline');
       dayHeadings.forEach((heading) => {
         gsap.fromTo(
@@ -56,32 +50,32 @@ export const ScheduleSection: React.FC = () => {
           {
             backgroundPosition: '0% 0%',
             opacity: 1,
-            ease: 'none',
+            duration: 0.8,
+            ease: 'power2.out',
             scrollTrigger: {
               trigger: heading,
-              start: 'top 80%',
-              end: 'top 35%',
-              scrub: 0.8,
+              start: 'top 85%',
+              once: true,
             },
           }
         );
       });
 
-      // 3. Event cards slide in smoothly
+      // 3. Event cards slide in smoothly once and stay visible
       const leftCards = container.querySelectorAll('.schedule-card-left');
       leftCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { x: -35, opacity: 0.2 },
+          { x: -25, opacity: 0 },
           {
             x: 0,
             opacity: 1,
+            duration: 0.7,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: card,
               start: 'top 85%',
-              end: 'top 55%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );
@@ -91,16 +85,16 @@ export const ScheduleSection: React.FC = () => {
       rightCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { x: 35, opacity: 0.2 },
+          { x: 25, opacity: 0 },
           {
             x: 0,
             opacity: 1,
+            duration: 0.7,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: card,
               start: 'top 85%',
-              end: 'top 55%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );

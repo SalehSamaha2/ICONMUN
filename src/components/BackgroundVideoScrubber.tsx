@@ -1,16 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GoldDustCanvas } from './GoldDustCanvas';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const FORWARD_SRC = '/assets/masque-forward.mp4';
 const REVERSE_SRC = '/assets/masque-reverse.mp4';
 
 /**
  * Calculates normalized scroll progress [0, 1] across the entire document height.
- * 0.0 = Top of page
+ * 0.0 = Top of page (Hero)
  * 1.0 = Bottom of page (Footer)
  */
 function getDocumentScrollProgress(): number {
@@ -32,10 +28,10 @@ interface BackgroundVideoScrubberProps {
 }
 
 /**
- * Velocity-Driven Dual Video Engine.
- * Plays the forward video natively when scrolling down and the reverse video natively
- * when scrolling up, with playbackRate dynamically matching scroll speed.
- * Delivers native 60fps hardware-accelerated playback with zero seek hitching.
+ * Full-Page Scroll-Stretched Cinematic Dual Video Engine.
+ * - Stretches the video timeline across the full document height (Hero = 0%, Footer = 100%).
+ * - Instant reverse response on the first upward scroll motion.
+ * - Hardware-accelerated rAF convergence that smoothly drives currentTime to match scroll progress.
  */
 export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = ({
   className = '',
@@ -44,109 +40,124 @@ export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = (
   const reverseVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const [activeDirection, setActiveDirection] = useState<'forward' | 'reverse'>('forward');
-  const [isReady, setIsReady] = useState(false);
 
-  // Performance tracking refs (0 React state re-renders during active scrolling)
   const lastScrollYRef = useRef<number>(0);
-  const lastScrollTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(10.027);
-  const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const directionRef = useRef<'forward' | 'reverse'>('forward');
+  const targetProgressRef = useRef<number>(0);
+  const rafIdRef = useRef<number | null>(null);
 
-  // Pause videos smoothly when scrolling rests without forced seeking jumps
-  const handleScrollStop = useCallback(() => {
-    const fwd = forwardVideoRef.current;
-    const rev = reverseVideoRef.current;
-    if (fwd && !fwd.paused) {
-      fwd.pause();
-    }
-    if (rev && !rev.paused) {
-      rev.pause();
-    }
+  // Active rAF loop: smoothly steps video toward target progress and holds position
+  useEffect(() => {
+    const tick = () => {
+      const fwd = forwardVideoRef.current;
+      const rev = reverseVideoRef.current;
+      const duration = durationRef.current;
+      const progress = targetProgressRef.current;
+
+      if (directionRef.current === 'forward' && fwd && fwd.readyState >= 2) {
+        const target = Math.min(Math.max(progress * (duration - 0.04), 0.001), duration - 0.02);
+        const diff = target - fwd.currentTime;
+
+        if (diff > 0.06) {
+          // Play forward to catch up to scroll target
+          const speed = Math.min(Math.max(diff * 2.8, 0.9), 3.0);
+          fwd.playbackRate = speed;
+          if (fwd.paused) {
+            fwd.play().catch(() => {});
+          }
+        } else if (diff < -0.25) {
+          // If ahead of target, gently reposition or pause
+          fwd.currentTime = target;
+          if (!fwd.paused) {
+            fwd.pause();
+          }
+        } else {
+          // At target: hold position cleanly
+          if (!fwd.paused) {
+            fwd.pause();
+          }
+        }
+      } else if (directionRef.current === 'reverse' && rev && rev.readyState >= 2) {
+        const target = Math.min(Math.max((1 - progress) * (duration - 0.04), 0.001), duration - 0.02);
+        const diff = target - rev.currentTime;
+
+        if (diff > 0.06) {
+          // Play reverse video forward to put the mask back on as user scrolls up
+          const speed = Math.min(Math.max(diff * 2.8, 0.9), 3.0);
+          rev.playbackRate = speed;
+          if (rev.paused) {
+            rev.play().catch(() => {});
+          }
+        } else if (diff < -0.25) {
+          rev.currentTime = target;
+          if (!rev.paused) {
+            rev.pause();
+          }
+        } else {
+          // At target: hold position cleanly
+          if (!rev.paused) {
+            rev.pause();
+          }
+        }
+      }
+
+      rafIdRef.current = requestAnimationFrame(tick);
+    };
+
+    rafIdRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
   }, []);
 
-  // Handle active scroll with velocity-driven playback
+  // Handle active scroll: update target progress and switch direction instantly
   const handleScroll = useCallback(() => {
     const fwd = forwardVideoRef.current;
     const rev = reverseVideoRef.current;
-    if (!fwd || !rev) return;
+    const duration = durationRef.current;
 
     const currentY = window.pageYOffset ?? document.documentElement.scrollTop ?? 0;
-    const now = performance.now();
     const deltaY = currentY - lastScrollYRef.current;
-    const deltaTime = Math.max(now - lastScrollTimeRef.current, 10);
-
     lastScrollYRef.current = currentY;
-    lastScrollTimeRef.current = now;
 
-    // Reset idle pause timer
-    if (stopTimeoutRef.current) {
-      clearTimeout(stopTimeoutRef.current);
-    }
-    stopTimeoutRef.current = setTimeout(handleScrollStop, 90);
-
-    if (Math.abs(deltaY) < 1) return;
+    // Filter sub-pixel jitter
+    if (Math.abs(deltaY) < 0.8) return;
 
     const progress = getDocumentScrollProgress();
-    const duration = durationRef.current;
-    const targetFwd = Math.min(Math.max(progress * (duration - 0.04), 0.001), duration - 0.02);
-    const targetRev = Math.min(Math.max((1 - progress) * (duration - 0.04), 0.001), duration - 0.02);
-
-    // Calculate normalized velocity (pixels per ms)
-    const velocity = Math.abs(deltaY) / deltaTime;
-    // Map velocity to dynamic playback rate between 1.0x and 3.0x
-    const speed = Math.min(Math.max(velocity * 1.8, 1.0), 3.0);
+    targetProgressRef.current = progress;
 
     if (deltaY > 0) {
-      // SCROLLING DOWN -> PLAY FORWARD VIDEO
+      // SCROLLING DOWN -> FORWARD VIDEO
       if (directionRef.current !== 'forward') {
         directionRef.current = 'forward';
         setActiveDirection('forward');
-        // Align forward video currentTime from reverse position
-        try {
-          fwd.currentTime = targetFwd;
-        } catch {
-          /* ignore */
+        if (rev && !rev.paused) rev.pause();
+        if (fwd && fwd.readyState >= 2) {
+          const target = Math.min(Math.max(progress * (duration - 0.04), 0.001), duration - 0.02);
+          if (Math.abs(fwd.currentTime - target) > 0.4) {
+            fwd.currentTime = target;
+          }
         }
       }
-
-      rev.pause();
-      fwd.playbackRate = speed;
-
-      // Soft anchor check: only nudge if drift exceeds 0.5s to avoid stutter
-      if (Math.abs(fwd.currentTime - targetFwd) > 0.55) {
-        fwd.currentTime = targetFwd;
-      }
-
-      if (fwd.paused) {
-        fwd.play().catch(() => {});
-      }
     } else {
-      // SCROLLING UP -> PLAY REVERSE VIDEO
+      // SCROLLING UP -> REVERSE VIDEO (INSTANT SWITCH)
       if (directionRef.current !== 'reverse') {
         directionRef.current = 'reverse';
         setActiveDirection('reverse');
-        // Align reverse video currentTime from forward position
-        try {
-          rev.currentTime = targetRev;
-        } catch {
-          /* ignore */
+        if (fwd && !fwd.paused) fwd.pause();
+        if (rev && rev.readyState >= 2) {
+          const target = Math.min(Math.max((1 - progress) * (duration - 0.04), 0.001), duration - 0.02);
+          if (Math.abs(rev.currentTime - target) > 0.4) {
+            rev.currentTime = target;
+          }
         }
       }
-
-      fwd.pause();
-      rev.playbackRate = speed;
-
-      // Soft anchor check: only nudge if drift exceeds 0.5s to avoid stutter
-      if (Math.abs(rev.currentTime - targetRev) > 0.55) {
-        rev.currentTime = targetRev;
-      }
-
-      if (rev.paused) {
-        rev.play().catch(() => {});
-      }
     }
-  }, [handleScrollStop]);
+  }, []);
 
   // Initial setup and metadata handler
   useEffect(() => {
@@ -158,10 +169,10 @@ export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = (
       if (fwd.duration && !isNaN(fwd.duration)) {
         durationRef.current = fwd.duration;
       }
-      setIsReady(true);
       fwd.pause();
       rev.pause();
       const p = getDocumentScrollProgress();
+      targetProgressRef.current = p;
       fwd.currentTime = p * durationRef.current;
       rev.currentTime = (1 - p) * durationRef.current;
     };
@@ -172,14 +183,13 @@ export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = (
     }
 
     lastScrollYRef.current = window.pageYOffset ?? 0;
-    lastScrollTimeRef.current = performance.now();
+    targetProgressRef.current = getDocumentScrollProgress();
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       fwd.removeEventListener('loadedmetadata', onMeta);
-      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
     };
   }, [handleScroll]);
 

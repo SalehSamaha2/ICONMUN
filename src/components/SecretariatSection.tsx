@@ -15,7 +15,7 @@ export const SecretariatSection: React.FC = () => {
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      // 1. Portrait SVG rings draw themselves (smooth scrub)
+      // 1. Portrait SVG rings draw themselves once
       const rings = container.querySelectorAll('.portrait-stroke-ring');
       rings.forEach((ring) => {
         gsap.fromTo(
@@ -23,52 +23,52 @@ export const SecretariatSection: React.FC = () => {
           { strokeDashoffset: 600 },
           {
             strokeDashoffset: 0,
-            ease: 'none',
+            duration: 1.2,
+            ease: 'power2.out',
             scrollTrigger: {
               trigger: ring,
               start: 'top 85%',
-              end: 'top 50%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );
       });
 
-      // 2. Circular portraits scale up smoothly
+      // 2. Circular portraits scale up smoothly once
       const portraits = container.querySelectorAll('.secretariat-portrait-container');
       portraits.forEach((el) => {
         gsap.fromTo(
           el,
-          { scale: 0.88, opacity: 0.4 },
+          { scale: 0.9, opacity: 0 },
           {
             scale: 1,
             opacity: 1,
+            duration: 0.8,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: el,
               start: 'top 85%',
-              end: 'top 50%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );
       });
 
-      // 3. Member card subtle rise
+      // 3. Member card subtle rise once
       const cards = container.querySelectorAll('.secretariat-col');
       cards.forEach((col) => {
         gsap.fromTo(
           col,
-          { opacity: 0.3, y: 30 },
+          { opacity: 0, y: 25 },
           {
             opacity: 1,
             y: 0,
+            duration: 0.8,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: col,
               start: 'top 88%',
-              end: 'top 60%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );

@@ -16,13 +16,12 @@ export const AboutSection: React.FC = () => {
     if (!section || !card) return;
 
     const ctx = gsap.context(() => {
-      // Master Timeline with smooth scrub: 0.8
+      // Entrance Timeline that plays once smoothly and locks in place
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          start: 'top 75%',
-          end: 'bottom 85%',
-          scrub: 0.8,
+          start: 'top 78%',
+          once: true,
         },
       });
 
@@ -30,18 +29,17 @@ export const AboutSection: React.FC = () => {
       if (headingRef.current) {
         tl.fromTo(
           headingRef.current,
-          { opacity: 0, y: 35 },
-          { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
-          0
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
         );
       }
 
       // 2. Card container unmasks with subtle scale
       tl.fromTo(
         card,
-        { opacity: 0.25, scale: 0.96 },
-        { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' },
-        0.1
+        { opacity: 0, y: 25, scale: 0.98 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'power2.out' },
+        '-=0.5'
       );
 
       // 3. SVG Gold border draws itself
@@ -49,8 +47,8 @@ export const AboutSection: React.FC = () => {
         tl.fromTo(
           borderPathRef.current,
           { strokeDashoffset: 2800 },
-          { strokeDashoffset: 0, duration: 1, ease: 'none' },
-          0.1
+          { strokeDashoffset: 0, duration: 1.4, ease: 'power2.out' },
+          '-=0.7'
         );
       }
     }, section);
