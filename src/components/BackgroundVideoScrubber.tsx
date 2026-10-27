@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { GoldDustCanvas } from './GoldDustCanvas';
 
-const FORWARD_SRC = '/assets/masque-forward.mp4';
-const REVERSE_SRC = '/assets/masque-reverse.mp4';
+const FORWARD_SRC = 'https://res.cloudinary.com/edtur3gp/video/upload/v1793132424/Edit_video_carpet_and_walking_700dd39e.mp4';
+const REVERSE_SRC = FORWARD_SRC;
 
 /**
  * Calculates normalized scroll progress [0, 1] across the entire document height.
