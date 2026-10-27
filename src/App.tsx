@@ -11,7 +11,6 @@ import { SecretariatSection } from './components/SecretariatSection';
 import { RegistrationSection } from './components/RegistrationSection';
 import { FooterSection } from './components/FooterSection';
 import { CustomCursor } from './components/CustomCursor';
-import { AudioAmbience } from './components/AudioAmbience';
 import { GlobalScrollEffects } from './components/GlobalScrollEffects';
 import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
@@ -122,9 +121,6 @@ export default function App() {
 
       {/* Custom Gold Ring Cursor */}
       <CustomCursor />
-
-      {/* Sound Toggle (Off by default as specified) */}
-      <AudioAmbience />
 
       {/* Top Navigation (Brand logo hidden until hero title scrolls away) */}
       <Navigation
