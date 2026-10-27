@@ -352,3 +352,154 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--icon-gold-brigh
     transition-duration: .01ms !important;
   }
 }
+
+
+/* ICON MUN full-page art direction: editorial panels, dramatic spacing, active details */
+.icon-hero {
+  min-height: max(900px, 100svh);
+  padding-top: clamp(7rem, 13vh, 10rem);
+  padding-bottom: clamp(3rem, 8vh, 6rem);
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(84,27,43,.22), transparent 45%),
+    linear-gradient(180deg, rgba(5,5,5,.08), rgba(5,5,5,.12) 55%, #050505 100%);
+}
+.icon-hero .hero-title {
+  font-size: clamp(3.1rem, 11vw, 9rem);
+  line-height: .92;
+  letter-spacing: -.035em !important;
+  text-wrap: balance;
+}
+.icon-hero .hero-eyebrow {
+  border-radius: 2px;
+  background: rgba(5,5,5,.34);
+  border-color: rgba(216,189,131,.36);
+}
+.icon-hero .hero-title + p {
+  margin-top: 1.5rem;
+  letter-spacing: .38em;
+  font-size: clamp(.65rem, 1.2vw, .82rem);
+}
+.icon-hero .grid.grid-cols-2 > div {
+  border-radius: 2px;
+  background: linear-gradient(145deg, rgba(231,219,195,.07), rgba(8,8,8,.35));
+  border-color: rgba(216,189,131,.22);
+  min-height: 100px;
+}
+.icon-hero .gold-btn-primary { border-radius: 2px; }
+
+/* Sections are treated as chapters in one continuous editorial story. */
+main > section[id], main > div[id], .constellation-section {
+  scroll-margin-top: 5rem;
+}
+main > section[id] {
+  padding-top: clamp(5rem, 10vw, 9rem);
+  padding-bottom: clamp(5rem, 10vw, 9rem);
+}
+main > section[id]:nth-of-type(even) {
+  background: linear-gradient(180deg, rgba(18,15,13,.74), rgba(7,7,7,.84));
+}
+main > section[id]:nth-of-type(odd) {
+  background: linear-gradient(180deg, rgba(5,5,5,.84), rgba(12,9,9,.68));
+}
+main > section[id] h2 {
+  font-size: clamp(2rem, 5.2vw, 4.7rem);
+  letter-spacing: -.025em;
+  line-height: 1.03;
+}
+main > section[id] p {
+  text-wrap: pretty;
+}
+main > section[id] .gold-card {
+  border-radius: 3px;
+}
+main > section[id] .rounded-2xl {
+  border-radius: 3px;
+}
+main > section[id] .rounded-xl {
+  border-radius: 2px;
+}
+
+/* Signature interactive feature: a diplomatic constellation, not another globe. */
+.constellation-section {
+  background:
+    radial-gradient(ellipse at 75% 45%, rgba(91,31,47,.19), transparent 40%),
+    linear-gradient(180deg, #080707, #0c0909 50%, #070707);
+  border-top: 1px solid rgba(216,189,131,.18);
+  border-bottom: 1px solid rgba(216,189,131,.18);
+}
+.constellation-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(216,189,131,.78);
+  text-shadow: none;
+}
+.constellation-map {
+  isolation: isolate;
+  filter: drop-shadow(0 25px 65px rgba(0,0,0,.3));
+}
+.constellation-orbit {
+  position: absolute;
+  border: 1px solid rgba(216,189,131,.13);
+  border-radius: 50%;
+  inset: 10%;
+  pointer-events: none;
+}
+.orbit-one { transform: rotate(-22deg) scaleY(.72); border-style: dashed; animation: constellation-turn 42s linear infinite; }
+.orbit-two { inset: 19%; transform: rotate(28deg) scaleY(.78); border-color: rgba(216,189,131,.22); }
+.orbit-three { inset: 28%; border-style: dotted; border-color: rgba(216,189,131,.18); }
+.constellation-core {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%,-50%);
+  width: 27%; aspect-ratio: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 1px solid rgba(216,189,131,.55);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(65,23,36,.72), rgba(5,5,5,.94) 70%);
+  box-shadow: 0 0 0 8px rgba(216,189,131,.025), 0 0 60px rgba(116,54,60,.18), inset 0 0 30px rgba(216,189,131,.06);
+}
+.constellation-core::before {
+  content: ""; position: absolute; inset: -7%; border: 1px solid rgba(216,189,131,.13); border-radius: 50%;
+}
+.constellation-core img { width: 47%; height: 47%; object-fit: cover; border-radius: 50%; mix-blend-mode: screen; }
+.constellation-core span { margin-top: 3%; font-family: Cinzel,serif; font-size: clamp(7px,1.1vw,12px); line-height: 1.1; letter-spacing: .25em; text-align: center; color: #e9d7ad; }
+.constellation-node {
+  position: absolute; z-index: 2;
+  transform: translate(-50%,-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: transparent; border: 0; color: #bcb09a; cursor: pointer;
+  min-width: 88px; padding: 0;
+  transition: color .25s ease, transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.constellation-node:hover, .constellation-node.is-active { color: #f3e5c3; transform: translate(-50%,-50%) scale(1.06); }
+.constellation-node-icon {
+  display: grid; place-items: center; width: 43px; height: 43px; border-radius: 50%;
+  border: 1px solid rgba(216,189,131,.38); background: rgba(8,7,7,.92);
+  box-shadow: 0 0 0 5px rgba(216,189,131,.025);
+  transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.constellation-node.is-active .constellation-node-icon {
+  background: #d8bd83; color: #17120a; border-color: #f3e5c3;
+  box-shadow: 0 0 0 7px rgba(216,189,131,.08), 0 0 30px rgba(216,189,131,.28);
+}
+.constellation-node-label { font-size: 8px; line-height: 1.2; letter-spacing: .16em; white-space: nowrap; }
+.constellation-coordinate { position: absolute; color: rgba(216,189,131,.52); font: 8px/1.7 ui-monospace,monospace; letter-spacing: .12em; }
+.coordinate-a { left: 1%; bottom: 10%; }
+.coordinate-b { right: 0; top: 10%; text-align: right; }
+@keyframes constellation-turn { to { transform: rotate(338deg) scaleY(.72); } }
+
+/* Reduced motion and touch-first tuning */
+@media (max-width: 767px) {
+  .icon-hero { min-height: 100svh; padding-top: 7rem; padding-bottom: 3rem; }
+  .icon-hero .hero-title { font-size: clamp(2.7rem, 13vw, 5rem); }
+  .icon-hero .hero-title + p { letter-spacing: .2em; }
+  .constellation-section { padding-top: 5rem; padding-bottom: 5rem; }
+  .constellation-map { width: min(100%, 480px); }
+  .constellation-node { min-width: 58px; gap: 5px; }
+  .constellation-node-icon { width: 34px; height: 34px; }
+  .constellation-node-icon svg { width: 14px; height: 14px; }
+  .constellation-node-label { font-size: 6px; letter-spacing: .08em; }
+  .constellation-coordinate { font-size: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-one { animation: none; }
+}
