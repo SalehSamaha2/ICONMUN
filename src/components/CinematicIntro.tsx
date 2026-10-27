@@ -25,6 +25,18 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Allow the footer's Replay Intro control to restart the cinematic reveal.
+  useEffect(() => {
+    const replayIntro = () => {
+      sessionStorage.removeItem('icon_mun_intro_seen');
+      setAutoplayBlocked(false);
+      setIsPlaying(false);
+      setIsDone(false);
+    };
+    window.addEventListener('icon-mun-replay-intro', replayIntro);
+    return () => window.removeEventListener('icon-mun-replay-intro', replayIntro);
+  }, []);
+
   // Clean transition out of intro
   const handleFinish = useCallback(() => {
     if (containerRef.current) {
