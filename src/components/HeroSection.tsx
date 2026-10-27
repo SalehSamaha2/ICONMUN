@@ -6,14 +6,14 @@ import { ChevronDown, Sparkles, ArrowRight, ShieldCheck, Calendar, Award } from 
 gsap.registerPlugin(ScrollTrigger);
 
 interface HeroSectionProps {
-  introComplete: boolean;
+  introComplete?: boolean;
   onHeroReady?: () => void;
   onHeroProgressChange?: (progress: number) => void;
   onOpenRegister?: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
-  introComplete,
+  introComplete = true,
   onHeroReady,
   onHeroProgressChange,
   onOpenRegister,

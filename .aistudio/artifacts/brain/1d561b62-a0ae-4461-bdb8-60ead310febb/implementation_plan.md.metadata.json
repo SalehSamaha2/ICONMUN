@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan to stretch the background video animation across the full page height from Hero to Footer, and make reverse playback trigger immediately upon upward scrolling.",
-  "updatedAt":  "2026-10-27T18:17:18.324393525Z",
+  "summary":  "Implementation plan to eliminate video startup latency and stutter by removing the rapid play/pause fighting loop, debouncing media state transitions, and smoothing timeline playback across the full site height.",
+  "updatedAt":  "2026-10-27T20:45:29.001887831Z",
   "requestFeedback":  true,
   "userFacing":  true
 }
