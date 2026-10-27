@@ -9,7 +9,7 @@ interface GlobalScrollEffectsProps {
 }
 
 const SECTIONS = [
-  { id: 'hero-scroll-container', label: '01. The Masquerade', short: 'Hero' },
+  { id: 'hero-scroll-container', label: '01. ICON MUN', short: 'Hero' },
   { id: 'about', label: '02. About (TBA)', short: 'About' },
   { id: 'committees', label: '03. Councils (TBA)', short: 'Councils' },
   { id: 'schedule', label: '04. Timeline (TBA)', short: 'Timeline' },

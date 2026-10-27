@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { Navigation } from './components/Navigation';
-import { HeroCanvasScrubber } from './components/HeroCanvasScrubber';
+import { HeroSection } from './components/HeroSection';
 import { AboutSection } from './components/AboutSection';
 import { CommitteesSection } from './components/CommitteesSection';
 import { ScheduleSection } from './components/ScheduleSection';
@@ -127,11 +127,12 @@ export default function App() {
         showBrandLogo={showNavLogo}
       />
 
-      {/* 7. Primary Hero Section with Bidirectional Video Scrubbing */}
+      {/* Primary Hero Section */}
       <main>
-        <HeroCanvasScrubber
+        <HeroSection
           onHeroReady={handleVideoReady}
           onHeroProgressChange={handleHeroScrollProgress}
+          onOpenRegister={handleOpenRegister}
         />
 
         {/* Pinned & scroll-scrubbed sections */}
