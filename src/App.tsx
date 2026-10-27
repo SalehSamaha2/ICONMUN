@@ -16,6 +16,7 @@ import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
 import { BackgroundVideoScrubber } from './components/BackgroundVideoScrubber';
 import { CinematicIntro } from './components/CinematicIntro';
+import { DiplomaticConstellation } from './components/DiplomaticConstellation';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -138,6 +139,7 @@ export default function App() {
         />
 
         {/* Pinned & scroll-scrubbed sections */}
+        <DiplomaticConstellation />
         <AboutSection />
         <CommitteesSection onSelectCommitteeForRegister={handleOpenRegister} />
         <ScheduleSection />
