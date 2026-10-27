@@ -82,7 +82,7 @@ export const SecretariatSection: React.FC = () => {
     <section
       ref={containerRef}
       id="secretariat"
-      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-paper text-ink overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-transparent text-ink overflow-hidden"
     >
       <div className="mx-auto max-w-6xl relative z-10">
         {/* Header */}
@@ -106,8 +106,8 @@ export const SecretariatSection: React.FC = () => {
           {SECRETARIAT_TEAM.map((member, idx) => (
             <div
               key={member.id}
-              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-gold/70 bg-surface will-change-transform ${
-                member.isConfirmed ? 'border-gold/50 shadow-[0_0_30px_rgba(231,219,195,0.12)]' : 'border-ink/10'
+              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-gold/70 bg-[#0C0C0C]/75 backdrop-blur-md shadow-2xl will-change-transform ${
+                member.isConfirmed ? 'border-gold/50 shadow-[0_0_30px_rgba(231,219,195,0.12)]' : 'border-gold/15'
               }`}
             >
               {/* Circular Portrait with SVG Ring that draws on scroll */}

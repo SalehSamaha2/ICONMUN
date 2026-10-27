@@ -62,7 +62,7 @@ export const AboutSection: React.FC = () => {
     <section
       ref={sectionRef}
       id="about"
-      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-paper text-ink overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-transparent text-ink overflow-hidden"
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
@@ -78,10 +78,10 @@ export const AboutSection: React.FC = () => {
           <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-gold to-transparent" />
         </div>
 
-        {/* Gold Bordered Card with SVG Stroke Draw */}
+        {/* Gold Bordered Card with SVG Stroke Draw & Frosted Glass */}
         <div
           ref={cardRef}
-          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-paper/90 backdrop-blur-sm shadow-2xl will-change-transform"
+          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-[#050505]/65 backdrop-blur-md border border-gold/25 shadow-[0_15px_45px_rgba(0,0,0,0.6)] will-change-transform"
         >
           {/* SVG Frame Drawing on Scroll */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-2xl" fill="none">

@@ -181,7 +181,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
       <div
         ref={containerRef}
         id="registration"
-        className="relative w-full bg-paper h-[100vh] md:h-[120vh]"
+        className="relative w-full bg-transparent h-[100vh] md:h-[120vh]"
       >
         {/* Pinned Viewport Container (100dvh) */}
         <div

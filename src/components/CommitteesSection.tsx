@@ -133,7 +133,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
     <div
       ref={containerRef}
       id="committees"
-      className="relative w-full bg-paper md:h-[150vh]"
+      className="relative w-full bg-transparent md:h-[150vh]"
     >
       {/* Pinned Viewport Container (Desktop ~150vh, Mobile natural flow) */}
       <div
@@ -166,7 +166,7 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
                 key={committee.id}
                 ref={(el) => { cardRefs.current[idx] = el; }}
                 onClick={() => setSelectedCommittee(committee)}
-                className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 w-full md:w-[400px] flex-shrink-0 flex flex-col justify-between border-gold/30 bg-surface will-change-transform"
+                className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 w-full md:w-[400px] flex-shrink-0 flex flex-col justify-between border border-gold/30 bg-[#0C0C0C]/75 backdrop-blur-md shadow-2xl will-change-transform"
                 style={{
                   transform: idx === 0 ? 'scale(1.04)' : 'scale(0.96)',
                   opacity: idx === 0 ? 1 : 0.7,

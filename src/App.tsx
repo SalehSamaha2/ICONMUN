@@ -15,6 +15,7 @@ import { AudioAmbience } from './components/AudioAmbience';
 import { GlobalScrollEffects } from './components/GlobalScrollEffects';
 import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
+import { BackgroundVideoScrubber } from './components/BackgroundVideoScrubber';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -112,6 +113,9 @@ export default function App() {
   return (
     <SiteDataProvider>
     <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
+      {/* Cinematic Full-Site Scroll-Scrubbed Background Video */}
+      <BackgroundVideoScrubber />
+
       {/* Global Scroll Effects: top progress bar and section navigation */}
       <GlobalScrollEffects onNavigateTo={handleNavigateTo} />
 
@@ -127,8 +131,8 @@ export default function App() {
         showBrandLogo={showNavLogo}
       />
 
-      {/* Primary Hero Section */}
-      <main>
+      {/* Content Layers with Frosted Glass Panels over Background */}
+      <main className="relative z-10">
         <HeroSection
           onHeroReady={handleVideoReady}
           onHeroProgressChange={handleHeroScrollProgress}

@@ -114,7 +114,7 @@ export const ScheduleSection: React.FC = () => {
     <section
       ref={containerRef}
       id="schedule"
-      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-paper text-ink overflow-hidden"
+      className="relative py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-transparent text-ink overflow-hidden"
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
@@ -199,7 +199,7 @@ export const ScheduleSection: React.FC = () => {
                             : 'schedule-card-right md:pl-10 md:text-left'
                         } will-change-transform`}
                       >
-                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-gold/60 bg-surface">
+                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-gold/60 bg-[#0C0C0C]/75 backdrop-blur-md border border-gold/20 shadow-xl">
                           <div
                             className={`flex flex-wrap items-center gap-2.5 text-xs text-gold mb-1.5 ${
                               isLeft ? 'md:justify-end' : 'md:justify-start'
