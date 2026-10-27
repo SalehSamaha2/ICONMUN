@@ -88,6 +88,21 @@ export default function App() {
     }
   }, []);
 
+  // Replay intro always begins from the very top of the site, including Lenis' virtual scroll.
+  useEffect(() => {
+    const returnToTopBeforeReplay = () => {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true, force: true });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+      ScrollTrigger.update();
+    };
+
+    window.addEventListener('icon-mun-replay-intro', returnToTopBeforeReplay);
+    return () => window.removeEventListener('icon-mun-replay-intro', returnToTopBeforeReplay);
+  }, []);
+
   const handleOpenRegister = useCallback((committeeCode?: string) => {
     if (committeeCode) {
       setSelectedCommitteeCode(committeeCode);
