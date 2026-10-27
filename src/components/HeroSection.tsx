@@ -41,13 +41,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
           tl.fromTo(
             titleRef.current,
-            { opacity: 0, y: 30, letterSpacing: '0.4em' },
-            { opacity: 1, y: 0, letterSpacing: '0.24em', duration: 1.2 },
+            { opacity: 0, y: 18, letterSpacing: '0.34em', scale: 0.98 },
+            { opacity: 1, y: 0, letterSpacing: '0.2em', scale: 1, duration: 0.48, ease: 'power4.out' },
             0.1
           ).fromTo(
             contentRef.current,
-            { opacity: 0, y: 25 },
-            { opacity: 1, y: 0, duration: 1.0 },
+            { opacity: 0, y: 14 },
+            { opacity: 1, y: 0, duration: 0.42, ease: 'power4.out' },
             0.3
           );
         }
@@ -82,7 +82,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       ref={containerRef}
       id="hero-scroll-container"
       data-theme="dark"
-      className="relative w-full min-h-[120vh] bg-transparent flex flex-col justify-between overflow-hidden pt-20 pb-16"
+      className="icon-hero relative w-full min-h-[120vh] bg-transparent flex flex-col justify-between overflow-hidden pt-20 pb-16"
     >
 
       {/* Soft Vignette Overlay */}
@@ -99,7 +99,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Top Header Block */}
         <div className="flex flex-col items-center">
           {/* Eyebrow Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/30 bg-black/40 text-[clamp(0.65rem,1.8vw,0.75rem)] font-semibold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-gold mb-3 shadow-lg">
+          <div className="hero-eyebrow inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/30 bg-black/40 text-[clamp(0.65rem,1.8vw,0.75rem)] font-semibold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-gold mb-3 shadow-lg">
             <Sparkles className="w-3.5 h-3.5 text-gold animate-pulse" />
             <span>The Premier Model United Nations</span>
             <span aria-hidden="true" className="text-golddeep">·</span>
@@ -109,7 +109,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Main Title */}
           <h1
             ref={titleRef}
-            className="font-cinzel text-[clamp(2.5rem,8vw,5.5rem)] font-black uppercase tracking-[0.18em] sm:tracking-[0.24em] md:tracking-[0.3em] text-gold-shimmer filter drop-shadow-[0_4px_25px_rgba(0,0,0,0.95)] whitespace-nowrap"
+            className="hero-title font-cinzel text-[clamp(2.5rem,8vw,5.5rem)] font-black uppercase tracking-[0.18em] sm:tracking-[0.24em] md:tracking-[0.3em] text-gold-shimmer filter drop-shadow-[0_4px_25px_rgba(0,0,0,0.95)] whitespace-nowrap"
             style={{
               textShadow: '0 0 40px rgba(231, 219, 195, 0.4), 0 0 80px rgba(60, 52, 40, 0.25)',
             }}
