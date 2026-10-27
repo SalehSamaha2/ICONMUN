@@ -24,6 +24,7 @@ export default function App() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedCommitteeCode, setSelectedCommitteeCode] = useState<string>('UNSC');
   const [showNavLogo, setShowNavLogo] = useState(false);
+  const [introComplete, setIntroComplete] = useState(false);
 
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -111,7 +112,7 @@ export default function App() {
     <SiteDataProvider>
     <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
       {/* One-time champagne-gold logo reveal, using ICON MUN's own intro footage */}
-      <CinematicIntro isHeroReady={true} onComplete={() => {}} />
+      <CinematicIntro isHeroReady={true} onComplete={() => setIntroComplete(true)} />
 
       {/* Cinematic Full-Site Scroll-Scrubbed Background Video */}
       <BackgroundVideoScrubber />
@@ -134,6 +135,7 @@ export default function App() {
       {/* Content Layers with Frosted Glass Panels over Background */}
       <main className="relative z-10">
         <HeroSection
+          introComplete={introComplete}
           onHeroReady={handleVideoReady}
           onHeroProgressChange={handleHeroScrollProgress}
           onOpenRegister={handleOpenRegister}
