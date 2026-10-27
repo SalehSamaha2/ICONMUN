@@ -106,8 +106,8 @@ export const SecretariatSection: React.FC = () => {
           {SECRETARIAT_TEAM.map((member, idx) => (
             <div
               key={member.id}
-              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-gold/70 bg-[#0C0C0C]/75 backdrop-blur-md shadow-2xl will-change-transform ${
-                member.isConfirmed ? 'border-gold/50 shadow-[0_0_30px_rgba(231,219,195,0.12)]' : 'border-gold/15'
+              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-gold/70 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.5)] will-change-transform ${
+                member.isConfirmed ? 'border-gold/50 shadow-[0_0_30px_rgba(231,219,195,0.12)]' : 'border-gold/20'
               }`}
             >
               {/* Circular Portrait with SVG Ring that draws on scroll */}
@@ -131,7 +131,7 @@ export const SecretariatSection: React.FC = () => {
                 <div className="absolute inset-1 rounded-full border border-dashed border-gold/20 pointer-events-none" />
 
                 {/* Circular Image or TBA Placeholder */}
-                <div className="relative h-36 w-36 rounded-full overflow-hidden border border-gold/40 shadow-xl bg-[#111] flex items-center justify-center">
+                <div className="relative h-36 w-36 rounded-full overflow-hidden border border-gold/40 shadow-xl bg-black/40 flex items-center justify-center">
                   {member.image ? (
                     <img
                       src={member.image}
@@ -143,7 +143,7 @@ export const SecretariatSection: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center text-gold/60 p-4">
                       <UserCheck className="h-10 w-10 text-gold/40 mb-1" />
-                      <span className="font-cinzel text-xs font-bold uppercase tracking-widest text-gold">
+                      <span className="font-cinzel text-xs font-bold uppercase tracking-widest text-gold text-contrast">
                         TBA
                       </span>
                     </div>
@@ -160,33 +160,33 @@ export const SecretariatSection: React.FC = () => {
 
               {/* Title & Name */}
               <div className="w-full">
-                <h3 className="font-cinzel text-base sm:text-lg font-bold text-inkstrong mb-1">
+                <h3 className="font-cinzel text-base sm:text-lg font-bold text-inkstrong mb-1 text-contrast">
                   {member.name}
                 </h3>
               </div>
 
               <div className="flex items-center gap-2 mb-3">
-                <p className="text-[11px] uppercase tracking-[0.2em] font-medium text-gold">
+                <p className="text-[11px] uppercase tracking-[0.2em] font-medium text-gold text-contrast">
                   {member.role}
                 </p>
                 {member.isConfirmed ? (
-                  <span className="rounded border border-gold/40 bg-gold/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-accent">
+                  <span className="rounded border border-gold/40 bg-black/40 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-accent">
                     Confirmed
                   </span>
                 ) : (
-                  <span className="rounded border border-ink/10 bg-ink/5 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-ink3">
+                  <span className="rounded border border-ink/10 bg-black/30 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-ink3">
                     TBA
                   </span>
                 )}
               </div>
 
               {/* Quote */}
-              <blockquote className="text-xs italic text-ink2 leading-relaxed mb-3 font-light border-y border-ink/5 py-2.5 w-full">
+              <blockquote className="text-xs italic text-inkstrong leading-relaxed mb-3 font-normal border-y border-ink/15 py-2.5 w-full text-contrast">
                 “{member.quote}”
               </blockquote>
 
               {/* Bio */}
-              <p className="text-[11px] text-ink3 leading-relaxed font-light mt-auto">
+              <p className="text-[11px] text-ink2 leading-relaxed font-normal mt-auto text-contrast">
                 {member.bio}
               </p>
             </div>

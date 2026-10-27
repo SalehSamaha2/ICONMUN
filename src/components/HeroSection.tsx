@@ -96,7 +96,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Top Header Block */}
         <div className="flex flex-col items-center">
           {/* Eyebrow Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/30 bg-[#050505]/70 backdrop-blur-md text-[clamp(0.65rem,1.8vw,0.75rem)] font-semibold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-gold mb-3 shadow-lg">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold/30 bg-black/40 text-[clamp(0.65rem,1.8vw,0.75rem)] font-semibold uppercase tracking-[0.25em] sm:tracking-[0.35em] text-gold mb-3 shadow-lg">
             <Sparkles className="w-3.5 h-3.5 text-gold animate-pulse" />
             <span>The Premier Model United Nations</span>
             <span aria-hidden="true" className="text-golddeep">·</span>
@@ -114,7 +114,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             ICON MUN
           </h1>
 
-          <p className="text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.35em] text-ink3 font-medium mt-1">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.25em] sm:tracking-[0.35em] text-ink2 font-medium mt-1 text-contrast">
             Where Diplomacy Meets Distinction
           </p>
         </div>
@@ -125,31 +125,31 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Lower Content Block */}
         <div ref={contentRef} className="space-y-5 mt-2 max-w-2xl mx-auto">
 
-          <p className="text-sm sm:text-base leading-relaxed text-ink2/90 font-light max-w-xl mx-auto text-balance">
+          <p className="text-sm sm:text-base leading-relaxed text-inkstrong font-medium max-w-xl mx-auto text-balance text-contrast">
             Gathering aspiring diplomats, strategists, and changemakers to engage in high-level multilateral debate, consensus building, and global resolution.
           </p>
 
           {/* Quick Pillars / Highlights */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 max-w-xl mx-auto border-y border-gold/15">
-            <div className="flex flex-col items-center p-2 rounded-lg bg-surface/40 border border-gold/10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 max-w-xl mx-auto border-y border-gold/25">
+            <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
               <ShieldCheck className="w-4 h-4 text-gold mb-1" />
-              <span className="font-cinzel text-sm sm:text-base font-bold text-accent">5 Councils</span>
-              <span className="text-[9px] uppercase tracking-wider text-ink4">Simulation</span>
+              <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">5 Councils</span>
+              <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Simulation</span>
             </div>
-            <div className="flex flex-col items-center p-2 rounded-lg bg-surface/40 border border-gold/10">
+            <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
               <Globe className="w-4 h-4 text-gold mb-1" />
-              <span className="font-cinzel text-sm sm:text-base font-bold text-accent">300+</span>
-              <span className="text-[9px] uppercase tracking-wider text-ink4">Delegates</span>
+              <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">300+</span>
+              <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Delegates</span>
             </div>
-            <div className="flex flex-col items-center p-2 rounded-lg bg-surface/40 border border-gold/10">
+            <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
               <Calendar className="w-4 h-4 text-gold mb-1" />
-              <span className="font-cinzel text-sm sm:text-base font-bold text-accent">3 Days</span>
-              <span className="text-[9px] uppercase tracking-wider text-ink4">Debate & Gala</span>
+              <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">3 Days</span>
+              <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Debate & Gala</span>
             </div>
-            <div className="flex flex-col items-center p-2 rounded-lg bg-surface/40 border border-gold/10">
+            <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
               <Award className="w-4 h-4 text-gold mb-1" />
-              <span className="font-cinzel text-sm sm:text-base font-bold text-accent">Awards</span>
-              <span className="text-[9px] uppercase tracking-wider text-ink4">Excellence</span>
+              <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">Awards</span>
+              <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Excellence</span>
             </div>
           </div>
 

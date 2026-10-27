@@ -199,38 +199,38 @@ export const ScheduleSection: React.FC = () => {
                             : 'schedule-card-right md:pl-10 md:text-left'
                         } will-change-transform`}
                       >
-                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-gold/60 bg-[#0C0C0C]/75 backdrop-blur-md border border-gold/20 shadow-xl">
+                        <div className="gold-card rounded-xl p-5 transition-all duration-300 hover:border-gold/60 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.5)]">
                           <div
                             className={`flex flex-wrap items-center gap-2.5 text-xs text-gold mb-1.5 ${
                               isLeft ? 'md:justify-end' : 'md:justify-start'
                             }`}
                           >
-                            <span className="flex items-center gap-1 font-mono tabular-nums">
+                            <span className="flex items-center gap-1 font-mono tabular-nums text-contrast">
                               <Clock className="h-3 w-3 text-gold" />
                               {event.time}
                             </span>
                             {event.badge && (
-                              <span className="rounded border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[9px] uppercase font-mono text-accent">
+                              <span className="rounded border border-gold/30 bg-black/40 px-1.5 py-0.5 text-[9px] uppercase font-mono text-accent">
                                 {event.badge}
                               </span>
                             )}
                           </div>
 
-                          <h3 className="font-cinzel text-sm sm:text-base font-semibold text-inkstrong mb-1.5">
+                          <h3 className="font-cinzel text-sm sm:text-base font-semibold text-inkstrong mb-1.5 text-contrast">
                             {event.title}
                           </h3>
 
-                          <p className="text-xs text-ink2 leading-relaxed mb-2.5 font-light">
+                          <p className="text-xs text-inkstrong leading-relaxed mb-2.5 font-normal text-contrast">
                             {event.description}
                           </p>
 
                           <div
-                            className={`flex items-center gap-1.5 text-xs text-ink3 ${
+                            className={`flex items-center gap-1.5 text-xs text-gold/90 ${
                               isLeft ? 'md:justify-end' : 'md:justify-start'
                             }`}
                           >
                             <MapPin className="h-3 w-3 text-gold" />
-                            <span>{event.location}</span>
+                            <span className="text-contrast">{event.location}</span>
                           </div>
                         </div>
                       </div>

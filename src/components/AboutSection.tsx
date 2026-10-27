@@ -78,10 +78,10 @@ export const AboutSection: React.FC = () => {
           <div className="mx-auto mt-3 h-[1px] w-20 bg-gradient-to-r from-transparent via-gold to-transparent" />
         </div>
 
-        {/* Gold Bordered Card with SVG Stroke Draw & Frosted Glass */}
+        {/* Transparent Gold Bordered Card with SVG Stroke Draw */}
         <div
           ref={cardRef}
-          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-[#050505]/65 backdrop-blur-md border border-gold/25 shadow-[0_15px_45px_rgba(0,0,0,0.6)] will-change-transform"
+          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.6)] will-change-transform"
         >
           {/* SVG Frame Drawing on Scroll */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-2xl" fill="none">
@@ -103,7 +103,7 @@ export const AboutSection: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Logo Emblem Thumbnail */}
             <div className="lg:col-span-4 flex flex-col items-center text-center">
-              <div className="relative h-56 w-56 sm:h-64 sm:w-64 rounded-full bg-[#E7DBC3] flex items-center justify-center shadow-[0_0_50px_rgba(231,219,195,0.14)]">
+              <div className="relative h-56 w-56 sm:h-64 sm:w-64 rounded-full bg-[#E7DBC3]/90 flex items-center justify-center shadow-[0_0_50px_rgba(231,219,195,0.2)]">
                 <img
                   src="/brand/logo-cutout.webp"
                   alt="ICON MUN emblem"
@@ -111,17 +111,17 @@ export const AboutSection: React.FC = () => {
                   loading="lazy"
                 />
               </div>
-              <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.25em] text-gold">
+              <p className="mt-3 font-cinzel text-xs uppercase tracking-[0.25em] text-gold text-contrast">
                 ICON MUN 2027
               </p>
             </div>
 
             {/* Narrative Prose */}
             <div className="lg:col-span-8 space-y-4">
-              <p className="text-sm sm:text-base leading-relaxed text-ink2 font-light">
+              <p className="text-sm sm:text-base leading-relaxed text-inkstrong font-medium text-contrast">
                 Welcome to ICON MUN 2027. In world diplomacy, every sovereign delegation brings ambition, perspective, and dedication to the floor.
               </p>
-              <p className="text-sm sm:text-base leading-relaxed text-ink2 font-light">
+              <p className="text-sm sm:text-base leading-relaxed text-inkstrong font-medium text-contrast">
                 Official conference guidelines, council configurations, and procedural announcements are currently being codified by the High Secretariat. All conference information is To Be Announced (TBA).
               </p>
 

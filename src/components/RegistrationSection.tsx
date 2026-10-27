@@ -71,49 +71,44 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
 
   useEffect(() => {
     const container = containerRef.current;
-    const sticky = stickyRef.current;
-    if (!container || !sticky) return;
+    if (!container) return;
 
     const ctx = gsap.context(() => {
-      // Pinned ~120vh, smooth scrub: 0.8
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: container,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: 0.8,
-          pin: sticky,
-          pinSpacing: true,
-        },
-      });
-
-      // 1. Giant globe and laurel rotate and scale behind
+      // Smooth entrance without pin or pinSpacing
       if (bgGlobeRef.current) {
-        tl.fromTo(
+        gsap.fromTo(
           bgGlobeRef.current,
-          { scale: 0.85, rotate: -20, opacity: 0.04 },
-          { scale: 1.25, rotate: 20, opacity: 0.15, ease: 'none' },
-          0
+          { scale: 0.85, rotate: -15, opacity: 0.04 },
+          {
+            scale: 1.15,
+            rotate: 15,
+            opacity: 0.14,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: container,
+              start: 'top 80%',
+              end: 'bottom 20%',
+              scrub: 0.8,
+            },
+          }
         );
       }
 
-      // 2. Headline scales up from small to full size
       if (headlineRef.current) {
-        tl.fromTo(
+        gsap.fromTo(
           headlineRef.current,
-          { scale: 0.7, opacity: 0.2 },
-          { scale: 1, opacity: 1, ease: 'power2.out' },
-          0.05
-        );
-      }
-
-      // 3. Register Now button fades in at end of scrub
-      if (buttonWrapperRef.current) {
-        tl.fromTo(
-          buttonWrapperRef.current,
-          { opacity: 0, y: 20, scale: 0.95 },
-          { opacity: 1, y: 0, scale: 1, ease: 'power2.out' },
-          0.4
+          { opacity: 0.3, y: 25 },
+          {
+            opacity: 1,
+            y: 0,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: container,
+              start: 'top 75%',
+              end: 'top 40%',
+              scrub: 0.8,
+            },
+          }
         );
       }
     }, container);
@@ -178,16 +173,12 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
 
   return (
     <>
-      <div
+      <section
         ref={containerRef}
         id="registration"
-        className="relative w-full bg-transparent h-[100vh] md:h-[120vh]"
+        className="relative w-full bg-transparent py-20 md:py-32 flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-12"
       >
-        {/* Pinned Viewport Container (100dvh) */}
-        <div
-          ref={stickyRef}
-          className="sticky top-0 h-screen-dvh w-full flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-12"
-        >
+        <div className="w-full flex items-center justify-center">
           {/* Rotating Giant Globe & Laurel behind (Hidden on small mobile) */}
           <div className="absolute inset-0 hidden sm:flex items-center justify-center pointer-events-none select-none z-0">
             <svg
@@ -267,7 +258,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Interactive Credential Application Modal */}
       {isOpenModal && (
@@ -279,11 +270,11 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
               onCloseModal();
             }
           }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-overlay backdrop-blur-xl animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="gold-card max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] overflow-y-auto border-gold/60 bg-surface relative shadow-[0_20px_80px_rgba(40,15,15,0.45)]"
+            className="gold-card max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] overflow-y-auto border border-gold/50 bg-[#0C0C0C] relative shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
           >
             {/* Primary Close Button (X) */}
             <button

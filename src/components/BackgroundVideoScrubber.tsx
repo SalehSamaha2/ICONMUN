@@ -5,18 +5,13 @@ import { GoldDustCanvas } from './GoldDustCanvas';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const VIDEO_URL =
-  'https://res.cloudinary.com/edtur3gp/video/upload/v1793118876/Female_silhouette_removes_masque__20261027193210.mp4';
-
-interface BackgroundVideoScrubberProps {
-  className?: string;
-}
+const FORWARD_SRC = '/assets/masque-forward.mp4';
+const REVERSE_SRC = '/assets/masque-reverse.mp4';
 
 /**
  * Calculates normalized scroll progress [0, 1] across the entire document height.
  * 0.0 = Top of page
- * 0.5 = Exact midpoint of the page
- * 1.0 = Bottom of page
+ * 1.0 = Bottom of page (Footer)
  */
 function getDocumentScrollProgress(): number {
   if (typeof window === 'undefined') return 0;
@@ -32,152 +27,206 @@ function getDocumentScrollProgress(): number {
   return Math.min(Math.max(scrollY / maxScroll, 0), 1);
 }
 
+interface BackgroundVideoScrubberProps {
+  className?: string;
+}
+
+/**
+ * Velocity-Driven Dual Video Engine.
+ * Plays the forward video natively when scrolling down and the reverse video natively
+ * when scrolling up, with playbackRate dynamically matching scroll speed.
+ * Delivers native 60fps hardware-accelerated playback with zero seek hitching.
+ */
 export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = ({
   className = '',
 }) => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isVideoReady, setIsVideoReady] = useState(false);
+  const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
+  const reverseVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  // High performance refs (zero React re-renders during scrolling)
-  const durationRef = useRef<number>(10.027); // Known Cloudinary asset duration
-  const targetTimeRef = useRef<number>(0);
-  const isSeekingRef = useRef<boolean>(false);
-  const lastSeekTimestampRef = useRef<number>(0);
+  const [activeDirection, setActiveDirection] = useState<'forward' | 'reverse'>('forward');
+  const [isReady, setIsReady] = useState(false);
 
-  // Synchronize target time based on total document scroll progress
-  const updateTargetTime = useCallback(() => {
-    const progress = getDocumentScrollProgress();
-    const duration = durationRef.current;
-    if (duration > 0) {
-      // Precise mapping: 0.001s at top of site, (duration - 0.03)s at absolute bottom
-      targetTimeRef.current = Math.min(
-        Math.max(progress * (duration - 0.03), 0.001),
-        duration - 0.02
-      );
+  // Performance tracking refs (0 React state re-renders during active scrolling)
+  const lastScrollYRef = useRef<number>(0);
+  const lastScrollTimeRef = useRef<number>(0);
+  const durationRef = useRef<number>(10.027);
+  const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const directionRef = useRef<'forward' | 'reverse'>('forward');
+
+  // Pause videos smoothly when scrolling rests without forced seeking jumps
+  const handleScrollStop = useCallback(() => {
+    const fwd = forwardVideoRef.current;
+    const rev = reverseVideoRef.current;
+    if (fwd && !fwd.paused) {
+      fwd.pause();
+    }
+    if (rev && !rev.paused) {
+      rev.pause();
     }
   }, []);
 
-  // When video metadata is available, capture exact duration and render the initial frame immediately
-  const handleLoadedMetadata = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  // Handle active scroll with velocity-driven playback
+  const handleScroll = useCallback(() => {
+    const fwd = forwardVideoRef.current;
+    const rev = reverseVideoRef.current;
+    if (!fwd || !rev) return;
 
-    if (video.duration && !isNaN(video.duration) && video.duration > 0) {
-      durationRef.current = video.duration;
+    const currentY = window.pageYOffset ?? document.documentElement.scrollTop ?? 0;
+    const now = performance.now();
+    const deltaY = currentY - lastScrollYRef.current;
+    const deltaTime = Math.max(now - lastScrollTimeRef.current, 10);
+
+    lastScrollYRef.current = currentY;
+    lastScrollTimeRef.current = now;
+
+    // Reset idle pause timer
+    if (stopTimeoutRef.current) {
+      clearTimeout(stopTimeoutRef.current);
     }
+    stopTimeoutRef.current = setTimeout(handleScrollStop, 90);
 
-    setIsVideoReady(true);
-    video.pause();
+    if (Math.abs(deltaY) < 1) return;
 
-    // Map initial frame based on where user is on initial load
-    updateTargetTime();
-    try {
-      video.currentTime = targetTimeRef.current;
-    } catch {
-      /* ignore */
-    }
-  }, [updateTargetTime]);
+    const progress = getDocumentScrollProgress();
+    const duration = durationRef.current;
+    const targetFwd = Math.min(Math.max(progress * (duration - 0.04), 0.001), duration - 0.02);
+    const targetRev = Math.min(Math.max((1 - progress) * (duration - 0.04), 0.001), duration - 0.02);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    // Calculate normalized velocity (pixels per ms)
+    const velocity = Math.abs(deltaY) / deltaTime;
+    // Map velocity to dynamic playback rate between 1.0x and 3.0x
+    const speed = Math.min(Math.max(velocity * 1.8, 1.0), 3.0);
 
-    let animId: number;
-
-    // Direct scroll-to-progress update via passive scroll listeners & ScrollTrigger
-    const onScroll = () => {
-      updateTargetTime();
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-
-    // GSAP ScrollTrigger across the full document body
-    const trigger = ScrollTrigger.create({
-      trigger: document.documentElement,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: () => {
-        updateTargetTime();
-      },
-    });
-
-    // High performance rAF loop with non-blocking seek locks
-    const tick = () => {
-      if (video && video.readyState >= 1) {
-        const target = targetTimeRef.current;
-        const current = video.currentTime;
-        const diff = Math.abs(target - current);
-
-        // Safety watchdog: If seek event hasn't fired in 70ms, release the seeking lock
-        if (isSeekingRef.current && performance.now() - lastSeekTimestampRef.current > 70) {
-          isSeekingRef.current = false;
-        }
-
-        // Only seek if difference exceeds threshold to avoid decoder micro-jitter
-        if (!isSeekingRef.current && !video.seeking && diff > 0.015) {
-          isSeekingRef.current = true;
-          lastSeekTimestampRef.current = performance.now();
-          video.currentTime = target;
+    if (deltaY > 0) {
+      // SCROLLING DOWN -> PLAY FORWARD VIDEO
+      if (directionRef.current !== 'forward') {
+        directionRef.current = 'forward';
+        setActiveDirection('forward');
+        // Align forward video currentTime from reverse position
+        try {
+          fwd.currentTime = targetFwd;
+        } catch {
+          /* ignore */
         }
       }
 
-      animId = requestAnimationFrame(tick);
+      rev.pause();
+      fwd.playbackRate = speed;
+
+      // Soft anchor check: only nudge if drift exceeds 0.5s to avoid stutter
+      if (Math.abs(fwd.currentTime - targetFwd) > 0.55) {
+        fwd.currentTime = targetFwd;
+      }
+
+      if (fwd.paused) {
+        fwd.play().catch(() => {});
+      }
+    } else {
+      // SCROLLING UP -> PLAY REVERSE VIDEO
+      if (directionRef.current !== 'reverse') {
+        directionRef.current = 'reverse';
+        setActiveDirection('reverse');
+        // Align reverse video currentTime from forward position
+        try {
+          rev.currentTime = targetRev;
+        } catch {
+          /* ignore */
+        }
+      }
+
+      fwd.pause();
+      rev.playbackRate = speed;
+
+      // Soft anchor check: only nudge if drift exceeds 0.5s to avoid stutter
+      if (Math.abs(rev.currentTime - targetRev) > 0.55) {
+        rev.currentTime = targetRev;
+      }
+
+      if (rev.paused) {
+        rev.play().catch(() => {});
+      }
+    }
+  }, [handleScrollStop]);
+
+  // Initial setup and metadata handler
+  useEffect(() => {
+    const fwd = forwardVideoRef.current;
+    const rev = reverseVideoRef.current;
+    if (!fwd || !rev) return;
+
+    const onMeta = () => {
+      if (fwd.duration && !isNaN(fwd.duration)) {
+        durationRef.current = fwd.duration;
+      }
+      setIsReady(true);
+      fwd.pause();
+      rev.pause();
+      const p = getDocumentScrollProgress();
+      fwd.currentTime = p * durationRef.current;
+      rev.currentTime = (1 - p) * durationRef.current;
     };
 
-    const handleSeeked = () => {
-      isSeekingRef.current = false;
-    };
+    fwd.addEventListener('loadedmetadata', onMeta);
+    if (fwd.readyState >= 1) {
+      onMeta();
+    }
 
-    video.addEventListener('seeked', handleSeeked);
-    animId = requestAnimationFrame(tick);
+    lastScrollYRef.current = window.pageYOffset ?? 0;
+    lastScrollTimeRef.current = performance.now();
 
-    // Initial calculation
-    updateTargetTime();
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      trigger.kill();
-      cancelAnimationFrame(animId);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-      video.removeEventListener('seeked', handleSeeked);
+      window.removeEventListener('scroll', handleScroll);
+      fwd.removeEventListener('loadedmetadata', onMeta);
+      if (stopTimeoutRef.current) clearTimeout(stopTimeoutRef.current);
     };
-  }, [updateTargetTime]);
+  }, [handleScroll]);
 
   return (
     <div
       aria-hidden="true"
       className={`fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#050505] select-none ${className}`}
     >
-      {/* Cinematic Full-Site Video */}
+      {/* Forward Video (Active when scrolling down) */}
       <video
-        ref={videoRef}
-        src={VIDEO_URL}
+        ref={forwardVideoRef}
+        src={FORWARD_SRC}
         playsInline
         webkit-playsinline="true"
         muted
         preload="auto"
-        crossOrigin="anonymous"
-        onLoadedMetadata={handleLoadedMetadata}
-        onLoadedData={handleLoadedMetadata}
-        onCanPlay={handleLoadedMetadata}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-          isVideoReady ? 'opacity-90' : 'opacity-40'
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${
+          activeDirection === 'forward' ? 'opacity-90' : 'opacity-0'
         }`}
       />
 
-      {/* Atmospheric Edge Vignette to blend seamlessly with #050505 background */}
+      {/* Reverse Video (Active when scrolling up) */}
+      <video
+        ref={reverseVideoRef}
+        src={REVERSE_SRC}
+        playsInline
+        webkit-playsinline="true"
+        muted
+        preload="auto"
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-200 ${
+          activeDirection === 'reverse' ? 'opacity-90' : 'opacity-0'
+        }`}
+      />
+
+      {/* Atmospheric Edge Vignette to blend edges */}
       <div
         className="pointer-events-none absolute inset-0 z-10"
         style={{
           background:
-            'radial-gradient(circle at center, transparent 38%, rgba(5,5,5,0.5) 75%, #050505 100%)',
+            'radial-gradient(circle at center, transparent 45%, rgba(5,5,5,0.4) 80%, rgba(5,5,5,0.85) 100%)',
         }}
       />
 
       {/* Subtle Floating Gold Dust Layer */}
-      <GoldDustCanvas className="z-15 opacity-60" />
+      <GoldDustCanvas className="z-15 opacity-40" />
     </div>
   );
 };
+
+export default BackgroundVideoScrubber;
