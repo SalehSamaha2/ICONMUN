@@ -109,12 +109,19 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) =>
       .to([wordmarkRef.current, taglineRef.current, eyebrowRef.current, lineRef.current], {
         opacity: 0, y: -12, duration: 0.3, ease: 'power2.in', stagger: 0.02,
       })
-      .to(emblemRef.current, { scale: 1.32, duration: 0.42, ease: 'power2.inOut' }, '<')
+      .to(emblemRef.current, {
+        x: () => -window.innerWidth / 2 + 76,
+        y: () => 40 - window.innerHeight * 0.34,
+        scale: 0.29,
+        rotation: 0,
+        duration: 0.9,
+        ease: 'power4.inOut',
+      }, '<')
       .to(orbitRef.current, { scale: 1.18, opacity: 0, duration: 0.38, ease: 'power2.in' }, '<')
       .to(leftCurtainRef.current, { xPercent: -101, duration: 0.9, ease: 'power4.inOut' }, '<0.06')
       .to(rightCurtainRef.current, { xPercent: 101, duration: 0.9, ease: 'power4.inOut' }, '<')
-      .to(emblemRef.current, { opacity: 0, scale: 1.65, duration: 0.34, ease: 'power2.in' }, '<0.48')
-      .to(containerRef.current, { opacity: 0, duration: 0.18 }, '<0.62');
+      .to(emblemRef.current, { opacity: 0, duration: 0.16, ease: 'power1.out' }, '<0.74')
+      .to(containerRef.current, { opacity: 0, duration: 0.18 }, '<0.76');
 
     return () => {
       timeline.kill();

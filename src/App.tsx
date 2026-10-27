@@ -125,7 +125,7 @@ export default function App() {
       {/* Top Navigation (Brand logo hidden until hero title scrolls away) */}
       <Navigation
         onOpenRegister={handleOpenRegister}
-        showBrandLogo={showNavLogo}
+        showBrandLogo={introComplete || showNavLogo}
       />
 
       {/* Content Layers with Frosted Glass Panels over Background */}
