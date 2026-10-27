@@ -259,7 +259,7 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
     };
   }, [drawFrame, onHeroReady, updateViewportSize]);
 
-  // Master ScrollTrigger Timeline for Hero (Pinned 180vh mobile, 250vh desktop, smooth scrub)
+  // Master ScrollTrigger Timeline for Hero (pinned while the frame sequence and captions progress)
   useEffect(() => {
     const container = containerRef.current;
     const sticky = stickyRef.current;
@@ -290,18 +290,13 @@ export const HeroCanvasScrubber: React.FC<HeroCanvasScrubberProps> = ({
         },
       });
 
-      // 1. Subtle scale and exit fade on canvas
+      // 1. Keep the hero media visible for the full scroll sequence; only use a restrained scale
       if (canvasWrapRef.current) {
         tl.fromTo(
           canvasWrapRef.current,
           { scale: 1 },
-          { scale: 1.05, ease: 'none', duration: 1 },
+          { scale: 1.025, ease: 'none', duration: 1 },
           0
-        );
-        tl.to(
-          canvasWrapRef.current,
-          { opacity: 0, ease: 'power2.in', duration: 0.12 },
-          0.88
         );
       }
 
