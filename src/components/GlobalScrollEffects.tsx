@@ -9,7 +9,7 @@ interface GlobalScrollEffectsProps {
 }
 
 const SECTIONS = [
-  { id: 'hero-scroll-container', label: '01. The Masquerade', short: 'Hero' },
+  { id: 'hero-scroll-container', label: '01. ICON MUN', short: 'Hero' },
   { id: 'about', label: '02. About (TBA)', short: 'About' },
   { id: 'committees', label: '03. Councils (TBA)', short: 'Councils' },
   { id: 'schedule', label: '04. Timeline (TBA)', short: 'Timeline' },
@@ -23,12 +23,9 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
   const [activeSection, setActiveSection] = useState('hero-scroll-container');
   const [hoveredDot, setHoveredDot] = useState<string | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
-  const globeSvgRef = useRef<SVGSVGElement | null>(null);
   const activeSectionRef = useRef('hero-scroll-container');
-  const globeAngleRef = useRef(0);
 
   useEffect(() => {
-    let lastScroll = window.scrollY;
     let lastSectionCheck = 0;
     let trailingTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -62,16 +59,7 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
           progressBarRef.current.style.transform = `scaleX(${p})`;
         }
 
-        // 2. Rotate background UN globe via transform ONLY
-        const currentScroll = window.scrollY;
-        const scrollDiff = currentScroll - lastScroll;
-        lastScroll = currentScroll;
-        globeAngleRef.current += scrollDiff * 0.05;
-        if (globeSvgRef.current) {
-          globeSvgRef.current.style.transform = `rotate(${globeAngleRef.current}deg)`;
-        }
-
-        // 3. Track active section: at most ~8x/sec while scrolling, plus one final check
+        // Track active section at most ~8x/sec while scrolling, plus one final check
         // after scrolling stops so the dots never end up stale.
         const now = performance.now();
         if (now - lastSectionCheck >= 120) {
@@ -100,54 +88,7 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
         />
       </div>
 
-      {/* 2. Faint Huge UN-Style Globe Fixed in Background (Desktop only to save mobile GPU/CPU) */}
-      <div className="hidden md:flex fixed inset-0 z-0 pointer-events-none items-center justify-center overflow-hidden opacity-[0.07] select-none">
-        <svg
-          ref={globeSvgRef}
-          viewBox="0 0 1000 1000"
-          className="w-[1200px] h-[1200px] max-w-none text-gold will-change-transform"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-        >
-          <circle cx="500" cy="500" r="470" strokeDasharray="6 8" strokeWidth="1" />
-          <circle cx="500" cy="500" r="450" strokeWidth="1.5" />
-          <circle cx="500" cy="500" r="390" strokeWidth="1" opacity="0.6" />
-
-          <circle cx="500" cy="500" r="320" strokeDasharray="3 4" />
-          <circle cx="500" cy="500" r="240" />
-          <circle cx="500" cy="500" r="160" strokeDasharray="3 4" />
-          <circle cx="500" cy="500" r="80" />
-          <circle cx="500" cy="500" r="6" fill="currentColor" />
-
-          {[0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165].map((angle) => (
-            <line
-              key={angle}
-              x1="500"
-              y1="50"
-              x2="500"
-              y2="950"
-              transform={`rotate(${angle} 500 500)`}
-              opacity="0.5"
-            />
-          ))}
-
-          {Array.from({ length: 24 }).map((_, i) => {
-            const rot = i * 15;
-            return (
-              <path
-                key={i}
-                d="M 500 40 C 490 20, 500 10, 500 0 C 500 10, 510 20, 500 40"
-                transform={`rotate(${rot} 500 500)`}
-                fill="currentColor"
-                opacity="0.75"
-              />
-            );
-          })}
-        </svg>
-      </div>
-
-      {/* 3. Fixed Dot Navigation on Right Side (Desktop only; on mobile top bar serves progress) */}
+      {/* 2. Fixed Dot Navigation on Right Side (Desktop only; on mobile top bar serves progress) */}
       <nav
         aria-label="Section Navigation"
         className="hidden md:flex fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-4 py-3"

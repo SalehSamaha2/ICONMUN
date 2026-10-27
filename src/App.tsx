@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import { CinematicIntro } from './components/CinematicIntro';
 import { Navigation } from './components/Navigation';
-import { HeroCanvasScrubber } from './components/HeroCanvasScrubber';
+import { HeroSection } from './components/HeroSection';
 import { AboutSection } from './components/AboutSection';
 import { CommitteesSection } from './components/CommitteesSection';
 import { ScheduleSection } from './components/ScheduleSection';
@@ -14,14 +13,12 @@ import { FooterSection } from './components/FooterSection';
 import { CustomCursor } from './components/CustomCursor';
 import { AudioAmbience } from './components/AudioAmbience';
 import { GlobalScrollEffects } from './components/GlobalScrollEffects';
-import { GoldDustCanvas } from './components/GoldDustCanvas';
 import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
-  const [isVideoReady, setIsVideoReady] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedCommitteeCode, setSelectedCommitteeCode] = useState<string>('UNSC');
   const [showNavLogo, setShowNavLogo] = useState(false);
@@ -78,12 +75,6 @@ export default function App() {
     };
   }, []);
 
-  const handleIntroComplete = useCallback(() => {
-    setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 150);
-  }, []);
-
   const handleNavigateTo = useCallback((sectionId: string) => {
     const el = document.getElementById(sectionId);
     if (!el) return;
@@ -110,7 +101,6 @@ export default function App() {
   }, []);
 
   const handleVideoReady = useCallback(() => {
-    setIsVideoReady(true);
     ScrollTrigger.refresh();
   }, []);
 
@@ -122,38 +112,30 @@ export default function App() {
   return (
     <SiteDataProvider>
     <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
-      {/* 1. Cinematic Intro (plays once, curtain splits on hero readiness) */}
-      <CinematicIntro
-        isHeroReady={isVideoReady}
-        onComplete={handleIntroComplete}
-      />
-
-      {/* 2. Global Floating Gold Dust Particles with Swirl Physics */}
-      <GoldDustCanvas />
-
-      {/* 3. Global Scroll Effects: Top Thin Progress Bar, Dot Nav, Faint Rotating UN Globe */}
+      {/* Global Scroll Effects: top progress bar and section navigation */}
       <GlobalScrollEffects onNavigateTo={handleNavigateTo} />
 
-      {/* 4. Custom Gold Ring Cursor */}
+      {/* Custom Gold Ring Cursor */}
       <CustomCursor />
 
-      {/* 5. Sound Toggle (Off by default as specified) */}
+      {/* Sound Toggle (Off by default as specified) */}
       <AudioAmbience />
 
-      {/* 6. Top Navigation (Brand logo hidden until hero title scrolls away) */}
+      {/* Top Navigation (Brand logo hidden until hero title scrolls away) */}
       <Navigation
         onOpenRegister={handleOpenRegister}
         showBrandLogo={showNavLogo}
       />
 
-      {/* 7. Primary Hero Section with Bidirectional Video Scrubbing */}
+      {/* Primary Hero Section */}
       <main>
-        <HeroCanvasScrubber
+        <HeroSection
           onHeroReady={handleVideoReady}
           onHeroProgressChange={handleHeroScrollProgress}
+          onOpenRegister={handleOpenRegister}
         />
 
-        {/* 8. Pinned & Scroll-Scrubbed Sections (No one-shot triggers) */}
+        {/* Pinned & scroll-scrubbed sections */}
         <AboutSection />
         <CommitteesSection onSelectCommitteeForRegister={handleOpenRegister} />
         <ScheduleSection />
@@ -166,7 +148,7 @@ export default function App() {
         />
       </main>
 
-      {/* 9. Scroll-Scrubbed Footer */}
+      {/* Scroll-Scrubbed Footer */}
       <FooterSection />
 
       {/* Dev-only FPS meter: open the site with ?perf */}
