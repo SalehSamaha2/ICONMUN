@@ -1,170 +1,125 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { Volume2, Play } from 'lucide-react';
 
 interface CinematicIntroProps {
   isHeroReady: boolean;
   onComplete: () => void;
 }
 
-export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onComplete }) => {
+export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const leftCurtainRef = useRef<HTMLDivElement | null>(null);
+  const rightCurtainRef = useRef<HTMLDivElement | null>(null);
+  const emblemRef = useRef<HTMLDivElement | null>(null);
+  const orbitRef = useRef<HTMLDivElement | null>(null);
+  const wordmarkRef = useRef<HTMLHeadingElement | null>(null);
+  const taglineRef = useRef<HTMLParagraphElement | null>(null);
+  const eyebrowRef = useRef<HTMLParagraphElement | null>(null);
+  const lineRef = useRef<HTMLDivElement | null>(null);
+  const progressRef = useRef<HTMLDivElement | null>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const onCompleteRef = useRef(onComplete);
 
   const [isDone, setIsDone] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
     return !!sessionStorage.getItem('icon_mun_intro_seen');
   });
 
-  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // Allow the footer's Replay Intro control to restart the cinematic reveal.
+  const finishIntro = useCallback(() => {
+    timelineRef.current?.kill();
+    const container = containerRef.current;
+    if (!container) {
+      sessionStorage.setItem('icon_mun_intro_seen', 'true');
+      setIsDone(true);
+      document.body.style.overflow = '';
+      onCompleteRef.current();
+      return;
+    }
+
+    gsap.to(container, {
+      opacity: 0,
+      duration: 0.35,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        sessionStorage.setItem('icon_mun_intro_seen', 'true');
+        setIsDone(true);
+        document.body.style.overflow = '';
+        onCompleteRef.current();
+      },
+    });
+  }, []);
+
   useEffect(() => {
     const replayIntro = () => {
+      timelineRef.current?.kill();
       sessionStorage.removeItem('icon_mun_intro_seen');
-      setAutoplayBlocked(false);
-      setIsPlaying(false);
       setIsDone(false);
     };
     window.addEventListener('icon-mun-replay-intro', replayIntro);
     return () => window.removeEventListener('icon-mun-replay-intro', replayIntro);
   }, []);
 
-  // Clean transition out of intro
-  const handleFinish = useCallback(() => {
-    if (containerRef.current) {
-      gsap.to(containerRef.current, {
-        opacity: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        onComplete: () => {
-          sessionStorage.setItem('icon_mun_intro_seen', 'true');
-          setIsDone(true);
-          document.body.style.overflow = '';
-          if (onCompleteRef.current) {
-            onCompleteRef.current();
-          }
-        },
-      });
-    } else {
-      sessionStorage.setItem('icon_mun_intro_seen', 'true');
-      setIsDone(true);
-      document.body.style.overflow = '';
-      if (onCompleteRef.current) {
-        onCompleteRef.current();
-      }
-    }
-  }, []);
-
-  // Skip Intro Handler
-  const handleSkip = useCallback(() => {
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
-    handleFinish();
-  }, [handleFinish]);
-
-  // Play video on user gesture if autoplay was blocked
-  const handleUserStart = () => {
-    const video = videoRef.current;
-    if (!video) {
-      handleFinish();
-      return;
-    }
-    // Never leave the visitor stuck: if the video can't start within 1.5s, enter the site.
-    let settled = false;
-    const bail = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      handleFinish();
-    }, 1500);
-    video
-      .play()
-      .then(() => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(bail);
-        setAutoplayBlocked(false);
-        setIsPlaying(true);
-      })
-      .catch(() => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(bail);
-        handleFinish();
-      });
-  };
-
   useEffect(() => {
     if (isDone) {
-      if (onCompleteRef.current) onCompleteRef.current();
+      onCompleteRef.current();
       return;
     }
 
-    // 1. Check prefers-reduced-motion or Save-Data
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const hasSaveData =
-      typeof navigator !== 'undefined' &&
-      'connection' in navigator &&
-      (navigator as unknown as { connection?: { saveData?: boolean } }).connection?.saveData;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = 'connection' in navigator &&
+      (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
 
-    if (mediaQuery.matches || hasSaveData) {
+    if (reducedMotion || saveData) {
       sessionStorage.setItem('icon_mun_intro_seen', 'true');
       setIsDone(true);
-      if (onCompleteRef.current) onCompleteRef.current();
       return;
     }
 
-    // Lock scroll during intro
     document.body.style.overflow = 'hidden';
+    gsap.set(containerRef.current, { opacity: 1 });
+    gsap.set([leftCurtainRef.current, rightCurtainRef.current], { xPercent: 0 });
+    gsap.set(emblemRef.current, { opacity: 0, scale: 0.72, y: 14 });
+    gsap.set(orbitRef.current, { opacity: 0, scale: 0.72, rotation: -35 });
+    gsap.set(wordmarkRef.current, { opacity: 0, y: 22, letterSpacing: '0.42em' });
+    gsap.set([taglineRef.current, eyebrowRef.current], { opacity: 0, y: 10 });
+    gsap.set(lineRef.current, { scaleX: 0, transformOrigin: 'center' });
+    gsap.set(progressRef.current, { scaleX: 0, transformOrigin: 'left' });
 
-    // 2. Max 2-second fallback on slow networks so user is never trapped
-    const slowNetworkTimer = setTimeout(() => {
-      if (!isPlaying) {
-        setAutoplayBlocked(true);
-      }
-    }, 2000);
+    const timeline = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      onComplete: finishIntro,
+    });
+    timelineRef.current = timeline;
 
-    // 3. Attempt autoplay with muted and inline attributes
-    const video = videoRef.current;
-    if (video) {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            clearTimeout(slowNetworkTimer);
-            setIsPlaying(true);
-            setAutoplayBlocked(false);
-          })
-          .catch(() => {
-            // Autoplay blocked by mobile browser policy
-            setAutoplayBlocked(true);
-          });
-      }
-    }
+    timeline
+      .to(lineRef.current, { scaleX: 1, duration: 0.55 }, 0.12)
+      .to(orbitRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 0.9 }, 0.2)
+      .to(emblemRef.current, { opacity: 1, scale: 1, y: 0, duration: 0.85 }, 0.48)
+      .to(wordmarkRef.current, { opacity: 1, y: 0, letterSpacing: '0.22em', duration: 0.8 }, 0.82)
+      .to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.45 }, 1.12)
+      .to(taglineRef.current, { opacity: 1, y: 0, duration: 0.55 }, 1.3)
+      .to(progressRef.current, { scaleX: 1, duration: 1.05, ease: 'none' }, 1.45)
+      .to({}, { duration: 0.38 })
+      .to([wordmarkRef.current, taglineRef.current, eyebrowRef.current, emblemRef.current, orbitRef.current, lineRef.current], {
+        opacity: 0,
+        y: -8,
+        duration: 0.28,
+        ease: 'power2.in',
+        stagger: 0.025,
+      })
+      .to(leftCurtainRef.current, { xPercent: -101, duration: 0.78, ease: 'power4.inOut' }, '<0.04')
+      .to(rightCurtainRef.current, { xPercent: 101, duration: 0.78, ease: 'power4.inOut' }, '<')
+      .to(containerRef.current, { opacity: 0, duration: 0.12 }, '<0.56');
 
     return () => {
-      clearTimeout(slowNetworkTimer);
+      timeline.kill();
       document.body.style.overflow = '';
     };
-  }, [isDone, isPlaying, handleFinish]);
-
-  // Track video time to animate bottom progress bar
-  const handleTimeUpdate = () => {
-    const video = videoRef.current;
-    const bar = progressBarRef.current;
-    if (video && bar && video.duration) {
-      const p = video.currentTime / video.duration;
-      bar.style.transform = `scaleX(${Math.min(1, p)})`;
-    }
-  };
+  }, [isDone, finishIntro]);
 
   if (isDone) return null;
 
@@ -172,81 +127,71 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
     <div
       ref={containerRef}
       data-theme="dark"
-      className="fixed inset-0 z-50 pointer-events-auto flex items-center justify-center bg-paper overflow-hidden select-none h-screen-dvh"
+      role="presentation"
+      className="fixed inset-0 z-[100] overflow-hidden select-none"
+      style={{ background: '#090908', color: '#e7dbc3' }}
     >
-      {/* Background radial glow */}
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 42%, rgba(181,145,83,0.12), transparent 43%), linear-gradient(145deg, #090908 0%, #12110e 52%, #080807 100%)' }} />
       <div
-        className="pointer-events-none absolute h-[350px] sm:h-[450px] w-[350px] sm:w-[450px] rounded-full opacity-30 will-change-transform"
-        style={{
-          background: 'radial-gradient(circle, rgba(231,219,195,0.3) 0%, rgba(60,52,40,0.15) 50%, transparent 70%)',
-        }}
+        ref={leftCurtainRef}
+        className="absolute inset-y-0 left-0 z-[1] w-1/2"
+        style={{ background: 'linear-gradient(120deg, #090908 0%, #12110e 100%)', borderRight: '1px solid rgba(231,219,195,0.13)' }}
+      />
+      <div
+        ref={rightCurtainRef}
+        className="absolute inset-y-0 right-0 z-[1] w-1/2"
+        style={{ background: 'linear-gradient(240deg, #090908 0%, #12110e 100%)', borderLeft: '1px solid rgba(231,219,195,0.13)' }}
       />
 
-      {/* Intro Reveal Video with Mobile Fallback Source */}
-      <div className="relative z-10 w-full h-full flex items-center justify-center max-h-screen-dvh">
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          webkit-playsinline="true"
-          preload="auto"
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleFinish}
-          className="w-full h-full object-contain max-h-[92dvh] select-none pointer-events-none"
-        >
-          <source src="/assets/intro-mobile.mp4" media="(max-width: 768px)" type="video/mp4" />
-          <source src="/assets/intro.mp4" type="video/mp4" />
-          <source src="/assets/aistudio/Gold_logo_reveal_animation_20261021182732_71a5a8e9.mp4" type="video/mp4" />
-        </video>
-      </div>
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-center">
+        <p ref={eyebrowRef} className="mb-7 text-[9px] sm:text-[10px] uppercase tracking-[0.42em] text-[#b8a47e]">
+          The International Masquerade of Diplomacy
+        </p>
 
-      {/* If Autoplay was blocked on iOS/Android: Show prominent gold "Enter" button */}
-      {autoplayBlocked && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-overlay backdrop-blur-sm p-6 text-center animate-in fade-in duration-300">
-          <div className="h-16 w-16 mb-4 rounded-full border border-gold bg-surface2 flex items-center justify-center shadow-[0_0_25px_rgba(231,219,195,0.35)]">
-            <Play className="h-7 w-7 text-accent ml-1" />
-          </div>
-          <h2 className="font-cinzel text-2xl sm:text-3xl font-bold uppercase tracking-[0.2em] text-gold-shimmer mb-2">
-            ICON MUN 2027
-          </h2>
-          <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-ink2 max-w-xs mb-6 font-light">
-            Behind the Masquerade of Global Diplomacy
-          </p>
-          <button
-            onClick={handleUserStart}
-            className="gold-btn-primary px-8 py-3.5 min-h-[48px] min-w-[200px] text-xs font-bold uppercase tracking-[0.25em] rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-2xl active:scale-95"
+        <div className="relative mb-7 flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center">
+          <div
+            ref={orbitRef}
+            className="absolute inset-0 rounded-full"
+            style={{ border: '1px solid rgba(231,219,195,0.52)', boxShadow: '0 0 45px rgba(185,147,83,0.08)' }}
           >
-            <span>Enter Experience</span>
-          </button>
+            <span className="absolute left-1/2 top-[-3px] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[#e7dbc3]" />
+            <span className="absolute bottom-[10%] right-[2%] h-1 w-1 rounded-full bg-[#a88952]" />
+          </div>
+          <div className="absolute inset-[8px] rounded-full" style={{ border: '1px solid rgba(231,219,195,0.16)' }} />
+          <div ref={emblemRef} className="relative flex h-[76px] w-[76px] sm:h-[88px] sm:w-[88px] items-center justify-center">
+            <img src="/brand/logo-mark.webp" alt="ICON MUN emblem" className="h-full w-full object-contain" />
+          </div>
         </div>
-      )}
 
-      {/* Large Clear Skip Button (Safe Area Aware & >= 44px tap target) */}
-      <button
-        onClick={handleSkip}
-        aria-label="Skip Intro"
-        className="absolute z-40 rounded-full border border-gold/40 bg-paper/80 px-4 py-2.5 min-h-[44px] min-w-[44px] text-xs uppercase font-mono tracking-widest text-accent backdrop-blur-md transition-all hover:border-gold hover:bg-surface2 active:scale-95 cursor-pointer flex items-center justify-center"
-        style={{
-          top: 'max(1.25rem, env(safe-area-inset-top, 0px))',
-          right: 'max(1.25rem, env(safe-area-inset-right, 0px))',
-        }}
-      >
-        <span>Skip →</span>
-      </button>
+        <div ref={lineRef} className="mb-6 h-px w-28 sm:w-36" style={{ background: 'linear-gradient(90deg, transparent, #c6a66a, transparent)' }} />
 
-      {/* Thin Gold Loading Progress Line at Bottom (Safe Area Aware) */}
-      <div
-        className="absolute left-0 right-0 h-[2.5px] bg-ink/5 z-30"
-        style={{
-          bottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
-        }}
-      >
-        <div
-          ref={progressBarRef}
-          className="h-full bg-gradient-to-r from-golddeep via-gold to-inkstrong origin-left will-change-transform"
-          style={{ transform: 'scaleX(0.05)' }}
-        />
+        <h1
+          ref={wordmarkRef}
+          className="font-cinzel text-3xl font-semibold uppercase sm:text-5xl"
+          style={{ color: '#f0e5ce', textShadow: '0 0 32px rgba(198,166,106,0.13)' }}
+        >
+          ICON MUN
+        </h1>
+
+        <p ref={taglineRef} className="mt-5 max-w-md text-[10px] uppercase tracking-[0.24em] text-[#b8b0a0] sm:text-xs sm:tracking-[0.32em]">
+          Behind the Masquerade of Global Diplomacy
+        </p>
+        <p className="mt-8 font-mono text-[9px] tracking-[0.38em] text-[#8f805f]">RIYADH · 2027</p>
       </div>
+
+      <div className="absolute bottom-0 left-0 right-0 z-20 h-[2px]" style={{ background: 'rgba(231,219,195,0.12)' }}>
+        <div ref={progressRef} className="h-full" style={{ background: 'linear-gradient(90deg, #8d6c36, #e7dbc3, #8d6c36)', transform: 'scaleX(0)' }} />
+      </div>
+
+      <button
+        type="button"
+        onClick={finishIntro}
+        aria-label="Skip intro animation"
+        className="absolute right-5 top-5 z-30 rounded-full border px-4 py-2.5 text-[10px] uppercase tracking-[0.22em] transition-colors hover:bg-[#e7dbc3]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e7dbc3]"
+        style={{ borderColor: 'rgba(231,219,195,0.35)', color: '#e7dbc3', background: 'rgba(9,9,8,0.55)' }}
+      >
+        Skip <span aria-hidden="true">↗</span>
+      </button>
     </div>
   );
 };
