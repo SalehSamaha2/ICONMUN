@@ -3,11 +3,12 @@ import { GoldDustCanvas } from './GoldDustCanvas';
 
 const VIDEO_SRC = 'https://res.cloudinary.com/edtur3gp/video/upload/v1793132424/Edit_video_carpet_and_walking_700dd39e.mp4';
 
-function getScrollProgress(): number {
+function getScrollProgress(scrollY?: number): number {
   const root = document.documentElement;
   const body = document.body;
   const maxScroll = Math.max(root.scrollHeight, body.scrollHeight, root.offsetHeight, body.offsetHeight) - window.innerHeight;
-  return maxScroll <= 0 ? 0 : Math.min(1, Math.max(0, window.scrollY / maxScroll));
+  const currentScroll = typeof scrollY === 'number' && Number.isFinite(scrollY) ? scrollY : window.scrollY;
+  return maxScroll <= 0 ? 0 : Math.min(1, Math.max(0, currentScroll / maxScroll));
 }
 
 /** Scrubs one continuous video timeline: first frame at page top, last frame at page bottom. */
@@ -31,8 +32,11 @@ export const BackgroundVideoScrubber: React.FC<{ className?: string }> = ({ clas
     });
   }, []);
 
-  const updateProgress = useCallback(() => {
-    pendingProgressRef.current = getScrollProgress();
+  const updateProgress = useCallback((event?: Event) => {
+    // Lenis supplies its actual interpolated scroll position. Using it makes the video
+    // follow the user's direction immediately instead of jumping/restarting on scroll-up.
+    const detail = (event as CustomEvent<{ scroll?: number }> | undefined)?.detail;
+    pendingProgressRef.current = getScrollProgress(detail?.scroll);
     syncFrame();
   }, [syncFrame]);
 
