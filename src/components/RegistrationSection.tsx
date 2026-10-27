@@ -74,21 +74,21 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      // Smooth entrance without pin or pinSpacing
+      // Smooth one-time entrance without scrub rewinding
       if (bgGlobeRef.current) {
         gsap.fromTo(
           bgGlobeRef.current,
-          { scale: 0.85, rotate: -15, opacity: 0.04 },
+          { scale: 0.9, rotate: -10, opacity: 0.02 },
           {
-            scale: 1.15,
-            rotate: 15,
-            opacity: 0.14,
-            ease: 'none',
+            scale: 1.1,
+            rotate: 10,
+            opacity: 0.12,
+            duration: 1.5,
+            ease: 'power2.out',
             scrollTrigger: {
               trigger: container,
               start: 'top 80%',
-              end: 'bottom 20%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );
@@ -97,16 +97,16 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
       if (headlineRef.current) {
         gsap.fromTo(
           headlineRef.current,
-          { opacity: 0.3, y: 25 },
+          { opacity: 0, y: 25 },
           {
             opacity: 1,
             y: 0,
+            duration: 0.8,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: container,
-              start: 'top 75%',
-              end: 'top 40%',
-              scrub: 0.8,
+              start: 'top 80%',
+              once: true,
             },
           }
         );

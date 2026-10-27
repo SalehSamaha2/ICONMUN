@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan to stretch the background video animation across the full page height from Hero to Footer, and make reverse playback trigger immediately upon upward scrolling.",
+  "updatedAt":  "2026-10-27T18:17:18.324393525Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

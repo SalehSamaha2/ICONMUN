@@ -28,27 +28,27 @@ export const FooterSection: React.FC = () => {
     if (!footer) return;
 
     const ctx = gsap.context(() => {
-      // 1. Contacts and details rise up with smooth scrub
+      // 1. Contacts and details rise up smoothly once
       if (contentRef.current) {
         gsap.fromTo(
           contentRef.current.children,
-          { y: 35, opacity: 0.2 },
+          { y: 30, opacity: 0 },
           {
             y: 0,
             opacity: 1,
             stagger: 0.08,
+            duration: 0.8,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: footer,
               start: 'top 85%',
-              end: 'top 40%',
-              scrub: 0.8,
+              once: true,
             },
           }
         );
       }
 
-      // 2. Giant outlined "ICON MUN" fills with gold from bottom to top
+      // 2. Giant outlined "ICON MUN" fills with gold smoothly once
       if (giantLogoRef.current) {
         gsap.fromTo(
           giantLogoRef.current,
@@ -59,12 +59,12 @@ export const FooterSection: React.FC = () => {
           {
             backgroundPosition: '0% 0%',
             opacity: 1,
-            ease: 'none',
+            duration: 1.0,
+            ease: 'power2.out',
             scrollTrigger: {
               trigger: giantLogoRef.current,
               start: 'top 95%',
-              end: 'bottom bottom',
-              scrub: 0.8,
+              once: true,
             },
           }
         );
