@@ -16,6 +16,7 @@ import { GlobalScrollEffects } from './components/GlobalScrollEffects';
 import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
 import { BackgroundVideoScrubber } from './components/BackgroundVideoScrubber';
+import { CinematicIntro } from './components/CinematicIntro';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -36,7 +37,6 @@ export default function App() {
     });
     lenisRef.current = lenis;
 
-    // Connect Lenis to ScrollTrigger without triggering component state updates
     lenis.on('scroll', () => {
       ScrollTrigger.update();
     });
@@ -45,16 +45,13 @@ export default function App() {
       lenis.raf(time * 1000);
     };
 
-    // prioritize=true: Lenis updates the scroll position BEFORE anything else in the frame
     gsap.ticker.add(updateTicker, false, true);
     gsap.ticker.lagSmoothing(500, 33);
 
-    // Refresh ScrollTrigger after fonts settle
     document.fonts.ready.then(() => {
       ScrollTrigger.refresh();
     });
 
-    // Debounced refresh on orientationchange and resize
     let resizeTimer: ReturnType<typeof setTimeout>;
     const handleDebouncedRefresh = () => {
       clearTimeout(resizeTimer);
@@ -113,6 +110,9 @@ export default function App() {
   return (
     <SiteDataProvider>
     <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
+      {/* One-time champagne-gold logo reveal, using ICON MUN's own intro footage */}
+      <CinematicIntro isHeroReady={true} onComplete={() => {}} />
+
       {/* Cinematic Full-Site Scroll-Scrubbed Background Video */}
       <BackgroundVideoScrubber />
 
