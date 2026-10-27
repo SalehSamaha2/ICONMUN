@@ -38,7 +38,10 @@ export default function App() {
     });
     lenisRef.current = lenis;
 
-    lenis.on('scroll', () => {\n      ScrollTrigger.update();\n      window.dispatchEvent(new Event('icon-mun-scroll'));\n    });
+    lenis.on('scroll', ({ scroll }: { scroll: number }) => {
+      ScrollTrigger.update();
+      window.dispatchEvent(new CustomEvent('icon-mun-scroll', { detail: { scroll } }));
+    });
 
     const updateTicker = (time: number) => {
       lenis.raf(time * 1000);
