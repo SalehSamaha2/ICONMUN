@@ -734,3 +734,31 @@ main > section[id] .rounded-xl {
   .icon-hero .hero-eyebrow, .icon-hero .hero-title, .icon-hero .hero-title + p,
   .icon-hero .hero-title ~ * { animation: none !important; }
 }
+
+
+/* ICON MUN — red-carpet art direction: oxblood, velvet black, warm ivory, restrained champagne. */
+:root, [data-theme="dark"] {
+  --paper: #100609; --surface: #19090f; --surface2: #260d17;
+  --ink: #f0e8e2; --inkstrong: #fff9f4; --ink2: #d8c5c5; --ink3: #b59b9f; --ink4: #8d737a;
+  --gold: #e8cba4; --goldmid: #c79b76; --golddeep: #885b55; --accent: #fff0df;
+  --shimmer: linear-gradient(90deg, #bd8c77 0%, #f1d6b3 28%, #fff5e8 50%, #e7c39c 74%, #9c655d 100%);
+  --gradient-text: linear-gradient(135deg, #fff5e8 0%, #f1d6b3 32%, #e8cba4 60%, #bd8c77 88%, #885b55 100%);
+  --btn-bg: linear-gradient(135deg, rgba(232,203,164,.2), rgba(117,36,55,.24));
+  --btn-bg-hover: linear-gradient(135deg, rgba(232,203,164,.32), rgba(117,36,55,.38));
+  --btn-text: #fff5e8; --btn-border: #e8cba4; --btn-glow: rgba(194,73,94,.25);
+  --card-bg: rgba(30,8,15,.4); --card-border: rgba(232,203,164,.28);
+  --card-border-hover: rgba(255,235,211,.72); --scroll-thumb: rgba(194,73,94,.65);
+  color: var(--ink);
+}
+:root { --icon-gold: #e8cba4; --icon-gold-bright: #fff0df; --icon-wine: #641b2d; }
+html, body { background-color: #100609; background-image: radial-gradient(ellipse at 50% 0%, rgba(112,22,45,.24), transparent 54%); }
+.gold-card { background: linear-gradient(145deg, rgba(255,241,226,.055), rgba(25,5,12,.24) 52%, rgba(112,22,45,.2)); border-color: rgba(232,203,164,.25); }
+.gold-card:hover { border-color: rgba(255,235,211,.65); box-shadow: 0 28px 85px rgba(0,0,0,.46), 0 0 32px rgba(133,24,52,.2); }
+.gold-btn-primary { background: linear-gradient(110deg, #7a2036, #bd7d69 48%, #e8cba4); color: #fff7ef; border-color: rgba(255,235,211,.72); }
+.icon-hero { background: radial-gradient(ellipse at 50% 42%, rgba(119,24,49,.26), transparent 49%), linear-gradient(180deg, rgba(16,6,9,.06), rgba(16,6,9,.2) 55%, #100609 100%); }
+main > section[id]:nth-of-type(even) { background: linear-gradient(180deg, rgba(38,13,23,.86), rgba(16,6,9,.92)); }
+main > section[id]:nth-of-type(odd) { background: linear-gradient(180deg, rgba(16,6,9,.91), rgba(34,9,18,.82)); }
+.constellation-section { background: radial-gradient(ellipse at 75% 45%, rgba(131,27,53,.24), transparent 42%), linear-gradient(180deg, #100609, #210b14 50%, #100609); border-color: rgba(232,203,164,.22); }
+.constellation-core { background: radial-gradient(circle, rgba(112,22,45,.86), rgba(16,6,9,.97) 72%); border-color: rgba(232,203,164,.62); }
+.constellation-node-icon { border-color: rgba(232,203,164,.42); }
+::selection { background: rgba(132,26,52,.5); color: #fff8f0; }
