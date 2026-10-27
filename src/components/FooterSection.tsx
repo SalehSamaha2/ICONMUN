@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Mail, MapPin, Phone, Instagram, Linkedin, Twitter, Send } from 'lucide-react';
+import { Mail, MapPin, Phone, Instagram, Linkedin, Twitter, Send, RotateCcw } from 'lucide-react';
 import { useSiteData } from '../lib/SiteData';
 import { safeUrl } from '../lib/supabase';
 
@@ -215,10 +215,19 @@ export const FooterSection: React.FC = () => {
           <div>
             © 2027 ICON MUN Directorate. All sovereign rights reserved.
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <span className="text-gold">ICON MUN 2027</span>
-            <span>·</span>
+            <span className="hidden sm:inline">·</span>
             <span>Chatham House Rule Preserved</span>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('icon-mun-replay-intro'))}
+              className="mt-2 sm:mt-0 inline-flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-gold/35 px-4 py-2 text-[10px] uppercase tracking-[0.18em] text-gold transition-all duration-300 hover:border-gold hover:bg-gold/10 hover:text-inkstrong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              aria-label="Replay ICON MUN intro animation"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Replay Intro
+            </button>
           </div>
         </div>
       </div>
