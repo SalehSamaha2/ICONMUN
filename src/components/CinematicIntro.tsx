@@ -195,7 +195,7 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ isHeroReady, onC
             <Play className="h-7 w-7 text-accent ml-1" />
           </div>
           <h2 className="font-cinzel text-2xl sm:text-3xl font-bold uppercase tracking-[0.2em] text-gold-shimmer mb-2">
-            ICON MUN 2026
+            ICON MUN 2027
           </h2>
           <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-ink2 max-w-xs mb-6 font-light">
             Behind the Masquerade of Global Diplomacy
