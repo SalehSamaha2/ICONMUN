@@ -83,8 +83,8 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) =>
     document.body.style.overflow = 'hidden';
     gsap.set(containerRef.current, { opacity: 1 });
     gsap.set([leftCurtainRef.current, rightCurtainRef.current], { xPercent: 0 });
-    gsap.set(emblemRef.current, { opacity: 0, scale: 0.72, y: 14 });
-    gsap.set(orbitRef.current, { opacity: 0, scale: 0.72, rotation: -35 });
+    gsap.set(emblemRef.current, { opacity: 0, scale: 0.42, y: 22, rotation: -12, filter: 'drop-shadow(0 0 0px rgba(198,166,106,0))' });
+    gsap.set(orbitRef.current, { opacity: 0, scale: 0.5, rotation: -70 });
     gsap.set(wordmarkRef.current, { opacity: 0, y: 22, letterSpacing: '0.42em' });
     gsap.set([taglineRef.current, eyebrowRef.current], { opacity: 0, y: 10 });
     gsap.set(lineRef.current, { scaleX: 0, transformOrigin: 'center' });
@@ -98,23 +98,24 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) =>
 
     timeline
       .to(lineRef.current, { scaleX: 1, duration: 0.55 }, 0.12)
-      .to(orbitRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 0.9 }, 0.2)
-      .to(emblemRef.current, { opacity: 1, scale: 1, y: 0, duration: 0.85 }, 0.48)
+      .to(orbitRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 1.15, ease: 'power3.out' }, 0.2)
+      .to(emblemRef.current, { opacity: 1, scale: 1, y: 0, rotation: 0, duration: 1.05, ease: 'back.out(1.35)', filter: 'drop-shadow(0 0 28px rgba(198,166,106,0.34))' }, 0.42)
+      .to(orbitRef.current, { rotation: 360, duration: 2.8, ease: 'none' }, 0.42)
       .to(wordmarkRef.current, { opacity: 1, y: 0, letterSpacing: '0.22em', duration: 0.8 }, 0.82)
       .to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.45 }, 1.12)
       .to(taglineRef.current, { opacity: 1, y: 0, duration: 0.55 }, 1.3)
       .to(progressRef.current, { scaleX: 1, duration: 1.05, ease: 'none' }, 1.45)
       .to({}, { duration: 0.38 })
-      .to([wordmarkRef.current, taglineRef.current, eyebrowRef.current, emblemRef.current, orbitRef.current, lineRef.current], {
-        opacity: 0,
-        y: -8,
-        duration: 0.28,
-        ease: 'power2.in',
-        stagger: 0.025,
+      // The emblem becomes the visual anchor, then the two panels part to reveal the real hero.
+      .to([wordmarkRef.current, taglineRef.current, eyebrowRef.current, lineRef.current], {
+        opacity: 0, y: -12, duration: 0.3, ease: 'power2.in', stagger: 0.02,
       })
-      .to(leftCurtainRef.current, { xPercent: -101, duration: 0.78, ease: 'power4.inOut' }, '<0.04')
-      .to(rightCurtainRef.current, { xPercent: 101, duration: 0.78, ease: 'power4.inOut' }, '<')
-      .to(containerRef.current, { opacity: 0, duration: 0.12 }, '<0.56');
+      .to(emblemRef.current, { scale: 1.32, duration: 0.42, ease: 'power2.inOut' }, '<')
+      .to(orbitRef.current, { scale: 1.18, opacity: 0, duration: 0.38, ease: 'power2.in' }, '<')
+      .to(leftCurtainRef.current, { xPercent: -101, duration: 0.9, ease: 'power4.inOut' }, '<0.06')
+      .to(rightCurtainRef.current, { xPercent: 101, duration: 0.9, ease: 'power4.inOut' }, '<')
+      .to(emblemRef.current, { opacity: 0, scale: 1.65, duration: 0.34, ease: 'power2.in' }, '<0.48')
+      .to(containerRef.current, { opacity: 0, duration: 0.18 }, '<0.62');
 
     return () => {
       timeline.kill();
