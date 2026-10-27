@@ -76,6 +76,7 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) =>
     if (reducedMotion || saveData) {
       sessionStorage.setItem('icon_mun_intro_seen', 'true');
       setIsDone(true);
+      onCompleteRef.current();
       return;
     }
 
@@ -159,7 +160,7 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) =>
           </div>
           <div className="absolute inset-[8px] rounded-full" style={{ border: '1px solid rgba(231,219,195,0.16)' }} />
           <div ref={emblemRef} className="relative flex h-[76px] w-[76px] sm:h-[88px] sm:w-[88px] items-center justify-center">
-            <img src="/brand/logo-mark.webp" alt="ICON MUN emblem" className="h-full w-full object-contain" />
+            <img src="/brand/logo-cutout.webp" alt="ICON MUN emblem" className="h-full w-full object-contain" />
           </div>
         </div>
 
