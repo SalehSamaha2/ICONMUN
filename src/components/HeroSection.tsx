@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ChevronDown, Sparkles, ArrowRight, ShieldCheck, Globe, Calendar, Award } from 'lucide-react';
+import { ChevronDown, Sparkles, ArrowRight, ShieldCheck, Calendar, Award } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -133,21 +133,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </p>
 
           {/* Quick Pillars / Highlights */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 max-w-xl mx-auto border-y border-gold/25">
+          <div className="grid grid-cols-3 gap-3 py-4 max-w-xl mx-auto border-y border-gold/25">
             <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
               <ShieldCheck className="w-4 h-4 text-gold mb-1" />
               <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">5 Councils</span>
               <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Simulation</span>
-            </div>
-            <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
-              <Globe className="w-4 h-4 text-gold mb-1" />
-              <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">300+</span>
-              <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Delegates</span>
-            </div>
-            <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
-              <Calendar className="w-4 h-4 text-gold mb-1" />
-              <span className="font-cinzel text-sm sm:text-base font-bold text-accent text-contrast">3 Days</span>
-              <span className="text-[9px] uppercase tracking-wider text-ink2 text-contrast">Debate & Gala</span>
             </div>
             <div className="flex flex-col items-center p-2 rounded-lg bg-black/40 border border-gold/25 shadow-md">
               <Award className="w-4 h-4 text-gold mb-1" />
