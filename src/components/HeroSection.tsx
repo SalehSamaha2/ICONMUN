@@ -6,12 +6,14 @@ import { ChevronDown, Sparkles, ArrowRight, ShieldCheck, Globe, Calendar, Award 
 gsap.registerPlugin(ScrollTrigger);
 
 interface HeroSectionProps {
+  introComplete: boolean;
   onHeroReady?: () => void;
   onHeroProgressChange?: (progress: number) => void;
   onOpenRegister?: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
+  introComplete,
   onHeroReady,
   onHeroProgressChange,
   onOpenRegister,
@@ -29,25 +31,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      // Entrance animation for hero elements
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-      if (titleRef.current) {
-        tl.fromTo(
-          titleRef.current,
-          { opacity: 0, y: 30, letterSpacing: '0.4em' },
-          { opacity: 1, y: 0, letterSpacing: '0.24em', duration: 1.2 },
-          0.1
-        );
-      }
-
-      if (contentRef.current) {
-        tl.fromTo(
-          contentRef.current,
-          { opacity: 0, y: 25 },
-          { opacity: 1, y: 0, duration: 1.0 },
-          0.3
-        );
+      // The intro reveal controls the hero entrance so the animation continues
+      // into the actual page instead of ending as a disconnected overlay.
+      if (titleRef.current && contentRef.current) {
+        if (!introComplete) {
+          gsap.set(titleRef.current, { opacity: 0, y: 30, letterSpacing: '0.4em' });
+          gsap.set(contentRef.current, { opacity: 0, y: 25 });
+        } else {
+          const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+          tl.fromTo(
+            titleRef.current,
+            { opacity: 0, y: 30, letterSpacing: '0.4em' },
+            { opacity: 1, y: 0, letterSpacing: '0.24em', duration: 1.2 },
+            0.1
+          ).fromTo(
+            contentRef.current,
+            { opacity: 0, y: 25 },
+            { opacity: 1, y: 0, duration: 1.0 },
+            0.3
+          );
+        }
       }
 
       // Parallax & scroll progress tracking
@@ -65,7 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }, container);
 
     return () => ctx.revert();
-  }, [onHeroProgressChange, onHeroReady]);
+  }, [introComplete, onHeroProgressChange, onHeroReady]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
