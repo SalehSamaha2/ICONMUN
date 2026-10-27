@@ -79,9 +79,9 @@ export const Navigation: React.FC<NavigationProps> = ({
               {/* Logo Mask Motif */}
               <div className="h-11 w-11 shrink-0 rounded-full bg-[#E7DBC3] flex items-center justify-center">
                 <img
-                  src="/brand/logo-mark.webp"
+                  src="https://d2ol7oe51mr4n9.cloudfront.net/user_3L3BcEGyaQpmkmEhNe5xVxLe3my/9798219d-d695-44ba-ac50-1a0b70e05a70.jpg"
                   alt="ICON MUN emblem"
-                  className="h-[86%] w-[86%] object-contain"
+                  className="h-full w-full rounded-full object-cover"
                   loading="lazy"
                 />
               </div>
