@@ -97,31 +97,31 @@ export const CinematicIntro: React.FC<CinematicIntroProps> = ({ onComplete }) =>
     timelineRef.current = timeline;
 
     timeline
-      .to(lineRef.current, { scaleX: 1, duration: 0.55 }, 0.12)
-      .to(orbitRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 1.15, ease: 'power3.out' }, 0.2)
-      .to(emblemRef.current, { opacity: 1, scale: 1, y: 0, rotation: 0, duration: 1.05, ease: 'back.out(1.35)', filter: 'drop-shadow(0 0 28px rgba(198,166,106,0.34))' }, 0.42)
-      .to(orbitRef.current, { rotation: 360, duration: 2.8, ease: 'none' }, 0.42)
-      .to(wordmarkRef.current, { opacity: 1, y: 0, letterSpacing: '0.22em', duration: 0.8 }, 0.82)
-      .to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.45 }, 1.12)
-      .to(taglineRef.current, { opacity: 1, y: 0, duration: 0.55 }, 1.3)
-      .to(progressRef.current, { scaleX: 1, duration: 1.05, ease: 'none' }, 1.45)
-      .to({}, { duration: 0.38 })
+      .to(lineRef.current, { scaleX: 1, duration: 0.22, ease: 'power4.out' }, 0.02)
+      .to(orbitRef.current, { opacity: 1, scale: 1, rotation: 0, duration: 0.42, ease: 'power4.out' }, 0.03)
+      .to(emblemRef.current, { opacity: 1, scale: 1, y: 0, rotation: 0, duration: 0.42, ease: 'back.out(1.8)', filter: 'drop-shadow(0 0 34px rgba(198,166,106,0.48))' }, 0.06)
+      .to(orbitRef.current, { rotation: 360, duration: 1.15, ease: 'none' }, 0.08)
+      .to(wordmarkRef.current, { opacity: 1, y: 0, letterSpacing: '0.22em', duration: 0.34, ease: 'power4.out' }, 0.18)
+      .to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.22 }, 0.25)
+      .to(taglineRef.current, { opacity: 1, y: 0, duration: 0.24 }, 0.3)
+      .to(progressRef.current, { scaleX: 1, duration: 0.48, ease: 'power2.inOut' }, 0.32)
+      .to({}, { duration: 0.12 })
       .to([wordmarkRef.current, taglineRef.current, eyebrowRef.current, lineRef.current], {
-        opacity: 0, y: -12, duration: 0.3, ease: 'power2.in', stagger: 0.02,
+        opacity: 0, y: -12, duration: 0.16, ease: 'power4.in', stagger: 0.01,
       })
       .to(emblemRef.current, {
         x: () => -window.innerWidth / 2 + 76,
         y: () => 40 - window.innerHeight * 0.34,
         scale: 0.29,
         rotation: 0,
-        duration: 0.9,
+        duration: 0.42,
         ease: 'power4.inOut',
       }, '<')
-      .to(orbitRef.current, { scale: 1.18, opacity: 0, duration: 0.38, ease: 'power2.in' }, '<')
-      .to(leftCurtainRef.current, { xPercent: -101, duration: 0.9, ease: 'power4.inOut' }, '<0.06')
+      .to(orbitRef.current, { scale: 1.18, opacity: 0, duration: 0.2, ease: 'power2.in' }, '<')
+      .to(leftCurtainRef.current, { xPercent: -101, duration: 0.48, ease: 'power4.inOut' }, '<0.06')
       .to(rightCurtainRef.current, { xPercent: 101, duration: 0.9, ease: 'power4.inOut' }, '<')
-      .to(emblemRef.current, { opacity: 0, duration: 0.16, ease: 'power1.out' }, '<0.74')
-      .to(containerRef.current, { opacity: 0, duration: 0.18 }, '<0.76');
+      .to(emblemRef.current, { opacity: 0, duration: 0.08, ease: 'power1.out' }, '<0.38')
+      .to(containerRef.current, { opacity: 0, duration: 0.12 }, '<0.4');
 
     return () => {
       timeline.kill();
