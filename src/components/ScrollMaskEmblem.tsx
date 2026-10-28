@@ -3,7 +3,6 @@ import * as THREE from 'three';
 
 const GOLD = 0xe8cba4;
 const WINE = 0x641b2d;
-const DARK = 0x16070c;
 
 /**
  * Procedural 3D masquerade mask. This is actual extruded geometry with eye
