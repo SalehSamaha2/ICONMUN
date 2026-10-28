@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, Mail, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { getSupabase } from '../lib/supabase';
-import { APPLICATION_STATUSES, DELEGATION_LABELS } from './config';
+import { APPLICATION_STATUSES, DELEGATION_LABELS, TRACK_LABELS } from './config';
 import { downloadCsv, toCsv } from './csv';
 import {
   Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorBox, Label, PageHeader, Select, Spinner, TextArea,
@@ -21,20 +21,34 @@ export interface Application {
   statement: string;
   status: string;
   internal_notes: string;
+  track: string;
+  details: Record<string, string> | null;
 }
+
+const TRACK_TABS = [
+  { value: 'all', label: 'All' },
+  { value: 'delegate', label: 'Delegates' },
+  { value: 'volunteer', label: 'Volunteers' },
+  { value: 'security', label: 'Security' },
+  { value: 'media', label: 'Media' },
+];
+
+/** The second column: council for delegates, chosen role for team applications. */
+const roleOf = (r: Application) => (r.track === 'delegate' ? r.committee : r.details?.focus || '—');
 
 export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const s = APPLICATION_STATUSES.find((x) => x.value === status);
   return <Badge tone={s?.tone || 'gray'}>{s?.label || status}</Badge>;
 };
 
-export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ initialStatus = 'all' }) => {
+export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrack?: string }> = ({ initialStatus = 'all', initialTrack = 'all' }) => {
   const toast = useToast();
   const [rows, setRows] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(initialStatus);
+  const [track, setTrack] = useState(TRACK_TABS.some((t) => t.value === initialTrack) ? initialTrack : 'all');
   const [committee, setCommittee] = useState('all');
 
   const [openId, setOpenId] = useState<string | null>(null);
@@ -60,24 +74,33 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const counts = useMemo(() => {
+  const trackRows = useMemo(() => (track === 'all' ? rows : rows.filter((r) => r.track === track)), [rows, track]);
+
+  const trackCounts = useMemo(() => {
     const c: Record<string, number> = { all: rows.length };
-    APPLICATION_STATUSES.forEach((s) => (c[s.value] = 0));
-    rows.forEach((r) => (c[r.status] = (c[r.status] || 0) + 1));
+    rows.forEach((r) => (c[r.track] = (c[r.track] || 0) + 1));
     return c;
   }, [rows]);
 
-  const committees = useMemo(() => Array.from(new Set(rows.map((r) => r.committee))).sort(), [rows]);
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: trackRows.length };
+    APPLICATION_STATUSES.forEach((s) => (c[s.value] = 0));
+    trackRows.forEach((r) => (c[r.status] = (c[r.status] || 0) + 1));
+    return c;
+  }, [trackRows]);
+
+  const showCouncilFilter = track === 'all' || track === 'delegate';
+  const committees = useMemo(() => Array.from(new Set(rows.filter((r) => r.track === 'delegate').map((r) => r.committee))).sort(), [rows]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return rows.filter(
+    return trackRows.filter(
       (r) =>
         (status === 'all' || r.status === status) &&
-        (committee === 'all' || r.committee === committee) &&
-        (!q || [r.full_name, r.email, r.institution, r.first_country, r.committee].some((x) => (x || '').toLowerCase().includes(q)))
+        (committee === 'all' || !showCouncilFilter || r.committee === committee) &&
+        (!q || [r.full_name, r.email, r.institution, r.first_country, r.committee, r.details?.focus].some((x) => (x || '').toLowerCase().includes(q)))
     );
-  }, [rows, search, status, committee]);
+  }, [trackRows, search, status, committee, showCouncilFilter]);
 
   const open = rows.find((r) => r.id === openId) || null;
   useEffect(() => {
@@ -124,10 +147,13 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
 
   const exportCsv = () => {
     const csv = toCsv(
-      ['Submitted', 'Status', 'Name', 'Email', 'Institution', 'Delegation', 'Council', 'Country preference', 'Experience', 'Message', 'Internal notes'],
-      filtered.map((r) => [r.created_at, r.status, r.full_name, r.email, r.institution, DELEGATION_LABELS[r.delegation_type] || r.delegation_type, r.committee, r.first_country, r.experience_level, r.statement, r.internal_notes])
+      ['Submitted', 'Track', 'Status', 'Name', 'Email', 'Phone', 'Institution', 'Delegation', 'Council', 'Country preference', 'Experience', 'Team role', 'Availability', 'Message', 'Internal notes'],
+      filtered.map((r) => {
+        const d = r.track === 'delegate';
+        return [r.created_at, TRACK_LABELS[r.track] || r.track, r.status, r.full_name, r.email, r.details?.phone || '', r.institution, d ? DELEGATION_LABELS[r.delegation_type] || r.delegation_type : '', d ? r.committee : '', d ? r.first_country : '', d ? r.experience_level : '', d ? '' : r.details?.focus || '', r.details?.availability || '', r.statement, r.internal_notes];
+      })
     );
-    downloadCsv(`icon-mun-applications-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+    downloadCsv(`icon-mun-${track === 'all' ? 'applications' : track}-${new Date().toISOString().slice(0, 10)}.csv`, csv);
     toast('info', `Exported ${filtered.length} application${filtered.length === 1 ? '' : 's'}.`);
   };
 
@@ -136,7 +162,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
       <PageHeader
         eyebrow="Registry"
         title="Applications"
-        subtitle="Everyone who registered interest. Only organisers can see this page."
+        subtitle="Everyone who applied, separated by type. Only organisers can see this page."
         actions={
           <>
             <Button variant="subtle" onClick={load}><RefreshCw className={cx('h-4 w-4', loading && 'animate-spin')} /> Refresh</Button>
@@ -144,6 +170,24 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
           </>
         }
       />
+
+      {/* one tab per kind of application */}
+      <div className="mb-5 flex flex-wrap gap-1 border-b border-white/10" role="tablist" aria-label="Application type">
+        {TRACK_TABS.map((t) => (
+          <button
+            key={t.value}
+            role="tab"
+            aria-selected={track === t.value}
+            onClick={() => { setTrack(t.value); setCommittee('all'); }}
+            className={cx(
+              '-mb-px cursor-pointer border-b-2 px-4 py-2.5 text-sm font-medium transition-colors',
+              track === t.value ? 'border-[#D4AF6A] text-[#FFF3D6]' : 'border-transparent text-[#8E8678] hover:text-[#F3DFA2]'
+            )}
+          >
+            {t.label} <span className="ml-1 text-xs opacity-60">{trackCounts[t.value] ?? 0}</span>
+          </button>
+        ))}
+      </div>
 
       {/* status chips */}
       <div className="mb-4 flex flex-wrap gap-2">
@@ -161,7 +205,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
         ))}
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_220px]">
+      <div className={cx('mb-4 grid grid-cols-1 gap-3', showCouncilFilter && 'sm:grid-cols-[1fr_220px]')}>
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6F685B]" />
           <input
@@ -172,14 +216,16 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
             className="w-full rounded-lg border border-white/10 bg-[#121212] py-2.5 pl-10 pr-3.5 text-sm text-[#F4EFE6] placeholder-white/25 focus:border-[#D4AF6A]/70 focus:outline-none focus:ring-2 focus:ring-[#D4AF6A]/15"
           />
         </div>
-        <Select value={committee} onChange={(e) => setCommittee(e.target.value)} aria-label="Filter by council">
-          <option value="all">All councils</option>
-          {committees.map((c) => <option key={c} value={c}>{c}</option>)}
-        </Select>
+        {showCouncilFilter && (
+          <Select value={committee} onChange={(e) => setCommittee(e.target.value)} aria-label="Filter by council">
+            <option value="all">All councils</option>
+            {committees.map((c) => <option key={c} value={c}>{c}</option>)}
+          </Select>
+        )}
       </div>
 
       {loading ? <Spinner /> : error ? <ErrorBox message={error} onRetry={load} /> : filtered.length === 0 ? (
-        <Card><EmptyState title={rows.length === 0 ? 'No applications yet' : 'Nothing matches those filters'} hint={rows.length === 0 ? 'When someone submits the registration form on the website, they appear here.' : 'Try clearing the search or the status filter.'} /></Card>
+        <Card><EmptyState title={rows.length === 0 ? 'No applications yet' : 'Nothing matches those filters'} hint={rows.length === 0 ? 'When someone submits a form on the website, they appear here.' : 'Try clearing the search or the status filter.'} /></Card>
       ) : (
         <Card className="overflow-hidden">
           {/* desktop table */}
@@ -187,8 +233,8 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-[11px] uppercase tracking-[0.16em] text-[#8E8678]">
-                  <th className="px-4 py-3 font-medium">Delegate</th>
-                  <th className="px-4 py-3 font-medium">Council</th>
+                  <th className="px-4 py-3 font-medium">Applicant</th>
+                  <th className="px-4 py-3 font-medium">{track === 'delegate' ? 'Council' : track === 'all' ? 'Type · council / role' : 'Role'}</th>
                   <th className="px-4 py-3 font-medium">Submitted</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3" />
@@ -201,7 +247,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
                       <div className="font-medium text-[#F4EFE6]">{r.full_name}</div>
                       <div className="text-xs text-[#8E8678]">{r.email} · {r.institution || '—'}</div>
                     </td>
-                    <td className="px-4 py-3 text-[#C4BAA8]">{r.committee}</td>
+                    <td className="px-4 py-3 text-[#C4BAA8]">{track === 'all' && <span className="mr-2 rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#8E8678]">{TRACK_LABELS[r.track] || r.track}</span>}{roleOf(r)}</td>
                     <td className="px-4 py-3 text-xs text-[#8E8678]" title={formatDate(r.created_at)}>{timeAgo(r.created_at)}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <Select value={r.status} onChange={(e) => quickStatus(r, e.target.value)} aria-label={`Status for ${r.full_name}`} className="!w-auto !py-1.5 text-xs">
@@ -225,7 +271,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
                   </div>
                   <StatusBadge status={r.status} />
                 </div>
-                <div className="mt-1.5 text-xs text-[#6F685B]">{r.committee} · {timeAgo(r.created_at)}</div>
+                <div className="mt-1.5 text-xs text-[#6F685B]">{(TRACK_LABELS[r.track] || r.track)} · {roleOf(r)} · {timeAgo(r.created_at)}</div>
               </button>
             ))}
           </div>
@@ -252,12 +298,21 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
           <div className="space-y-6">
             <dl className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               {[
+                ['Type', TRACK_LABELS[open.track] || open.track],
                 ['Email', <a key="m" href={`mailto:${open.email}`} className="inline-flex items-center gap-1.5 text-[#F3DFA2] underline-offset-2 hover:underline"><Mail className="h-3.5 w-3.5" />{open.email}</a>],
                 ['School / institution', open.institution || '—'],
-                ['Delegation', DELEGATION_LABELS[open.delegation_type] || open.delegation_type],
-                ['Council preference', open.committee],
-                ['Country preference', open.first_country],
-                ['Experience', open.experience_level],
+                ...(open.track === 'delegate'
+                  ? [
+                      ['Delegation', DELEGATION_LABELS[open.delegation_type] || open.delegation_type],
+                      ['Council preference', open.committee],
+                      ['Country preference', open.first_country],
+                      ['Experience', open.experience_level],
+                    ]
+                  : [
+                      ['Role / specialty', open.details?.focus || '—'],
+                      ['Phone', open.details?.phone || '—'],
+                      ['Availability', open.details?.availability || '—'],
+                    ]),
               ].map(([k, v]) => (
                 <div key={k as string}>
                   <dt className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">{k}</dt>
@@ -267,7 +322,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
             </dl>
             {open.statement && (
               <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">Message from the delegate</div>
+                <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">{open.track === 'delegate' ? 'Message from the delegate' : 'Their answer'}</div>
                 <p className="mt-1.5 whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-[#121212] p-3.5 text-sm leading-relaxed text-[#E6E1D8]">{open.statement}</p>
               </div>
             )}
@@ -276,7 +331,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string }> = ({ init
               <Select id="app-status" value={draftStatus} onChange={(e) => setDraftStatus(e.target.value)}>
                 {APPLICATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
               </Select>
-              <p className="mt-1.5 text-xs text-[#6F685B]">Changing the status does not email the delegate. Contact them yourself.</p>
+              <p className="mt-1.5 text-xs text-[#6F685B]">Changing the status does not email the applicant. Contact them yourself.</p>
             </div>
             <div>
               <Label htmlFor="app-notes" hint="Private. Never shown to delegates or on the website.">Internal notes</Label>

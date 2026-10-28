@@ -37,3 +37,15 @@ Never put the `service_role` key anywhere in this project.
 - Changing an application status does not email the delegate.
 - Panel signs you out after 60 minutes of inactivity.
 - Registration collects names and emails (probably of students): add a real privacy notice before launch.
+
+## Registration switches and team applications
+
+Run `supabase/team_applications.sql` once in the Supabase SQL Editor (it is safe to run again). It adds the four registration tracks: delegate, volunteer, security and media.
+
+In the admin panel, **Registry > Registration** shows one card per track:
+
+- **Accepting applications** is the on/off switch. It saves immediately.
+- **Opens at / Closes at** are optional. A track accepts applications only while the switch is on and the current time is inside those dates, so it opens and closes by itself.
+- **Closed message** is what visitors see when a track is closed (for example `Closed` or `Full`).
+
+The database enforces the same rule, so a closed track rejects applications even if someone bypasses the website. Team applications appear under **Registry > Applications**, in their own tabs.

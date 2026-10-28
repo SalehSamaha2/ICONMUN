@@ -8,12 +8,15 @@ import {
   type ScheduleGroupItem,
   type SecretariatItem,
   type SiteContent,
+  type TrackItem,
+  type TrackKey,
 } from '../data/defaults';
 
 const SiteDataContext = createContext<SiteContent>(DEFAULT_CONTENT);
 
 export const useSiteData = () => useContext(SiteDataContext);
 
+const TRACK_KEYS: TrackKey[] = ['delegate', 'volunteer', 'security', 'media'];
 const ICON_KEYS: IconKey[] = ['shield', 'eye', 'lock', 'activity', 'landmark'];
 
 /**
@@ -34,12 +37,13 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     (async () => {
       try {
         const sb = await clientP;
-        const [com, days, evs, sec, set] = await Promise.all([
+        const [com, days, evs, sec, set, trk] = await Promise.all([
           sb.from('committees').select('*').eq('is_published', true).order('sort_order'),
           sb.from('schedule_days').select('*').eq('is_published', true).order('sort_order'),
           sb.from('schedule_events').select('*').eq('is_published', true).order('sort_order'),
           sb.from('secretariat').select('*').eq('is_published', true).order('sort_order'),
           sb.from('settings').select('key,value'),
+          sb.from('registration_tracks').select('*').order('sort_order'),
         ]);
         if (cancelled) return;
 
@@ -102,6 +106,24 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           const merged = { ...DEFAULT_CONTENT.settings };
           for (const row of set.data) merged[row.key] = row.value;
           next.settings = merged;
+        }
+
+        if (!trk.error && trk.data && trk.data.length > 0) {
+          const fromDb = new Map<string, TrackItem>();
+          for (const r of trk.data) {
+            if (!TRACK_KEYS.includes(r.key)) continue;
+            fromDb.set(r.key, {
+              key: r.key,
+              title: r.title,
+              description: r.description ?? '',
+              isOpen: !!r.is_open,
+              opensAt: r.opens_at ?? null,
+              closesAt: r.closes_at ?? null,
+              closedLabel: r.closed_label || 'Closed',
+            });
+          }
+          // keep the fixed order and fall back to defaults for any track the database lacks
+          next.tracks = DEFAULT_CONTENT.tracks.map((d) => fromDb.get(d.key) ?? d);
         }
 
         // Only re-render (and rebuild the scroll animations) if something really differs.

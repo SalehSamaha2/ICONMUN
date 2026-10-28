@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
-  CalendarDays, ClipboardList, History, Inbox, Landmark, LayoutDashboard, Loader2, LogOut, Menu, Settings, ShieldAlert, Users, X, ExternalLink,
+  CalendarDays, ClipboardList, DoorOpen, History, Inbox, Landmark, LayoutDashboard, Loader2, LogOut, Menu, Settings, ShieldAlert, Users, X, ExternalLink,
 } from 'lucide-react';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { ApplicationsManager } from './ApplicationsManager';
 import { AuditLog } from './AuditLog';
 import { ContentManager } from './ContentManager';
 import { Dashboard } from './Dashboard';
+import { RegistrationManager } from './RegistrationManager';
 import { SettingsManager } from './SettingsManager';
 import { Button, Card, Label, TextInput, ToastProvider, cx } from './ui';
 
@@ -15,7 +16,7 @@ const IDLE_LIMIT_MS = 60 * 60 * 1000; // sign out after 60 minutes without activ
 
 const NAV: Array<{ group: string; items: Array<{ route: string; label: string; icon: React.ComponentType<{ className?: string }> }> }> = [
   { group: 'Overview', items: [{ route: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }] },
-  { group: 'Registry', items: [{ route: 'applications', label: 'Applications', icon: Inbox }] },
+  { group: 'Registry', items: [{ route: 'registrations', label: 'Registration', icon: DoorOpen }, { route: 'applications', label: 'Applications', icon: Inbox }] },
   {
     group: 'Website content',
     items: [
@@ -214,7 +215,8 @@ const AdminInner: React.FC = () => {
   const route = nav.route;
   let page: React.ReactNode;
   if (route === 'dashboard') page = <Dashboard go={go} />;
-  else if (route === 'applications') page = <ApplicationsManager key={nav.query.get('status') || 'all'} initialStatus={nav.query.get('status') || 'all'} />;
+  else if (route === 'applications') page = <ApplicationsManager key={`${nav.query.get('status') || 'all'}-${nav.query.get('track') || 'all'}`} initialStatus={nav.query.get('status') || 'all'} initialTrack={nav.query.get('track') || 'all'} />;
+  else if (route === 'registrations') page = <RegistrationManager go={go} />;
   else if (route === 'settings') page = <SettingsManager />;
   else if (route === 'activity') page = <AuditLog />;
   else if (['committees', 'schedule_days', 'schedule_events', 'secretariat'].includes(route)) page = <ContentManager key={route} resourceKey={route} />;

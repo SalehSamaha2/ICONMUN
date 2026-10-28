@@ -64,7 +64,7 @@ export const SettingsManager: React.FC = () => {
       <PageHeader
         eyebrow="Content"
         title="Site settings"
-        subtitle="Contact details, social links and the registration switch. Everything here is public on the website."
+        subtitle="Contact details and social links. Everything here is public on the website. Registration switches now live under Registry > Registration."
         actions={<Button variant="primary" loading={saving} disabled={dirtyKeys.length === 0} onClick={save}>Save changes{dirtyKeys.length ? ` (${dirtyKeys.length})` : ''}</Button>}
       />
       {loading ? <Spinner /> : error ? <ErrorBox message={error} onRetry={load} /> : (

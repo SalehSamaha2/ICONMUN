@@ -157,7 +157,6 @@ export interface SettingDef {
 }
 
 export const SETTINGS: SettingDef[] = [
-  { key: 'registration_open', label: 'Registration is open', kind: 'toggle', group: 'Registration', help: 'When off, the form shows "closed" and the database rejects new applications.' },
   { key: 'venue', label: 'Venue & location', kind: 'text', group: 'Contact details', placeholder: 'Riyadh, Saudi Arabia', help: 'Shown in the footer. Leave empty to show "TBA".' },
   { key: 'contact_email', label: 'Contact email', kind: 'email', group: 'Contact details', placeholder: 'secretariat@example.com' },
   { key: 'contact_phone', label: 'Phone / contact', kind: 'text', group: 'Contact details', placeholder: '+966 …' },
@@ -179,4 +178,11 @@ export const DELEGATION_LABELS: Record<string, string> = {
   single: 'Single delegate',
   double: 'Double delegate',
   head: 'Head delegate',
+};
+
+export const TRACK_LABELS: Record<string, string> = {
+  delegate: 'Delegates',
+  volunteer: 'Volunteers',
+  security: 'Security',
+  media: 'Media',
 };

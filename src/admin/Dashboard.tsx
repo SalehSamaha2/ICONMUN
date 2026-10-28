@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, CalendarDays, Inbox, Landmark, Settings, Users } from 'lucide-react';
+import { getTrackStatus } from '../lib/tracks';
+import type { TrackItem } from '../data/defaults';
 import { getSupabase } from '../lib/supabase';
-import { APPLICATION_STATUSES } from './config';
+import { APPLICATION_STATUSES, TRACK_LABELS } from './config';
 import { StatusBadge, type Application } from './ApplicationsManager';
-import { Button, Card, ErrorBox, PageHeader, Spinner, Toggle, cx, friendlyError, timeAgo, useToast } from './ui';
+import { Button, Card, ErrorBox, PageHeader, Spinner, cx, friendlyError, timeAgo } from './ui';
 
-type Slim = Pick<Application, 'id' | 'created_at' | 'status' | 'committee' | 'full_name' | 'institution'>;
+type Slim = Pick<Application, 'id' | 'created_at' | 'status' | 'committee' | 'full_name' | 'institution' | 'track'>;
 
 const Stat: React.FC<{ label: string; value: number | string; tone?: string; onClick?: () => void; hint?: string }> = ({ label, value, tone, onClick, hint }) => (
   <button onClick={onClick} disabled={!onClick} className={cx('block h-full w-full cursor-pointer text-left disabled:cursor-default')}>
@@ -18,9 +20,8 @@ const Stat: React.FC<{ label: string; value: number | string; tone?: string; onC
 );
 
 export const Dashboard: React.FC<{ go: (route: string) => void }> = ({ go }) => {
-  const toast = useToast();
   const [apps, setApps] = useState<Slim[]>([]);
-  const [regOpen, setRegOpen] = useState(true);
+  const [tracks, setTracks] = useState<TrackItem[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,8 +32,8 @@ export const Dashboard: React.FC<{ go: (route: string) => void }> = ({ go }) => 
     try {
       const sb = await getSupabase()!;
       const [a, s, c1, c2, c3, c4] = await Promise.all([
-        sb.from('applications').select('id,created_at,status,committee,full_name,institution').order('created_at', { ascending: false }).limit(2000),
-        sb.from('settings').select('value').eq('key', 'registration_open').maybeSingle(),
+        sb.from('applications').select('id,created_at,status,committee,full_name,institution,track').order('created_at', { ascending: false }).limit(2000),
+        sb.from('registration_tracks').select('*').order('sort_order'),
         sb.from('committees').select('id', { count: 'exact', head: true }),
         sb.from('schedule_events').select('id', { count: 'exact', head: true }),
         sb.from('secretariat').select('id', { count: 'exact', head: true }),
@@ -40,22 +41,17 @@ export const Dashboard: React.FC<{ go: (route: string) => void }> = ({ go }) => 
       ]);
       if (a.error) throw a.error;
       setApps((a.data || []) as Slim[]);
-      setRegOpen(!['false', 'no', '0', 'closed'].includes((s.data?.value || 'true').toLowerCase()));
+      setTracks(
+        (s.data || []).map((r: Record<string, string | boolean | null>) => ({
+          key: r.key as TrackItem['key'], title: String(r.title), description: String(r.description ?? ''), isOpen: !!r.is_open,
+          opensAt: (r.opens_at as string) ?? null, closesAt: (r.closes_at as string) ?? null, closedLabel: String(r.closed_label || 'Closed'),
+        }))
+      );
       setCounts({ committees: c1.count || 0, events: c2.count || 0, secretariat: c3.count || 0, days: c4.count || 0 });
     } catch (e) { setError(friendlyError(e)); }
     finally { setLoading(false); }
   }, []);
   useEffect(() => { load(); }, [load]);
-
-  const toggleReg = async (next: boolean) => {
-    setRegOpen(next);
-    try {
-      const sb = await getSupabase()!;
-      const { error: e } = await sb.from('settings').upsert({ key: 'registration_open', value: next ? 'true' : 'false' }, { onConflict: 'key' });
-      if (e) throw e;
-      toast('ok', next ? 'Registration is open.' : 'Registration is closed.');
-    } catch (e) { setRegOpen(!next); toast('err', friendlyError(e)); }
-  };
 
   const byStatus = useMemo(() => {
     const m: Record<string, number> = {};
@@ -78,7 +74,7 @@ export const Dashboard: React.FC<{ go: (route: string) => void }> = ({ go }) => 
 
   const byCommittee = useMemo(() => {
     const m: Record<string, number> = {};
-    apps.forEach((a) => (m[a.committee] = (m[a.committee] || 0) + 1));
+    apps.filter((a) => a.track === 'delegate').forEach((a) => (m[a.committee] = (m[a.committee] || 0) + 1));
     return Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [apps]);
   const maxCom = Math.max(1, ...byCommittee.map(([, n]) => n));
@@ -121,14 +117,25 @@ export const Dashboard: React.FC<{ go: (route: string) => void }> = ({ go }) => 
             </Card>
 
             <Card className="p-5">
-              <h2 className="mb-4 font-cinzel text-base font-semibold text-[#F3DFA2]">Registration</h2>
-              <div className="flex items-start gap-4">
-                <Toggle checked={regOpen} onChange={toggleReg} label="Registration open" />
-                <div>
-                  <div className="text-sm font-medium text-[#F4EFE6]">{regOpen ? 'Open to delegates' : 'Closed'}</div>
-                  <p className="mt-0.5 text-xs text-[#6F685B]">{regOpen ? 'The form accepts new applications.' : 'The form shows “closed” and the database rejects submissions.'}</p>
-                </div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-cinzel text-base font-semibold text-[#F3DFA2]">Registration</h2>
+                <Button size="sm" variant="ghost" onClick={() => go('registrations')}>Manage <ArrowRight className="h-3.5 w-3.5" /></Button>
               </div>
+              <ul className="space-y-2">
+                {tracks.map((t) => {
+                  const st = getTrackStatus(t);
+                  return (
+                    <li key={t.key} className="flex items-center justify-between text-sm">
+                      <span className="text-[#C4BAA8]">{TRACK_LABELS[t.key]}</span>
+                      <span className={cx('inline-flex items-center gap-1.5 text-xs', st.state === 'open' ? 'text-emerald-300' : st.state === 'upcoming' ? 'text-amber-300' : 'text-[#8E8678]')}>
+                        <span className={cx('h-1.5 w-1.5 rounded-full', st.state === 'open' ? 'bg-emerald-300' : st.state === 'upcoming' ? 'bg-amber-300' : 'bg-rose-300/70')} />
+                        {st.label}
+                      </span>
+                    </li>
+                  );
+                })}
+                {tracks.length === 0 && <li className="text-xs text-[#6F685B]">Run supabase/team_applications.sql to enable registration switches.</li>}
+              </ul>
               <div className="mt-6 space-y-2.5">
                 {APPLICATION_STATUSES.map((s) => (
                   <div key={s.value} className="flex items-center justify-between text-sm">
@@ -152,7 +159,7 @@ export const Dashboard: React.FC<{ go: (route: string) => void }> = ({ go }) => 
                     <li key={a.id} className="flex items-center justify-between gap-3 py-2.5">
                       <div className="min-w-0">
                         <div className="truncate text-sm font-medium text-[#F4EFE6]">{a.full_name}</div>
-                        <div className="truncate text-xs text-[#6F685B]">{a.committee} · {timeAgo(a.created_at)}</div>
+                        <div className="truncate text-xs text-[#6F685B]">{TRACK_LABELS[a.track] || a.track}{a.track === 'delegate' ? ` · ${a.committee}` : ''} · {timeAgo(a.created_at)}</div>
                       </div>
                       <StatusBadge status={a.status} />
                     </li>

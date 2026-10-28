@@ -46,11 +46,25 @@ export interface SecretariatItem {
 
 export type SiteSettings = Record<string, string>;
 
+export type TrackKey = 'delegate' | 'volunteer' | 'security' | 'media';
+
+/** One way of joining the conference (delegate, or one of the team roles). */
+export interface TrackItem {
+  key: TrackKey;
+  title: string;
+  description: string;
+  isOpen: boolean; // master switch
+  opensAt: string | null; // ISO time, optional
+  closesAt: string | null; // ISO time, optional
+  closedLabel: string; // what visitors see when closed, e.g. "Closed" or "Full"
+}
+
 export interface SiteContent {
   committees: CommitteeItem[];
   schedule: ScheduleGroupItem[];
   secretariat: SecretariatItem[];
   settings: SiteSettings;
+  tracks: TrackItem[];
 }
 
 const TBA_CHARTER = 'Council charter and mandate to be announced by the Secretariat.';
@@ -88,7 +102,7 @@ const DEFAULT_SECRETARIAT: SecretariatItem[] = [
     quote: 'I hope we can support each other, share our ideas, and make ICON MUN 2027 a successful and unforgettable experience for everyone!! 🤍',
     bio: 'hiii everyoneeee!! my name is laila mohammad, and im the secretary-general of icon mun 2027!! im so happy to be part of this journey and to work with such an amazing team. i hope we can support each other, share our ideas, and make icon mun 2027 a successful and unforgettable experience for everyone!! 🤍',
     isConfirmed: true,
-    objectPosition: 'center 60%',
+    objectPosition: 'center 85%',
   },
   {
     id: 'sec-2',
@@ -154,8 +168,13 @@ export const DEFAULT_CONTENT: SiteContent = {
     },
   ],
   secretariat: DEFAULT_SECRETARIAT,
+  tracks: [
+    { key: 'delegate', title: 'Delegate', description: 'Represent a nation in one of the councils.', isOpen: true, opensAt: null, closesAt: null, closedLabel: 'Closed' },
+    { key: 'volunteer', title: 'Volunteer', description: 'Help run the conference: registration desk, logistics and delegate care.', isOpen: false, opensAt: null, closesAt: null, closedLabel: 'Closed' },
+    { key: 'security', title: 'Security', description: 'Keep the venue safe and the flow of people orderly.', isOpen: false, opensAt: null, closesAt: null, closedLabel: 'Closed' },
+    { key: 'media', title: 'Media', description: 'Photography, video, design and social media coverage.', isOpen: false, opensAt: null, closesAt: null, closedLabel: 'Closed' },
+  ],
   settings: {
-    registration_open: 'true',
     contact_email: '',
     contact_phone: '',
     venue: '',

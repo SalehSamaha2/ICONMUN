@@ -4,6 +4,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Award, CheckCircle2, X } from 'lucide-react';
 import { useSiteData } from '../lib/SiteData';
 import { getSupabase } from '../lib/supabase';
+import { getTrackStatus, useNow } from '../lib/tracks';
+import { JoinPanel } from './JoinPanel';
+import { TeamApplicationModal } from './TeamApplicationModal';
+import type { TrackKey } from '../data/defaults';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,8 +24,12 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   onOpenModal,
   preselectedCommittee = 'TBA',
 }) => {
-  const { committees, settings } = useSiteData();
-  const registrationOpen = !['false', 'no', '0', 'closed'].includes((settings.registration_open || 'true').toLowerCase());
+  const { committees, tracks } = useSiteData();
+  const now = useNow();
+  const delegateTrack = tracks.find((t) => t.key === 'delegate');
+  const delegateStatus = delegateTrack ? getTrackStatus(delegateTrack, now) : null;
+  const registrationOpen = delegateStatus ? delegateStatus.state === 'open' : true;
+  const [teamTrack, setTeamTrack] = useState<Exclude<TrackKey, 'delegate'> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stickyRef = useRef<HTMLDivElement | null>(null);
   const headlineRef = useRef<HTMLHeadingElement | null>(null);
@@ -137,6 +145,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     try {
       const sb = await clientP;
       const { error } = await sb.from('applications').insert({
+        track: 'delegate',
         delegation_type: delegationType,
         full_name: fullName.trim(),
         institution: institution.trim(),
@@ -223,7 +232,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
           <div className="relative z-10 max-w-4xl w-full text-center px-2 sm:px-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3.5 sm:px-4 py-1.5 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] text-accent mb-4 sm:mb-6">
               <Award className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-gold" />
-              <span>ICON MUN 2027 · Registry TBA</span>
+              <span>ICON MUN 2027 · Registry</span>
             </div>
 
             {/* Headline scaling from small to full size */}
@@ -240,25 +249,18 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
             </h2>
 
             <p className="mt-4 sm:mt-5 text-xs sm:text-base text-ink2 max-w-lg mx-auto font-light leading-relaxed">
-              Register early interest for ICON MUN 2027. Official dates, council allotments, and conference details are To Be Announced (TBA).
+              Join ICON MUN 2027 as a delegate, or help run it as part of the team. Official dates, council allotments, and conference details are To Be Announced (TBA).
             </p>
 
-            {/* Action Button */}
-            <div
-              ref={buttonWrapperRef}
-              className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 will-change-transform w-full max-w-xs sm:max-w-none mx-auto"
-            >
-              <button
-                type="button"
-                onClick={onOpenModal}
-                className="gold-btn-primary w-full sm:w-auto px-9 py-4 min-h-[48px] text-xs sm:text-sm font-bold uppercase tracking-[0.25em] rounded-md shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
-              >
-                Register Interest (TBA)
-              </button>
-            </div>
+            <JoinPanel
+              onApplyDelegate={onOpenModal}
+              onApplyTeam={(k) => setTeamTrack(k)}
+            />
           </div>
         </div>
       </section>
+
+      {teamTrack && <TeamApplicationModal trackKey={teamTrack} onClose={() => setTeamTrack(null)} />}
 
       {/* Interactive Credential Application Modal */}
       {isOpenModal && (
@@ -274,7 +276,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="gold-card max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] overflow-y-auto border border-gold/50 bg-[#0C0C0C] relative shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
+            className="max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] overflow-y-auto border border-gold/50 bg-[#0C0C0C] relative shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
           >
             {/* Primary Close Button (X) */}
             <button
@@ -454,7 +456,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
 
                   {!registrationOpen && (
                     <p role="alert" className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-accent">
-                      Registration is currently closed.
+                      {delegateStatus?.state === 'upcoming' ? `${delegateStatus.detail}.` : 'Delegate registration is currently closed.'}
                     </p>
                   )}
                   {submitError && (
