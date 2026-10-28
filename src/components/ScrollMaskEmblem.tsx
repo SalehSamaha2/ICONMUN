@@ -3,7 +3,6 @@ import * as THREE from 'three';
 
 const GOLD = 0xe8cba4;
 const WINE = 0x641b2d;
-const DARK = 0x16070c;
 
 /**
  * Procedural 3D masquerade mask. This is actual extruded geometry with eye
@@ -74,8 +73,11 @@ export const ScrollMaskEmblem: React.FC = () => {
     leftEye.bezierCurveTo(-0.92, 0.12, -1.5, 0.04, -1.88, 0.24);
     leftEye.bezierCurveTo(-1.98, 0.29, -2.02, 0.36, -2.02, 0.43);
     outline.holes.push(leftEye);
-    const rightEye = leftEye.clone();
-    rightEye.scale(-1, 1);
+    const rightEye = new THREE.Path();
+    rightEye.moveTo(2.02, 0.43);
+    rightEye.bezierCurveTo(1.66, 0.78, 1.04, 0.78, 0.63, 0.43);
+    rightEye.bezierCurveTo(0.92, 0.12, 1.5, 0.04, 1.88, 0.24);
+    rightEye.bezierCurveTo(1.98, 0.29, 2.02, 0.36, 2.02, 0.43);
     outline.holes.push(rightEye);
 
     const geometry = new THREE.ExtrudeGeometry(outline, {
