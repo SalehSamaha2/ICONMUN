@@ -21,7 +21,7 @@ export const ScrollMaskEmblem: React.FC = () => {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const spin = reducedMotion ? 0 : progress * 1080;
       const tilt = reducedMotion ? 0 : Math.sin(progress * Math.PI * 2) * 9;
-      face.style.transform = `rotateY(${spin}deg) rotateX(${tilt}deg) rotateZ(${progress * 28}deg)`;
+      face.style.transform = `translate(-50%, -50%) rotateY(${spin}deg) rotateX(${tilt}deg) rotateZ(${progress * 28}deg)`;
       stage.style.setProperty('--mask-progress', String(progress));
     };
 
@@ -31,6 +31,8 @@ export const ScrollMaskEmblem: React.FC = () => {
       if (rafRef.current === null) rafRef.current = window.requestAnimationFrame(render);
     };
 
+    const onWindowScroll = () => schedule();
+    const onResize = () => schedule();
     const onLenisScroll = (event: Event) => {
       const detail = (event as CustomEvent<{ scroll?: number }>).detail;
       schedule(detail?.scroll);
@@ -38,12 +40,14 @@ export const ScrollMaskEmblem: React.FC = () => {
 
     latestScrollRef.current = window.scrollY;
     schedule();
-    window.addEventListener('scroll', () => schedule(), { passive: true });
+    window.addEventListener('scroll', onWindowScroll, { passive: true });
     window.addEventListener('icon-mun-scroll', onLenisScroll);
-    window.addEventListener('resize', () => schedule(), { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
 
     return () => {
+      window.removeEventListener('scroll', onWindowScroll);
       window.removeEventListener('icon-mun-scroll', onLenisScroll);
+      window.removeEventListener('resize', onResize);
       if (rafRef.current !== null) window.cancelAnimationFrame(rafRef.current);
     };
   }, []);
