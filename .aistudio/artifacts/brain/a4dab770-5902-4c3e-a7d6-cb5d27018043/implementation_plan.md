@@ -1,6 +1,6 @@
-# Active Scroll-Driven Background Video Playback
+# Autoplay & Scroll-Modulated Background Video Playback
 
-Fixes the frozen background video by transitioning from low-level frame seeking to a robust scroll-velocity playback controller. Whenever the visitor scrolls down the page, the video smoothly plays (`video.play()`), adjusting speed dynamically with scroll movement, and immediately pauses (`video.pause()`) when scrolling stops.
+Resolves the video playback blockage caused by browser iframe autoplay security policies. By configuring native `autoPlay`, `muted`, `loop`, and `playsInline`, the video immediately gains browser playback clearance on load, dynamically modulates speed with scroll velocity during user navigation, and cleanly pauses when scrolling stops.
 
 ---
 
@@ -9,63 +9,64 @@ Fixes the frozen background video by transitioning from low-level frame seeking 
 > [!IMPORTANT]
 > The following parameters were confirmed during the interactive clarification phase:
 
-- **Confirmed Playback Mechanic**: The video plays actively while the user is scrolling and automatically pauses when scrolling stops.
-- **Root Cause Identified**: Programmatic `currentTime` scrubbing on remote unbuffered MP4s blocked the browser's hardware video decoder, keeping the video frozen on frame 0. Switching to native `play()` / `pause()` tied to scroll activity resolves the issue completely across all browsers.
-- **Video Source**: Cloudinary MP4 `https://res.cloudinary.com/edtur3gp/video/upload/v1793118876/Female_silhouette_removes_masque__20261027193210.mp4`.
+- **Confirmed Playback Clearance**: Enable native HTML5 `autoPlay` alongside `muted` and `playsInline`. Browsers inside iframes reject programmatic `play()` from scroll events unless the video was initialized with `autoPlay`.
+- **Confirmed Speed Modulation**: Scrolling down/up dynamically modulates playback speed ($1.0\times$–$2.2\times$) based on scroll velocity.
+- **Confirmed Idle Behavior**: Automatically pauses after a 350ms settling window when scrolling stops, holding the frame cleanly.
+- **Video Source**: `https://res.cloudinary.com/edtur3gp/video/upload/v1793171466/Create_3D_mask_animation_8bf7b23b.mp4`.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: As visitors explore the conference website, the background video of the female silhouette removing her masquerade mask comes alive with smooth continuous motion during active scrolling. When the user stops to read a council topic or speaker bio, the video gracefully pauses.
-- **Velocity Matching**: Fast scrolling speeds up the playback rate slightly ($1.2\times$–$1.5\times$), while gentle reading scrolls maintain standard cinematic speed ($0.8\times$–$1.0\times$).
-- **Browser Compatibility**: Works smoothly across Chrome, Safari, iOS, and Android by honoring browser autoplay requirements (`muted`, `playsInline`, `preload="auto"`).
+- **The Problem**: Web browsers in sandbox/iframe environments reject programmatic `.play()` invocations originating from synthetic or non-gesture scroll events, resulting in an unhandled promise rejection and leaving the video permanently paused.
+- **The Solution**:
+  1. Add native HTML attributes `autoPlay`, `muted`, `playsInline`, and `loop`. This satisfies the browser's Autoplay Policy specification, granting instant permission.
+  2. While the user is actively scrolling, the playback rate dynamically adjusts to match scroll intensity.
+  3. When the user stops scrolling, a smooth debounce timer calls `video.pause()`. When the user scrolls again, `video.play()` resumes without browser blockage.
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### Playback State Flow
+### Playback State Machine
 
 ```
-[ Visitor at rest ]
-       │  Video is paused at current cinematic frame
-       ▼
-[ Visitor scrolls / swipes ]
-       │  Scroll listener detects motion
-       │  video.play() triggered immediately
-       │  Playback rate matches scroll intensity
-       ▼
-[ Visitor stops scrolling ]
-       │  Inactivity window triggers (~250ms)
-       │  video.pause() called smoothly
-       │  Frame remains held in crisp focus
+[ Page Load ] ────────────► Video autoplays muted immediately (no frozen frame)
+                                └─ 3D mask animation is moving smoothly
+
+[ User Scrolls ] ─────────► Scroll velocity modulates playback speed
+                                └─ Fast scroll: accelerates up to 2.0x
+                                └─ Steady scroll: normal 1.0x
+
+[ User Stops Scrolling ] ─► 350ms settling timer pauses video
+                                └─ Frame rests in focus while reading
+
+[ User Resumes Scroll ] ──► Video unpauses smoothly and continues playing
 ```
 
 ### Visual Styling
 
-- The video is fixed full-screen behind the website (`fixed inset-0 pointer-events-none z-0`).
-- Subtle ambient gold glow and edge vignette blend the video edges into the `#050505` obsidian paper.
-- Ambient floating gold particles (`GoldDustCanvas`) drift quietly above the video.
-- All conference content sections float on frosted glass panels (`backdrop-blur-md bg-[#050505]/65 border border-gold/25`) in front (`z-10`).
+- Full-screen fixed background (`fixed inset-0 pointer-events-none z-0`).
+- Atmospheric edge vignette (`radial-gradient`) blending into `#050505` obsidian paper.
+- Ambient floating gold dust particles (`GoldDustCanvas`) layered softly on top.
+- High-legibility frosted glass cards (`backdrop-blur-md bg-[#050505]/65 border border-gold/25`) in front (`z-10`).
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Scroll-Driven `play()` / `pause()` vs. `currentTime` Seeking**:
-  - *Chosen Approach*: Drive playback via native media playback events tied to scroll velocity rather than forcing `currentTime` seeks.
-  - *Why*: Eliminates decoder stalls, buffering lags, and black-frame flickers. Provides 60fps cinematic playback on desktop and mobile.
-  - *Alternatives Considered*: Frame-by-frame canvas rendering (rejected for high bandwidth consumption).
-- **Decision 2: Scroll Inactivity Debounce Window**:
-  - *Chosen Approach*: Use a 250ms settling window after the last scroll tick before invoking `video.pause()`.
-  - *Why*: Prevents choppy start-stop stutter during continuous mousewheel or trackpad scrolling, creating a polished cinematic feel.
+- **Decision 1: Native `autoPlay` Attribute Initialization**:
+  - *Chosen Approach*: Supply `autoPlay` on the `<video>` element directly in JSX.
+  - *Why*: Guaranteed by W3C specification to play muted media without requiring click gestures.
+- **Decision 2: 350ms Pause Settle Window**:
+  - *Chosen Approach*: A 350ms window before pausing.
+  - *Why*: Accommodates smooth trackpad and mouse wheel deceleration curves without jerky micro-stuttering.
 
 ---
 
-## 4. Technical Architecture & Component Details
+## 4. Technical Architecture & Component Implementation
 
-### System Hierarchy
+### Component Hierarchy
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -73,26 +74,23 @@ Fixes the frozen background video by transitioning from low-level frame seeking 
 │  (Lenis Smooth Scroll + Global GSAP ScrollTrigger Sync)      │
 └───────────────┬─────────────────────────────┬───────────────┘
                 │
-                ▼ Scroll Velocity & Activity Events
+                ▼ Velocity & Active Scroll Updates
     ┌─────────────────────────────────────────┐
-    │     BackgroundVideoScrubber (Fixed z-0) │
+    │ BackgroundVideoScrubber (Fixed z-0)     │
     │                                         │
-    │  • On scroll: video.play()              │
-    │  • On idle (250ms): video.pause()       │
-    │  • Playback rate: 0.8x - 1.5x           │
-    │  • Loop enabled for continuous motion   │
-    │  • Radial gold glow & edge vignette     │
-    │  • Floating gold dust particles         │
+    │ • autoPlay + muted + playsInline        │
+    │ • Modulate speed: 1.0x - 2.2x           │
+    │ • On scroll idle: video.pause()         │
+    │ • On scroll resume: video.play()        │
+    │ • Vignette & Gold Dust ambient layers   │
     └─────────────────────────────────────────┘
 ```
 
-### Component Implementation Details
+### Implementation Steps
 
-- **`src/components/BackgroundVideoScrubber.tsx`**:
-  - Configure `<video>` with `src={VIDEO_URL}`, `muted`, `playsInline`, `webkit-playsinline="true"`, `loop`, `preload="auto"`.
-  - Listen to Lenis scroll events via `ScrollTrigger.create({ onUpdate })` and direct window scroll listeners.
-  - When scroll delta occurs:
-    - If `video.paused`, call `video.play().catch(() => {})`.
-    - Adjust `playbackRate = Math.min(Math.max(scrollSpeed * factor, 0.75), 1.6)`.
-    - Clear previous pause timer and set a new timer for 250ms to call `video.pause()`.
-  - Also seek proportionally to overall page depth so video progress corresponds to the conference journey.
+1. **Update `BackgroundVideoScrubber.tsx`**:
+   - Set `<video autoPlay muted loop playsInline preload="auto" src={VIDEO_URL} />`.
+   - Implement velocity-based playback rate modulation.
+   - Implement 350ms debounce pause on idle and immediate unpause on scroll.
+2. **Verify**:
+   - Run compilation and linting tests.

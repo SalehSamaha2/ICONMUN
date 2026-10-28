@@ -14,7 +14,7 @@ import { CustomCursor } from './components/CustomCursor';
 import { GlobalScrollEffects } from './components/GlobalScrollEffects';
 import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
-import { CinematicIntro } from './components/CinematicIntro';
+import { BackgroundVideoScrubber } from './components/BackgroundVideoScrubber';
 import { DiplomaticConstellation } from './components/DiplomaticConstellation';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -23,7 +23,6 @@ export default function App() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedCommitteeCode, setSelectedCommitteeCode] = useState<string>('UNSC');
   const [showNavLogo, setShowNavLogo] = useState(false);
-  const [introComplete, setIntroComplete] = useState(false);
 
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -126,21 +125,8 @@ export default function App() {
   return (
     <SiteDataProvider>
     <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
-      {/* One-time champagne-gold logo reveal, using ICON MUN's own intro footage */}
-      <CinematicIntro isHeroReady={true} onComplete={() => setIntroComplete(true)} />
-
-      {/* User-provided cinematic mask video background */}
-      <video
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[1] h-full w-full object-cover"
-        src="https://res.cloudinary.com/edtur3gp/video/upload/v1793171466/Create_3D_mask_animation_8bf7b23b.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        style={{ opacity: 0.58 }}
-      />
+      {/* 3D Mask Animation Background Video with Scroll-Direction Logic */}
+      <BackgroundVideoScrubber />
 
       {/* Global Scroll Effects: top progress bar and section navigation */}
       <GlobalScrollEffects onNavigateTo={handleNavigateTo} />
@@ -151,13 +137,12 @@ export default function App() {
       {/* Top Navigation (Brand logo hidden until hero title scrolls away) */}
       <Navigation
         onOpenRegister={handleOpenRegister}
-        showBrandLogo={introComplete || showNavLogo}
+        showBrandLogo={showNavLogo}
       />
 
       {/* Content Layers with Frosted Glass Panels over Background */}
       <main className="relative z-10">
         <HeroSection
-          introComplete={introComplete}
           onHeroReady={handleVideoReady}
           onHeroProgressChange={handleHeroScrollProgress}
           onOpenRegister={handleOpenRegister}

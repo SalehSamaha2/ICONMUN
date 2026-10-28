@@ -1,229 +1,165 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GoldDustCanvas } from './GoldDustCanvas';
 
-const LOCAL_VIDEO_SRC = '/assets/carpet-walking.mp4';
-const FALLBACK_VIDEO_SRC = 'https://res.cloudinary.com/edtur3gp/video/upload/v1793132424/Edit_video_carpet_and_walking_700dd39e.mp4';
+gsap.registerPlugin(ScrollTrigger);
 
-function getScrollProgress(scrollY?: number): number {
-  if (typeof window === 'undefined') return 0;
-  const root = document.documentElement;
-  const body = document.body;
-  const maxScroll = Math.max(root.scrollHeight, body.scrollHeight, root.offsetHeight, body.offsetHeight) - window.innerHeight;
-  const currentScroll = typeof scrollY === 'number' && Number.isFinite(scrollY) ? scrollY : window.scrollY;
-  return maxScroll <= 0 ? 0 : Math.min(1, Math.max(0, currentScroll / maxScroll));
+const VIDEO_URL =
+  'https://res.cloudinary.com/edtur3gp/video/upload/v1793171466/Create_3D_mask_animation_8bf7b23b.mp4';
+
+interface BackgroundVideoScrubberProps {
+  className?: string;
 }
 
-/**
- * Fluid 60fps Native Video Engine.
- * - Hardware-accelerated continuous playback (native 60fps video, not stepped stills).
- * - Modulates playbackRate proportional to scroll momentum across the full page height.
- * - Gentle deceleration when resting; holds current frame without abrupt stops.
- * - Zero resets: clamped strictly at the footer, holding the final frame permanently.
- */
-export const BackgroundVideoScrubber: React.FC<{ className?: string }> = ({ className = '' }) => {
+export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = ({
+  className = '',
+}) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const durationRef = useRef(0);
-  const stopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const decelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastScrollYRef = useRef(0);
-  const lastScrollTimeRef = useRef(0);
-  const isPlayPendingRef = useRef(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastScrollYRef = useRef<number>(0);
+  const lastScrollTimeRef = useRef<number>(Date.now());
 
-  // Safe play to prevent interrupting asynchronous promises
-  const safePlay = useCallback(() => {
+  // Called when video is ready to play
+  const handleCanPlay = useCallback(() => {
+    setIsVideoReady(true);
     const video = videoRef.current;
-    if (!video || !video.paused || isPlayPendingRef.current) return;
-
-    // Never call play if we are at or near the end of the video to prevent browser auto-rewind
-    const duration = durationRef.current;
-    if (duration > 0 && video.currentTime >= duration - 0.08) return;
-
-    isPlayPendingRef.current = true;
-    const promise = video.play();
-    if (promise !== undefined) {
-      promise
-        .then(() => {
-          isPlayPendingRef.current = false;
-        })
-        .catch(() => {
-          isPlayPendingRef.current = false;
+    if (video) {
+      // Ensure it starts playing smoothly on load
+      const p = video.play();
+      if (p !== undefined) {
+        p.catch(() => {
+          /* browser autoplay restrictions gracefully handled */
         });
-    } else {
-      isPlayPendingRef.current = false;
+      }
     }
   }, []);
 
-  // Safe pause that respects in-flight play promises
-  const safePause = useCallback(() => {
-    const video = videoRef.current;
-    if (!video || video.paused) return;
-
-    if (isPlayPendingRef.current) {
-      setTimeout(() => {
-        if (videoRef.current && !videoRef.current.paused) {
-          videoRef.current.pause();
-        }
-      }, 50);
-    } else {
-      video.pause();
-    }
-  }, []);
-
-  // Gentle deceleration on scroll rest
-  const handleScrollRest = useCallback(() => {
-    const video = videoRef.current;
-    if (!video || video.paused) return;
-
-    // Smoothly ease down playback rate before pausing
-    video.playbackRate = 0.5;
-
-    if (decelTimerRef.current) clearTimeout(decelTimerRef.current);
-    decelTimerRef.current = setTimeout(() => {
-      safePause();
-    }, 70);
-  }, [safePause]);
-
-  const handleScrollInput = useCallback((event?: Event) => {
+  // Handle active scroll: unpauses if paused, modulates speed with velocity, pauses on idle
+  const handleScrollMotion = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const detail = (event as CustomEvent<{ scroll?: number }> | undefined)?.detail;
-    const currentScrollY = typeof detail?.scroll === 'number' && Number.isFinite(detail.scroll) ? detail.scroll : window.scrollY;
-    const now = performance.now();
-    const deltaY = currentScrollY - lastScrollYRef.current;
-    const deltaTime = Math.max(now - lastScrollTimeRef.current, 10);
+    const now = Date.now();
+    const currentY = window.pageYOffset ?? document.documentElement.scrollTop ?? window.scrollY ?? 0;
+    const deltaY = Math.abs(currentY - lastScrollYRef.current);
+    const deltaTime = Math.max(now - lastScrollTimeRef.current, 16);
+    const velocity = deltaY / deltaTime; // pixels per ms
 
-    lastScrollYRef.current = currentScrollY;
+    lastScrollYRef.current = currentY;
     lastScrollTimeRef.current = now;
 
-    // Reset idle timers
-    if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
-    if (decelTimerRef.current) clearTimeout(decelTimerRef.current);
-    stopTimerRef.current = setTimeout(handleScrollRest, 130);
+    // Dynamically adjust playback rate based on scroll velocity (1.0x to 2.2x)
+    const targetRate = Math.min(Math.max(1.0 + velocity * 0.4, 0.9), 2.2);
+    video.playbackRate = targetRate;
 
-    // Filter tiny sub-pixel tremors
-    if (Math.abs(deltaY) < 0.8) return;
-
-    const duration = durationRef.current;
-    if (duration <= 0) return;
-
-    const progress = getScrollProgress(currentScrollY);
-    const maxEnd = Math.max(0, duration - 0.08);
-    const targetTime = progress >= 0.995 ? maxEnd : Math.min(Math.max(progress * maxEnd, 0.001), maxEnd);
-
-    if (deltaY > 0) {
-      // SCROLLING DOWN:
-      if (progress >= 0.995) {
-        // At the bottom of the page (footer): hold cleanly on the final frame forever
-        safePause();
-        if (Math.abs(video.currentTime - maxEnd) > 0.08) {
-          try { video.currentTime = maxEnd; } catch { /* ignore */ }
-        }
-        return;
-      }
-
-      const drift = targetTime - video.currentTime;
-
-      // Teleport only on massive discontinuous jumps (e.g. clicking navigation links)
-      if (Math.abs(drift) > 4.5) {
-        try { video.currentTime = targetTime; } catch { /* ignore */ }
-      } else if (drift > 0.03) {
-        // Video is behind scroll progress: play forward at native 60fps with rate matching velocity
-        const velocity = Math.abs(deltaY) / deltaTime;
-        const baseSpeed = Math.min(Math.max(velocity * 1.5, 0.85), 2.0);
-        const rate = Math.min(Math.max(baseSpeed * (1.0 + drift * 0.4), 0.75), 2.2);
-        video.playbackRate = rate;
-
-        if (video.paused && video.currentTime < maxEnd) {
-          safePlay();
-        }
-      } else if (drift < -0.1) {
-        // Video reached or slightly passed current scroll depth: gently slow down so it doesn't outrun progress
-        video.playbackRate = 0.65;
-      }
-    } else {
-      // SCROLLING UP:
-      // When scrolling upward, smoothly ease back toward earlier frames
-      safePause();
-      if (video.currentTime > targetTime + 0.2 || targetTime - video.currentTime < -2.0) {
-        try { video.currentTime = targetTime; } catch { /* ignore */ }
+    // If currently paused, resume playback immediately
+    if (video.paused) {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
       }
     }
-  }, [handleScrollRest, safePlay, safePause]);
+
+    // Reset inactivity timer: pause after 350ms of no scrolling
+    if (pauseTimerRef.current) {
+      clearTimeout(pauseTimerRef.current);
+    }
+
+    pauseTimerRef.current = setTimeout(() => {
+      if (video && !video.paused) {
+        video.pause();
+      }
+    }, 350);
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const onMetadata = () => {
-      durationRef.current = Number.isFinite(video.duration) ? video.duration : 10.0;
-      video.playbackRate = 1.0;
-      video.pause();
+    lastScrollYRef.current =
+      window.pageYOffset ?? document.documentElement.scrollTop ?? window.scrollY ?? 0;
+    lastScrollTimeRef.current = Date.now();
 
-      const initialProgress = getScrollProgress();
-      if (durationRef.current > 0) {
-        const initialTarget = initialProgress * Math.max(0, durationRef.current - 0.08);
-        try { video.currentTime = initialTarget; } catch { /* ignore */ }
+    // Direct scroll and touch listeners
+    const onScroll = () => handleScrollMotion();
+    const onWheel = () => handleScrollMotion();
+    const onTouchMove = () => handleScrollMotion();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+
+    // GSAP ScrollTrigger hook
+    const trigger = ScrollTrigger.create({
+      start: 0,
+      end: 'max',
+      onUpdate: (self) => {
+        if (Math.abs(self.getVelocity()) > 5) {
+          handleScrollMotion();
+        }
+      },
+    });
+
+    // Touch/pointer fallback unlocker
+    const unlocker = () => {
+      if (video && video.paused) {
+        video.play().catch(() => {});
       }
+      window.removeEventListener('pointerdown', unlocker);
+      window.removeEventListener('touchstart', unlocker);
     };
-
-    // When reaching the end, hold the final frame and never rewind
-    const onEnded = () => {
-      safePause();
-      const duration = durationRef.current;
-      if (duration > 0) {
-        try { video.currentTime = Math.max(0, duration - 0.08); } catch { /* ignore */ }
-      }
-    };
-
-    video.addEventListener('loadedmetadata', onMetadata);
-    video.addEventListener('durationchange', onMetadata);
-    video.addEventListener('ended', onEnded);
-
-    window.addEventListener('scroll', handleScrollInput, { passive: true });
-    window.addEventListener('resize', handleScrollInput, { passive: true });
-    window.addEventListener('icon-mun-scroll', handleScrollInput);
-
-    if (video.readyState >= 1) onMetadata();
-
-    lastScrollYRef.current = window.scrollY;
+    window.addEventListener('pointerdown', unlocker, { once: true });
+    window.addEventListener('touchstart', unlocker, { once: true });
 
     return () => {
-      video.removeEventListener('loadedmetadata', onMetadata);
-      video.removeEventListener('durationchange', onMetadata);
-      video.removeEventListener('ended', onEnded);
-      window.removeEventListener('scroll', handleScrollInput);
-      window.removeEventListener('resize', handleScrollInput);
-      window.removeEventListener('icon-mun-scroll', handleScrollInput);
-      if (stopTimerRef.current) clearTimeout(stopTimerRef.current);
-      if (decelTimerRef.current) clearTimeout(decelTimerRef.current);
+      trigger.kill();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('pointerdown', unlocker);
+      window.removeEventListener('touchstart', unlocker);
+      if (pauseTimerRef.current) {
+        clearTimeout(pauseTimerRef.current);
+      }
     };
-  }, [handleScrollInput, safePause]);
+  }, [handleScrollMotion]);
 
   return (
-    <div aria-hidden="true" className={`fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#100609] select-none ${className}`}>
+    <div
+      aria-hidden="true"
+      className={`fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#050505] select-none ${className}`}
+    >
+      {/* 3D Mask Animation Video Element with native autoPlay clearance */}
       <video
         ref={videoRef}
+        src={VIDEO_URL}
+        autoPlay
         playsInline
+        webkit-playsinline="true"
         muted
+        loop
         preload="auto"
-        tabIndex={-1}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: 'center center' }}
-      >
-        <source src={LOCAL_VIDEO_SRC} type="video/mp4" />
-        <source src={FALLBACK_VIDEO_SRC} type="video/mp4" />
-      </video>
+        crossOrigin="anonymous"
+        onCanPlay={handleCanPlay}
+        onLoadedData={handleCanPlay}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+          isVideoReady ? 'opacity-90' : 'opacity-50'
+        }`}
+      />
+
+      {/* Atmospheric Edge Vignette to blend seamlessly into #050505 background */}
       <div
         className="pointer-events-none absolute inset-0 z-10"
         style={{
           background:
-            'linear-gradient(180deg, rgba(18,4,10,.18) 0%, rgba(18,4,10,.26) 45%, rgba(8,3,5,.78) 100%), radial-gradient(ellipse at center, transparent 34%, rgba(8,3,5,.52) 100%)',
+            'radial-gradient(circle at center, transparent 38%, rgba(5,5,5,0.55) 75%, #050505 100%)',
         }}
       />
-      <GoldDustCanvas className="z-15 opacity-25" />
+
+      {/* Subtle Floating Gold Dust Layer */}
+      <GoldDustCanvas className="z-15 opacity-60" />
     </div>
   );
 };
-
-export default BackgroundVideoScrubber;
