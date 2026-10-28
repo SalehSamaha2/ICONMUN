@@ -762,3 +762,62 @@ main > section[id]:nth-of-type(odd) { background: linear-gradient(180deg, rgba(1
 .constellation-core { background: radial-gradient(circle, rgba(112,22,45,.86), rgba(16,6,9,.97) 72%); border-color: rgba(232,203,164,.62); }
 .constellation-node-icon { border-color: rgba(232,203,164,.42); }
 ::selection { background: rgba(132,26,52,.5); color: #fff8f0; }
+
+
+/* Scroll-driven 3D ICON mask emblem — velvet, oxblood and champagne metal. */
+.scroll-mask-stage {
+  perspective: 1400px;
+  perspective-origin: 50% 46%;
+  contain: layout paint;
+  --mask-progress: 0;
+}
+.scroll-mask-aura {
+  position: absolute; left: 50%; top: 44%; width: min(72vw, 780px); aspect-ratio: 1;
+  transform: translate(-50%,-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(110,24,47,.22), rgba(110,24,47,.08) 34%, transparent 70%);
+  filter: blur(12px);
+}
+.scroll-mask-orbit {
+  position: absolute; left: 50%; top: 44%; width: min(66vw, 680px); aspect-ratio: 1;
+  border: 1px solid rgba(232,203,164,.14); border-radius: 50%;
+  transform: translate(-50%,-50%) rotateX(68deg) rotateZ(calc(var(--mask-progress) * 100deg));
+  box-shadow: 0 0 35px rgba(112,22,45,.1), inset 0 0 25px rgba(232,203,164,.025);
+}
+.scroll-mask-orbit-b {
+  width: min(53vw, 550px);
+  border-color: rgba(194,73,94,.2);
+  transform: translate(-50%,-50%) rotateX(68deg) rotateY(28deg) rotateZ(calc(var(--mask-progress) * -140deg));
+}
+.scroll-mask-depth {
+  position: absolute; left: 50%; top: 44%; width: clamp(250px, 38vw, 500px); aspect-ratio: 1;
+  transform-style: preserve-3d; will-change: transform;
+  transform: translate(-50%,-50%);
+  filter: drop-shadow(0 38px 50px rgba(0,0,0,.5));
+}
+.scroll-mask-face {
+  position: absolute; inset: 0; overflow: hidden; border-radius: 50%;
+  border: 1px solid rgba(232,203,164,.58);
+  background: radial-gradient(circle at 35% 25%, #f7e6d0, #b88b7c 46%, #481321 82%, #100609);
+  backface-visibility: hidden;
+  box-shadow: inset 0 0 0 8px rgba(16,6,9,.75), inset 0 0 0 9px rgba(232,203,164,.34), 0 0 55px rgba(120,22,47,.24);
+}
+.scroll-mask-face::after {
+  content: ""; position: absolute; inset: 10%; border: 1px solid rgba(255,240,223,.28);
+  border-radius: 50%; pointer-events: none;
+}
+.scroll-mask-face img {
+  width: 100%; height: 100%; display: block; object-fit: cover;
+  transform: scale(1.75); user-select: none;
+}
+.scroll-mask-back { transform: rotateY(180deg); }
+.scroll-mask-back img { transform: scale(1.75) scaleX(-1); }
+@media (max-width: 767px) {
+  .scroll-mask-depth { width: clamp(230px, 72vw, 360px); top: 39%; }
+  .scroll-mask-orbit { width: 88vw; top: 39%; }
+  .scroll-mask-orbit-b { width: 70vw; }
+  .scroll-mask-aura { width: 100vw; top: 39%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-mask-depth { will-change: auto; }
+}
