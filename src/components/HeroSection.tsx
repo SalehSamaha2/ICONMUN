@@ -7,6 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface HeroSectionProps {
   introComplete?: boolean;
+  isIntroExiting?: boolean;
   onHeroReady?: () => void;
   onHeroProgressChange?: (progress: number) => void;
   onOpenRegister?: () => void;
@@ -14,11 +15,13 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   introComplete = true,
+  isIntroExiting = false,
   onHeroReady,
   onHeroProgressChange,
   onOpenRegister,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const heroWrapperRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -31,24 +34,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      // The intro reveal controls the hero entrance so the animation continues
-      // into the actual page instead of ending as a disconnected overlay.
+      // Dramatic cinematic scale-down from large (1.18x with blur) to crisp 1.0x as curtains part
+      if (heroWrapperRef.current) {
+        if (!introComplete && !isIntroExiting) {
+          gsap.set(heroWrapperRef.current, {
+            opacity: 0,
+            scale: 1.18,
+            filter: 'blur(10px)',
+          });
+        } else {
+          gsap.to(heroWrapperRef.current, {
+            opacity: 1,
+            scale: 1.0,
+            filter: 'blur(0px)',
+            duration: 0.95,
+            ease: 'power3.out',
+          });
+        }
+      }
+
       if (titleRef.current && contentRef.current) {
-        if (!introComplete) {
+        if (!introComplete && !isIntroExiting) {
           gsap.set(titleRef.current, { opacity: 0, y: 30, letterSpacing: '0.4em' });
           gsap.set(contentRef.current, { opacity: 0, y: 25 });
         } else {
           const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
           tl.fromTo(
             titleRef.current,
-            { opacity: 0, y: 18, letterSpacing: '0.34em', scale: 0.98 },
-            { opacity: 1, y: 0, letterSpacing: '0.2em', scale: 1, duration: 0.48, ease: 'power4.out' },
-            0.1
+            { opacity: 0, y: 24, letterSpacing: '0.34em' },
+            { opacity: 1, y: 0, letterSpacing: '0.2em', duration: 0.65, ease: 'power4.out' },
+            0.15
           ).fromTo(
             contentRef.current,
-            { opacity: 0, y: 14 },
-            { opacity: 1, y: 0, duration: 0.42, ease: 'power4.out' },
-            0.3
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.55, ease: 'power4.out' },
+            0.35
           );
         }
       }
@@ -68,7 +88,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     }, container);
 
     return () => ctx.revert();
-  }, [introComplete, onHeroProgressChange, onHeroReady]);
+  }, [introComplete, isIntroExiting, onHeroProgressChange, onHeroReady]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -94,8 +114,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }}
       />
 
-      {/* Main Content Area */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-between px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto my-auto w-full pt-4">
+      {/* Main Content Area with Dramatic Cinematic Scale-Down */}
+      <div
+        ref={heroWrapperRef}
+        className="relative z-10 flex-1 flex flex-col items-center justify-between px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto my-auto w-full pt-4 will-change-transform"
+      >
         {/* Top Header Block */}
         <div className="flex flex-col items-center">
           {/* Eyebrow Pill */}

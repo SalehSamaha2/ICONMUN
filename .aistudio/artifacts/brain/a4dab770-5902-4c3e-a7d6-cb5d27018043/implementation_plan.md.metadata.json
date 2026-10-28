@@ -1,6 +1,6 @@
 {
-  "summary":  "Implementation plan to fix the video playback by using native HTML5 autoPlay with muted attribute to satisfy browser autoplay policies, modulating speed dynamically during scroll, and pausing smoothly when scrolling ceases.",
-  "updatedAt":  "2026-10-28T07:59:04.900504971Z",
+  "summary":  "Implementation plan to connect the intro animation to the website: the intro emblem flies seamlessly into the top-left navigation bar, and the hero section performs a dramatic cinematic scale-down from large to normal as the curtains part.",
+  "updatedAt":  "2026-10-28T08:32:57.410833895Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

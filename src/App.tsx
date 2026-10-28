@@ -16,6 +16,7 @@ import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
 import { BackgroundVideoScrubber } from './components/BackgroundVideoScrubber';
 import { DiplomaticConstellation } from './components/DiplomaticConstellation';
+import { CinematicIntro } from './components/CinematicIntro';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,6 +24,8 @@ export default function App() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedCommitteeCode, setSelectedCommitteeCode] = useState<string>('UNSC');
   const [showNavLogo, setShowNavLogo] = useState(false);
+  const [introComplete, setIntroComplete] = useState(false);
+  const [isIntroExiting, setIsIntroExiting] = useState(false);
 
   const lenisRef = useRef<Lenis | null>(null);
 
@@ -125,6 +128,16 @@ export default function App() {
   return (
     <SiteDataProvider>
     <div className="relative min-h-screen bg-paper text-ink selection:bg-gold/20 selection:text-accent overflow-x-hidden">
+      {/* Grand Cinematic Curtain Intro & Logo Reveal with Skip Option */}
+      <CinematicIntro
+        isHeroReady={true}
+        onExiting={() => setIsIntroExiting(true)}
+        onComplete={() => {
+          setIsIntroExiting(true);
+          setIntroComplete(true);
+        }}
+      />
+
       {/* 3D Mask Animation Background Video with Scroll-Direction Logic */}
       <BackgroundVideoScrubber />
 
@@ -134,15 +147,17 @@ export default function App() {
       {/* Custom Gold Ring Cursor */}
       <CustomCursor />
 
-      {/* Top Navigation (Brand logo hidden until hero title scrolls away) */}
+      {/* Top Navigation (Brand logo hidden until hero title scrolls away or intro completes) */}
       <Navigation
         onOpenRegister={handleOpenRegister}
-        showBrandLogo={showNavLogo}
+        showBrandLogo={introComplete || showNavLogo}
       />
 
       {/* Content Layers with Frosted Glass Panels over Background */}
       <main className="relative z-10">
         <HeroSection
+          introComplete={introComplete}
+          isIntroExiting={isIntroExiting}
           onHeroReady={handleVideoReady}
           onHeroProgressChange={handleHeroScrollProgress}
           onOpenRegister={handleOpenRegister}
