@@ -14,7 +14,6 @@ import { CustomCursor } from './components/CustomCursor';
 import { GlobalScrollEffects } from './components/GlobalScrollEffects';
 import { PerfHUD } from './components/PerfHUD';
 import { SiteDataProvider } from './lib/SiteData';
-import { ScrollMaskEmblem } from './components/ScrollMaskEmblem';
 import { CinematicIntro } from './components/CinematicIntro';
 import { DiplomaticConstellation } from './components/DiplomaticConstellation';
 
@@ -130,8 +129,18 @@ export default function App() {
       {/* One-time champagne-gold logo reveal, using ICON MUN's own intro footage */}
       <CinematicIntro isHeroReady={true} onComplete={() => setIntroComplete(true)} />
 
-      {/* Scroll-reactive 3D mask emblem replaces the full-page background video */}
-      <ScrollMaskEmblem />
+      {/* User-provided cinematic mask video background */}
+      <video
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-[1] h-full w-full object-cover"
+        src="https://res.cloudinary.com/edtur3gp/video/upload/v1793171466/Create_3D_mask_animation_8bf7b23b.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        style={{ opacity: 0.58 }}
+      />
 
       {/* Global Scroll Effects: top progress bar and section navigation */}
       <GlobalScrollEffects onNavigateTo={handleNavigateTo} />
