@@ -10,12 +10,12 @@ export const Button: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; size?: 'sm' | 'md'; loading?: boolean }
 > = ({ variant = 'subtle', size = 'md', loading, className, children, disabled, ...rest }) => {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-lg font-medium tracking-wide transition-all duration-200 cursor-pointer select-none ' +
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF6A]/70 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
+    'inline-flex items-center justify-center gap-2 rounded-xl font-medium tracking-wide transition-[background,color,border,box-shadow,transform] duration-200 ease-out cursor-pointer select-none ' +
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8CBA4]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#100609] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]';
   const sizes = size === 'sm' ? 'px-3 py-1.5 text-xs min-h-[34px]' : 'px-4 py-2.5 text-sm min-h-[42px]';
   const variants: Record<BtnVariant, string> = {
     primary:
-      'bg-gradient-to-b from-[#E3C27F] to-[#B8893C] text-[#1a1305] font-semibold shadow-[0_0_0_1px_rgba(243,223,162,0.35),0_8px_24px_-8px_rgba(212,175,106,0.45)] hover:brightness-110',
+      'bg-[#E8CBA4] text-[#211015] font-semibold shadow-[0_5px_18px_-8px_rgba(232,203,164,.35)] hover:bg-[#F4DCC0] hover:shadow-[0_8px_24px_-8px_rgba(232,203,164,.4)]',
     subtle: 'border border-[#D4AF6A]/25 bg-white/[0.03] text-[#E6E1D8] hover:border-[#D4AF6A]/60 hover:bg-[#D4AF6A]/10',
     ghost: 'text-[#A89D8A] hover:text-[#F3DFA2] hover:bg-white/5',
     danger: 'border border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20 hover:border-red-400/70',
@@ -33,7 +33,7 @@ export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className
   <div
     {...rest}
     className={cx(
-      'rounded-2xl border border-[#D4AF6A]/15 bg-gradient-to-b from-[#0F0F0F] to-[#0A0A0A] shadow-[0_20px_60px_-30px_rgba(0,0,0,0.9)]',
+      'rounded-2xl border border-[#E8CBA4]/[0.14] bg-[#19090F]/80 shadow-[0_18px_55px_-34px_rgba(0,0,0,.9)] transition-colors duration-200',
       className
     )}
   />
@@ -48,8 +48,8 @@ export const PageHeader: React.FC<{ eyebrow?: string; title: string; subtitle?: 
   <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
       {eyebrow && <div className="mb-1 text-[11px] font-medium uppercase tracking-[0.28em] text-[#D4AF6A]">{eyebrow}</div>}
-      <h1 className="font-cinzel text-2xl font-bold tracking-wide text-[#FFF3D6] sm:text-3xl">{title}</h1>
-      {subtitle && <p className="mt-1 max-w-2xl text-sm text-[#8E8678]">{subtitle}</p>}
+      <h1 className="font-cinzel text-2xl font-semibold tracking-[0.015em] text-[#FFF5E8] sm:text-[2rem]">{title}</h1>
+      {subtitle && <p className="mt-2 max-w-2xl text-sm leading-6 text-[#B59B9F]">{subtitle}</p>}
     </div>
     {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
   </div>
@@ -103,8 +103,8 @@ export const ErrorBox: React.FC<{ message: string; onRetry?: () => void }> = ({ 
 
 /* ----------------------------------------------------------------- form controls */
 const inputBase =
-  'w-full rounded-lg border border-white/10 bg-[#121212] px-3.5 py-2.5 text-sm text-[#F4EFE6] placeholder-white/25 ' +
-  'transition-colors focus:border-[#D4AF6A]/70 focus:outline-none focus:ring-2 focus:ring-[#D4AF6A]/15 disabled:opacity-60';
+  'w-full rounded-xl border border-[#E8CBA4]/15 bg-[#12070C] px-3.5 py-2.5 text-sm text-[#FFF5E8] placeholder-[#8D737A] ' +
+  'transition-[border,box-shadow,background] duration-200 focus:border-[#E8CBA4]/65 focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.08] disabled:opacity-60';
 
 export const Label: React.FC<{ htmlFor?: string; children: React.ReactNode; hint?: string; required?: boolean }> = ({
   htmlFor,
@@ -113,7 +113,7 @@ export const Label: React.FC<{ htmlFor?: string; children: React.ReactNode; hint
   required,
 }) => (
   <div className="mb-1.5">
-    <label htmlFor={htmlFor} className="block text-[11px] font-medium uppercase tracking-[0.18em] text-[#C4BAA8]">
+    <label htmlFor={htmlFor} className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#D8C5C5]">
       {children}
       {required && <span className="ml-1 text-[#D4AF6A]">*</span>}
     </label>
@@ -189,7 +189,7 @@ export const Drawer: React.FC<{ open: boolean; title: string; subtitle?: string;
   return (
     <div className="fixed inset-0 z-[200] flex justify-end" role="dialog" aria-modal="true" aria-label={title}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className={cx('relative flex h-full w-full flex-col border-l border-[#D4AF6A]/25 bg-[#0B0B0B] shadow-2xl animate-[slideIn_.22s_ease-out]', width)}>
+      <div className={cx('relative flex h-full w-full flex-col border-l border-[#E8CBA4]/20 bg-[#16080E] shadow-2xl animate-[slideIn_.22s_ease-out]', width)}>
         <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
           <div className="min-w-0">
             <h2 className="truncate font-cinzel text-lg font-bold text-[#FFF3D6]">{title}</h2>
