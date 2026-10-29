@@ -11,6 +11,8 @@ const inputCls =
   'w-full rounded-lg border border-ink/10 bg-surface2 px-4 py-3 min-h-[44px] text-base text-inkstrong focus:border-gold focus:outline-none';
 const labelCls = 'text-xs uppercase tracking-wider text-ink2 block mb-1.5 font-medium';
 
+const countWords = (value: string) => value.trim().split(/\s+/).filter(Boolean).length;
+
 export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => void }> = ({ trackKey, onClose }) => {
   const meta = TEAM_META[trackKey];
   const { tracks } = useSiteData();
@@ -23,9 +25,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
   const [email, setEmail] = useState('');
   const [institution, setInstitution] = useState('');
   const [phone, setPhone] = useState('');
-  const [focus, setFocus] = useState(meta.focusOptions[0]);
-  const [availability, setAvailability] = useState('');
-  const [statement, setStatement] = useState('');
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [honeypot, setHoneypot] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -46,7 +46,19 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     e.preventDefault();
     if (sending || !isOpen) return;
     setError('');
-    if (honeypot) return setDone(true); // bots fill hidden fields
+
+    const missing = meta.questions.find((q) => {
+      const answer = (answers[q.id] || '').trim();
+      return !answer || (q.minWords !== undefined && countWords(answer) < q.minWords);
+    });
+    if (missing) {
+      setError(missing.minWords !== undefined
+        ? `“${missing.prompt}” requires at least ${missing.minWords} words.`
+        : `Please answer: ${missing.prompt}`);
+      return;
+    }
+
+    if (honeypot) return setDone(true);
 
     const clientP = getSupabase();
     if (!clientP) return setError('Applications are not available yet. Please try again later.');
@@ -54,16 +66,21 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     setSending(true);
     try {
       const sb = await clientP;
+      const questionAnswers = Object.fromEntries(
+        meta.questions.map((q) => [q.prompt, (answers[q.id] || '').trim()])
+      );
+      const statement = meta.questions
+        .map((q) => `${q.prompt}\n${(answers[q.id] || '').trim()}`)
+        .join('\n\n');
       const { error: err } = await sb.from('applications').insert({
         track: trackKey,
         full_name: fullName.trim(),
         email: email.trim(),
         institution: institution.trim(),
-        statement: statement.trim(),
+        statement,
         details: {
           phone: phone.trim(),
-          focus,
-          availability: availability.trim(),
+          question_answers: questionAnswers,
         },
       });
       if (err) {
@@ -125,6 +142,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
             <div className="mb-6 pr-10">
               <h3 className="font-cinzel text-2xl font-bold text-gold-gradient sm:text-3xl">{meta.title} application</h3>
               <p className="mt-1 text-xs text-ink3">ICON MUN 2027 organising team</p>
+              <p className="mt-3 text-sm text-ink2">Answer every question below. Minimum word counts are enforced where specified.</p>
             </div>
 
             {!isOpen && status && (
@@ -156,23 +174,34 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="t-focus" className={labelCls}>{meta.focusLabel}</label>
-                  <select id="t-focus" value={focus} onChange={(e) => setFocus(e.target.value)} className={inputCls}>
-                    {meta.focusOptions.map((o) => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="t-avail" className={labelCls}>Availability (optional)</label>
-                  <input id="t-avail" maxLength={200} value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Days and times you can commit" className={inputCls} />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="t-why" className={labelCls}>{meta.statementLabel} *</label>
-                <textarea id="t-why" required rows={4} maxLength={1500} value={statement} onChange={(e) => setStatement(e.target.value)} placeholder={meta.statementPlaceholder} className={`${inputCls} min-h-[110px]`} />
-              </div>
+              {meta.questions.map((question, index) => {
+                const answer = answers[question.id] || '';
+                const wordCount = countWords(answer);
+                const meetsMinimum = question.minWords === undefined || wordCount >= question.minWords;
+                return (
+                  <div key={question.id}>
+                    <label htmlFor={`team-question-${question.id}`} className={labelCls}>
+                      {index + 1}. {question.prompt}{question.minWordsLabel ? ` (${question.minWordsLabel})` : ''} *
+                    </label>
+                    <textarea
+                      id={`team-question-${question.id}`}
+                      required
+                      rows={4}
+                      maxLength={4000}
+                      value={answer}
+                      onChange={(e) => setAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))}
+                      placeholder={question.placeholder || 'Write your answer here...'}
+                      className={`${inputCls} min-h-[110px]`}
+                      aria-describedby={question.minWords !== undefined ? `word-count-${question.id}` : undefined}
+                    />
+                    {question.minWords !== undefined && (
+                      <p id={`word-count-${question.id}`} className={`mt-1 text-xs ${meetsMinimum ? 'text-ink3' : 'text-gold'}`}>
+                        {wordCount} / {question.minWords} words minimum
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
 
               <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
                 <label>Website<input type="text" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} /></label>
