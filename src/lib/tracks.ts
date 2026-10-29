@@ -36,39 +36,51 @@ export function useNow(intervalMs = 20000): number {
   return now;
 }
 
-export interface TrackMeta {
-  title: string;
-  verb: string; // button text when open
-  focusLabel: string;
-  focusOptions: string[];
-  statementLabel: string;
-  statementPlaceholder: string;
+export interface TeamQuestion {
+  id: string;
+  prompt: string;
+  minWords?: number;
+  minWordsLabel?: string;
+  placeholder?: string;
 }
 
-/** Wording and extra questions for the three team applications. */
+export interface TrackMeta {
+  title: string;
+  verb: string;
+  questions: TeamQuestion[];
+}
+
+/** Required written questions shown on each team application. */
 export const TEAM_META: Record<Exclude<TrackKey, 'delegate'>, TrackMeta> = {
-  volunteer: {
-    title: 'Volunteer',
-    verb: 'Apply as volunteer',
-    focusLabel: 'Where would you like to help?',
-    focusOptions: ['Registration desk', 'Logistics', 'Delegate care', 'Committee support', 'No preference'],
-    statementLabel: 'Why do you want to volunteer?',
-    statementPlaceholder: 'A few sentences about yourself and what you can offer.',
+  media: {
+    title: 'Media',
+    verb: 'Apply to media',
+    questions: [
+      { id: 'choose_you', prompt: 'Why should we choose you over other applicants?', minWords: 40, minWordsLabel: '40+ words' },
+      { id: 'why_media', prompt: 'Why do you want to be a part of the ICON MUN media team?', minWords: 40, minWordsLabel: '40+ words' },
+      { id: 'committee_entry', prompt: 'When entering a committee to take photos or record footage, how would you do so without disturbing the committee?', placeholder: 'Explain how you would enter, move around, and respect the committee’s proceedings.' },
+      { id: 'equipment', prompt: 'What equipment do you use? Include the device or camera model where possible.', placeholder: 'For example: camera, lens, phone, microphone, tripod, etc.' },
+      { id: 'upload_access', prompt: 'Do you have access to a device (such as a laptop, adapter, or card reader) that lets you upload footage from your camera to the shared drive?', placeholder: 'Describe the equipment you can use and any limitations.' },
+      { id: 'camera_comfort', prompt: 'How comfortable are you using a camera in a fast-paced event environment?', placeholder: 'Describe your experience and how you handle busy situations.' },
+    ],
   },
   security: {
     title: 'Security',
     verb: 'Apply to security',
-    focusLabel: 'Preferred duty',
-    focusOptions: ['Entrance & accreditation checks', 'Crowd flow', 'Emergency & first-aid support', 'No preference'],
-    statementLabel: 'Why do you want to join security?',
-    statementPlaceholder: 'Any relevant experience, training or responsibilities you have had.',
+    questions: [
+      { id: 'why_security', prompt: 'Why do you want to join the Security Department?', minWords: 50, minWordsLabel: '50+ words' },
+      { id: 'security_role', prompt: 'What do you understand about the role of Security at a MUN conference?', minWords: 60, minWordsLabel: '60+ words' },
+      { id: 'conflict_response', prompt: 'If two delegates are fighting during a break, what precautions and steps would you take?', minWords: 70, minWordsLabel: '70+ words' },
+      { id: 'rules', prompt: 'How would you help ensure participants follow conference rules?', placeholder: 'Explain how you would communicate expectations and handle non-compliance appropriately.' },
+    ],
   },
-  media: {
-    title: 'Media',
-    verb: 'Apply to media',
-    focusLabel: 'Your specialty',
-    focusOptions: ['Photography', 'Videography', 'Graphic design', 'Social media', 'Writing & press', 'No preference'],
-    statementLabel: 'Tell us about your work',
-    statementPlaceholder: 'Links to a portfolio or past work help (Instagram, Drive, YouTube...).',
+  volunteer: {
+    title: 'Volunteer',
+    verb: 'Apply as volunteer',
+    questions: [
+      { id: 'why_volunteer', prompt: 'Why do you want to join the Volunteer Department?', minWords: 50, minWordsLabel: '50+ words' },
+      { id: 'volunteer_role', prompt: 'What do you understand about the role of a Volunteer at a MUN conference?', minWords: 60, minWordsLabel: '60+ words' },
+      { id: 'wandering_volunteer', prompt: 'As a volunteer, you notice another volunteer wandering around instead of carrying out their duties. What would you do to help the conference run smoothly?', minWords: 70, minWordsLabel: '70+ words' },
+    ],
   },
 };
