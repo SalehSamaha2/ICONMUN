@@ -172,7 +172,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
       />
 
       {/* one tab per kind of application */}
-      <div className="mb-5 flex flex-wrap gap-1 border-b border-white/10" role="tablist" aria-label="Application type">
+      <div className="mb-5 flex flex-wrap gap-1 rounded-2xl border border-[#E8CBA4]/10 bg-[#16080E]/75 p-1.5" role="tablist" aria-label="Application type">
         {TRACK_TABS.map((t) => (
           <button
             key={t.value}
@@ -180,8 +180,8 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
             aria-selected={track === t.value}
             onClick={() => { setTrack(t.value); setCommittee('all'); }}
             className={cx(
-              '-mb-px cursor-pointer border-b-2 px-4 py-2.5 text-sm font-medium transition-colors',
-              track === t.value ? 'border-[#D4AF6A] text-[#FFF3D6]' : 'border-transparent text-[#8E8678] hover:text-[#F3DFA2]'
+              'cursor-pointer rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium transition-all duration-200',
+              track === t.value ? 'border-[#E8CBA4]/15 bg-[#E8CBA4]/[0.09] text-[#FFF5E8] shadow-sm' : 'text-[#B59B9F] hover:bg-white/[0.04] hover:text-[#FFF5E8]'
             )}
           >
             {t.label} <span className="ml-1 text-xs opacity-60">{trackCounts[t.value] ?? 0}</span>
@@ -196,8 +196,8 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
             key={s.value}
             onClick={() => setStatus(s.value)}
             className={cx(
-              'cursor-pointer rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide transition-all',
-              status === s.value ? 'border-[#D4AF6A] bg-[#D4AF6A]/15 text-[#FFF3D6]' : 'border-white/10 bg-white/[0.02] text-[#A89D8A] hover:border-[#D4AF6A]/40'
+              'cursor-pointer rounded-full border px-3.5 py-2 text-xs font-medium tracking-wide transition-all duration-200',
+              status === s.value ? 'border-[#E8CBA4]/50 bg-[#E8CBA4]/[0.10] text-[#FFF5E8]' : 'border-white/[0.09] bg-white/[0.02] text-[#B59B9F] hover:border-[#E8CBA4]/30'
             )}
           >
             {s.label} <span className="ml-1 opacity-60">{counts[s.value] ?? 0}</span>
@@ -213,7 +213,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, email, school, country…"
             aria-label="Search applications"
-            className="w-full rounded-lg border border-white/10 bg-[#121212] py-2.5 pl-10 pr-3.5 text-sm text-[#F4EFE6] placeholder-white/25 focus:border-[#D4AF6A]/70 focus:outline-none focus:ring-2 focus:ring-[#D4AF6A]/15"
+            className="w-full rounded-xl border border-[#E8CBA4]/15 bg-[#16080E] py-3 pl-10 pr-3.5 text-sm text-[#FFF5E8] placeholder-[#8D737A] transition-all duration-200 focus:border-[#E8CBA4]/60 focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.08]"
           />
         </div>
         {showCouncilFilter && (
@@ -232,7 +232,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-[11px] uppercase tracking-[0.16em] text-[#8E8678]">
+                <tr className="border-b border-white/[0.08] bg-white/[0.018] text-[10px] uppercase tracking-[0.16em] text-[#B59B9F]">
                   <th className="px-4 py-3 font-medium">Applicant</th>
                   <th className="px-4 py-3 font-medium">{track === 'delegate' ? 'Council' : track === 'all' ? 'Type · council / role' : 'Role'}</th>
                   <th className="px-4 py-3 font-medium">Submitted</th>
@@ -242,7 +242,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filtered.map((r) => (
-                  <tr key={r.id} className="cursor-pointer transition-colors hover:bg-[#D4AF6A]/[0.04]" onClick={() => setOpenId(r.id)}>
+                  <tr key={r.id} className="cursor-pointer transition-colors duration-150 hover:bg-[#E8CBA4]/[0.045] focus-within:bg-[#E8CBA4]/[0.045]" onClick={() => setOpenId(r.id)}>
                     <td className="px-4 py-3">
                       <div className="font-medium text-[#F4EFE6]">{r.full_name}</div>
                       <div className="text-xs text-[#8E8678]">{r.email} · {r.institution || '—'}</div>
@@ -275,7 +275,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
               </button>
             ))}
           </div>
-          <div className="border-t border-white/10 px-4 py-2.5 text-xs text-[#6F685B]">Showing {filtered.length} of {rows.length}</div>
+          <div className="border-t border-white/[0.08] bg-white/[0.015] px-4 py-3 text-xs text-[#8D737A]">Showing {filtered.length} of {rows.length}</div>
         </Card>
       )}
 
@@ -323,7 +323,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
             {open.statement && (
               <div>
                 <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">{open.track === 'delegate' ? 'Message from the delegate' : 'Their answer'}</div>
-                <p className="mt-1.5 whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-[#121212] p-3.5 text-sm leading-relaxed text-[#E6E1D8]">{open.statement}</p>
+                <p className="mt-2 whitespace-pre-wrap break-words rounded-xl border border-[#E8CBA4]/10 bg-[#12070C] p-4 text-sm leading-7 text-[#F0E8E2]">{open.statement}</p>
               </div>
             )}
             <div>

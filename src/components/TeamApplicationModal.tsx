@@ -6,8 +6,8 @@ import { getTrackStatus, TEAM_META, useNow } from '../lib/tracks';
 import type { TrackKey } from '../data/defaults';
 
 type TeamKey = Exclude<TrackKey, 'delegate'>;
-const inputCls = 'w-full rounded-lg border border-ink/10 bg-surface2 px-4 py-3 min-h-[44px] text-base text-inkstrong focus:border-gold focus:outline-none';
-const labelCls = 'text-xs uppercase tracking-wider text-ink2 block mb-1.5 font-medium';
+const inputCls = 'w-full rounded-xl border border-[#E8CBA4]/15 bg-[#100609] px-4 py-3 min-h-[46px] text-sm text-[#FFF5E8] placeholder-[#8D737A] transition-[border,box-shadow] duration-200 focus:border-[#E8CBA4]/65 focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.08]';
+const labelCls = 'text-[10px] uppercase tracking-[0.16em] text-[#D8C5C5] block mb-2 font-semibold';
 const countWords = (value: string) => value.trim().split(/\s+/).filter(Boolean).length;
 const COUNTRY_CODES = [
   ['Saudi Arabia', '+966'], ['United States', '+1'], ['Canada', '+1'], ['United Kingdom', '+44'],
@@ -106,9 +106,9 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
   return (
     <div role="dialog" aria-modal="true" aria-label={`${meta.title} application`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden overscroll-none bg-black/85 p-3 animate-in fade-in duration-200 sm:p-6">
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden overscroll-none bg-[#090407]/90 p-3 backdrop-blur-md animate-in fade-in duration-200 sm:p-6">
       <div onClick={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}
-        className="relative max-h-[90dvh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-2xl border border-gold/50 bg-[#0C0C0C] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.9)] touch-pan-y sm:p-10"
+        className="relative max-h-[90dvh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-[1.5rem] border border-[#E8CBA4]/25 bg-[#16080E] p-5 shadow-[0_30px_100px_rgba(0,0,0,.65)] touch-pan-y sm:p-9"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         <button type="button" onClick={onClose} aria-label="Close"
           className="absolute right-4 top-4 z-50 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-gold/50 bg-surface2 text-accent transition-all hover:border-gold hover:text-inkstrong active:scale-90 sm:right-6 sm:top-6">
@@ -124,7 +124,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
         ) : (
           <>
             <div className="mb-6 pr-10">
-              <h3 className="font-cinzel text-2xl font-bold text-gold-gradient sm:text-3xl">{meta.title} application</h3>
+              <h3 className="font-cinzel text-2xl font-semibold tracking-tight text-[#FFF5E8] sm:text-3xl">{meta.title} application</h3>
               <p className="mt-1 text-xs text-ink3">ICON MUN 2027 organising team</p>
               <p className="mt-3 text-sm text-ink2">Answer every question below. Minimum word counts are enforced where specified.</p>
             </div>
@@ -146,25 +146,25 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                       onChange={(e) => setPhone(e.target.value.replace(/[^\d\s().-]/g, ''))} className={inputCls}
                       autoComplete="tel-national" placeholder="5X XXX XXXX" />
                   </div>
-                  <p className="mt-1 text-[11px] text-ink3">Saudi Arabia (+966) is selected by default.</p>
+                  <p className="mt-1 text-[11px] text-[#8D737A]">Saudi Arabia (+966) is selected by default.</p>
                 </div>
               </div>
               {meta.questions.map((question, index) => {
                 const answer = answers[question.id] || '';
                 const wordCount = countWords(answer);
                 const meetsMinimum = question.minWords === undefined || wordCount >= question.minWords;
-                return <div key={question.id}>
+                return <div key={question.id} className="rounded-2xl border border-[#E8CBA4]/10 bg-white/[0.018] p-4 sm:p-5">
                   <label htmlFor={`team-question-${question.id}`} className={labelCls}>{index + 1}. {question.prompt}{question.minWordsLabel ? ` (${question.minWordsLabel})` : ''} *</label>
                   <textarea id={`team-question-${question.id}`} required rows={4} maxLength={4000} value={answer}
                     onChange={(e) => setAnswers((prev) => ({ ...prev, [question.id]: e.target.value }))}
-                    placeholder={question.placeholder || 'Write your answer here...'} className={`${inputCls} min-h-[110px]`}
+                    placeholder={question.placeholder || 'Write your answer here...'} className={`${inputCls} min-h-[120px] leading-6 resize-y`}
                     aria-describedby={question.minWords !== undefined ? `word-count-${question.id}` : undefined} />
                   {question.minWords !== undefined && <p id={`word-count-${question.id}`} className={`mt-1 text-xs ${meetsMinimum ? 'text-ink3' : 'text-gold'}`}>{wordCount} / {question.minWords} words minimum</p>}
                 </div>;
               })}
               <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden"><label>Website<input type="text" tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} /></label></div>
-              <p className="text-[11px] leading-relaxed text-ink4">Your details are stored securely and are visible only to the ICON MUN organisers, who use them to contact you.</p>
-              {error && <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</p>}
+              <p className="text-[11px] leading-relaxed text-[#8D737A]">Your details are stored securely and are visible only to the ICON MUN organisers, who use them to contact you.</p>
+              {error && <p role="alert" className="rounded-lg border border-red-400/25 bg-red-500/[0.08] px-4 py-3 text-sm text-red-200">{error}</p>}
               <div className="flex flex-col-reverse items-stretch justify-end gap-3 pt-2 sm:flex-row sm:items-center">
                 <button type="button" onClick={onClose} className="flex min-h-[44px] cursor-pointer items-center justify-center px-5 py-3 text-xs uppercase tracking-wider text-ink3 hover:text-inkstrong active:scale-95">Cancel</button>
                 <button type="submit" disabled={sending || !isOpen} className="gold-btn-primary flex min-h-[48px] cursor-pointer items-center justify-center rounded-lg px-8 py-3.5 text-xs font-bold uppercase tracking-widest shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-50">{sending ? 'Sending…' : 'Submit application'}</button>

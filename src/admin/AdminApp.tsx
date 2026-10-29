@@ -38,8 +38,8 @@ const parseHash = () => {
 
 /* ------------------------------------------------------------------ shell */
 const Backdrop: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="relative min-h-screen bg-[#050505] text-[#E6E1D8]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-    <div className="pointer-events-none fixed inset-0 opacity-70" style={{ background: 'radial-gradient(900px 500px at 85% -10%, rgba(212,175,106,0.10), transparent 60%), radial-gradient(700px 500px at -10% 110%, rgba(90,15,30,0.18), transparent 60%)' }} />
+  <div className="icon-admin-shell relative min-h-screen bg-[#100609] text-[#F0E8E2]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="pointer-events-none fixed inset-0 opacity-70" style={{ background: 'radial-gradient(900px 500px at 85% -10%, rgba(232,203,164,0.10), transparent 60%), radial-gradient(700px 500px at -10% 110%, rgba(100,27,45,0.24), transparent 60%)' }} />
     <div className="relative">{children}</div>
   </div>
 );
@@ -48,8 +48,8 @@ const Brand: React.FC<{ small?: boolean }> = ({ small }) => (
   <div className="flex items-center gap-3">
     <span className={cx('flex items-center justify-center rounded-xl bg-[#E7DBC3]', small ? 'h-10 w-10' : 'h-14 w-14')}><img src="/brand/logo-mark.webp" alt="" className={small ? 'h-9 w-9 object-contain' : 'h-12 w-12 object-contain'} /></span>
     <div>
-      <div className={cx('font-cinzel font-bold tracking-[0.22em] text-[#FFF3D6]', small ? 'text-sm' : 'text-lg')}>ICON MUN</div>
-      <div className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF6A]">Organiser console</div>
+      <div className={cx('font-cinzel font-bold tracking-[0.22em] text-[#FFF5E8]', small ? 'text-sm' : 'text-lg')}>ICON MUN</div>
+      <div className="text-[10px] uppercase tracking-[0.3em] text-[#E8CBA4]">Organiser console</div>
     </div>
   </div>
 );
@@ -61,7 +61,7 @@ const SetupNeeded: React.FC = () => (
         <Brand />
         <h1 className="mt-6 font-cinzel text-xl font-bold text-[#FFF3D6]">Supabase is not connected</h1>
         <p className="mt-2 text-sm leading-relaxed text-[#A89D8A]">
-          Create a file named <code className="rounded bg-white/10 px-1.5 py-0.5 text-[#F3DFA2]">.env</code> in the project folder with your project URL and anon key, then restart the dev server (or add them as environment variables on Vercel and redeploy):
+          Create a file named <code className="rounded bg-white/10 px-1.5 py-0.5 text-[#F1D6B3]">.env</code> in the project folder with your project URL and anon key, then restart the dev server (or add them as environment variables on Vercel and redeploy):
         </p>
         <pre className="mt-4 overflow-x-auto rounded-lg border border-white/10 bg-[#0d0d0d] p-4 text-xs leading-relaxed text-[#F3DFA2]">{`VITE_SUPABASE_URL=https://xxxx.supabase.co\nVITE_SUPABASE_ANON_KEY=eyJ...`}</pre>
       </Card>
@@ -228,7 +228,7 @@ const AdminInner: React.FC = () => {
       <div className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
         {NAV.map((g) => (
           <div key={g.group}>
-            <div className="mb-1.5 px-3 text-[10px] font-medium uppercase tracking-[0.28em] text-[#6F685B]">{g.group}</div>
+            <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8D737A]">{g.group}</div>
             {g.items.map((it) => {
               const active = route === it.route || (route === 'dashboard' && it.route === 'dashboard');
               return (
@@ -237,8 +237,8 @@ const AdminInner: React.FC = () => {
                   onClick={() => go(it.route)}
                   aria-current={active ? 'page' : undefined}
                   className={cx(
-                    'group relative flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
-                    active ? 'bg-[#D4AF6A]/12 text-[#FFF3D6]' : 'text-[#A89D8A] hover:bg-white/5 hover:text-[#F3DFA2]'
+                    'group relative flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 hover:translate-x-0.5',
+                    active ? 'bg-[#E8CBA4]/10 text-[#FFF3D6]' : 'text-[#A89D8A] hover:bg-white/5 hover:text-[#F3DFA2]'
                   )}
                 >
                   {active && <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r bg-[#D4AF6A]" />}
@@ -253,7 +253,7 @@ const AdminInner: React.FC = () => {
       <div className="border-t border-white/10 p-4">
         <div className="mb-3 truncate text-xs text-[#8E8678]" title={session?.user.email}>{session?.user.email}</div>
         <div className="flex gap-2">
-          <a href="/" target="_blank" rel="noopener noreferrer" className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#D4AF6A]/25 px-3 py-2 text-xs text-[#E6E1D8] transition-colors hover:border-[#D4AF6A]/60 hover:bg-[#D4AF6A]/10">
+          <a href="/" target="_blank" rel="noopener noreferrer" className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#E8CBA4]/25 px-3 py-2 text-xs text-[#E6E1D8] transition-colors hover:border-[#E8CBA4]/60 hover:bg-[#E8CBA4]/10">
             <ExternalLink className="h-3.5 w-3.5" /> View site
           </a>
           <Button size="sm" variant="ghost" onClick={signOut} aria-label="Sign out"><LogOut className="h-4 w-4" /></Button>
@@ -264,10 +264,10 @@ const AdminInner: React.FC = () => {
 
   return (
     <Backdrop>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-[#D4AF6A]/15 bg-[#080808]/95 backdrop-blur lg:block">{sidebar}</aside>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] border-r border-[#E8CBA4]/15 bg-[#16080E]/95 shadow-[18px_0_60px_rgba(0,0,0,.12)] backdrop-blur-xl lg:block">{sidebar}</aside>
 
       {/* mobile top bar */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[#D4AF6A]/15 bg-[#080808]/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[#D4AF6A]/15 bg-[#16080E]/95 px-4 py-3 backdrop-blur lg:hidden">
         <Brand small />
         <Button variant="ghost" size="sm" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu className="h-5 w-5" /></Button>
       </header>
@@ -281,8 +281,8 @@ const AdminInner: React.FC = () => {
         </div>
       )}
 
-      <main className="px-4 py-8 sm:px-8 lg:ml-64 lg:px-10 lg:py-10">
-        <div className="mx-auto max-w-6xl">{page}</div>
+      <main className="px-4 py-6 sm:px-7 lg:ml-64 lg:px-10 lg:py-9">
+        <div className="mx-auto max-w-[1440px]">{page}</div>
       </main>
     </Backdrop>
   );
