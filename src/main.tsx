@@ -10,6 +10,6 @@ const root = createRoot(document.getElementById('root')!);
 
 if (isAdminRoute) {
   import('./admin/AdminApp').then(({ default: AdminApp }) => root.render(<AdminApp />));
-} } else {
+} else {
   root.render(<App />);
 }
