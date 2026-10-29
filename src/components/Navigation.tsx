@@ -131,7 +131,6 @@ export const Navigation: React.FC<NavigationProps> = ({
 
           {/* Zone 3: Desktop Register CTA + Mobile Hamburger */}
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            <a href="/portal" className="hidden lg:inline-flex min-h-[44px] items-center px-2 text-[10px] uppercase tracking-[.14em] text-ink2 transition hover:text-accent">Applicant portal</a>
             <button
               type="button"
               onClick={onOpenRegister}
