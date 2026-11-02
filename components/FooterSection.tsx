@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Mail, MapPin, Phone, Instagram, Linkedin, Twitter, Send, RotateCcw } from 'lucide-react';
-import { useSiteData } from '../lib/SiteData';
-import { safeUrl } from '../lib/supabase';
+import { useSiteData } from '../src/lib/SiteData';
+import { safeUrl } from '../src/lib/supabase';
 
 gsap.registerPlugin(ScrollTrigger);
 

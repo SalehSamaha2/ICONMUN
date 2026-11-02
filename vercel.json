@@ -1,10 +1,11 @@
 {
   "rewrites": [
-    { "source": "/admin/(.*)", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" },
+    { "source": "/admin/(.*)", "destination": "/index.html" },
     { "source": "/pass", "destination": "/index.html" },
     { "source": "/pass/(.*)", "destination": "/index.html" },
     { "source": "/security-scanner", "destination": "/index.html" },
-    { "source": "/security-scanner/(.*)", "destination": "/index.html" }
+    { "source": "/security-scanner/(.*)", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

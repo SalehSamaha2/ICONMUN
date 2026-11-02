@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2, LogOut, Mail, ShieldCheck } from 'lucide-react';
-import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
-import { CheckInManager } from '../admin/CheckInManager';
-import { Button, Card, Label, TextInput, ToastProvider } from '../admin/ui';
+import { getSupabase, isSupabaseConfigured } from '../src/lib/supabase';
+import { CheckInManager } from '../src/admin/CheckInManager';
+import { Button, Card, Label, TextInput, ToastProvider } from '../src/admin/ui';
 
 function SecurityScannerInner() {
   const [email, setEmail] = useState('');
@@ -42,7 +42,7 @@ function SecurityScannerInner() {
       const { data } = await sb.auth.getSession();
       if (alive && data.session) await verifyAccess();
       else if (alive) setLoading(false);
-      const { data: listener } = sb.auth.onAuthStateChange((event) => {
+      const { data: listener } = sb.auth.onAuthStateChange((event: string) => {
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
           window.setTimeout(() => { if (alive) void verifyAccess(); }, 0);
         }
@@ -91,7 +91,7 @@ function SecurityScannerInner() {
               <p className="mt-2 text-sm leading-6 text-[#A89D8A]">Sign in with the verified email address attached to your accepted ICON MUN Security application. Administrators can also sign in here.</p>
               {sessionEmail ? <div className="mt-5 rounded-lg border border-white/10 p-3 text-sm text-[#D7C9B4]">Signed in as {sessionEmail}</div> : (
                 <form onSubmit={sendLink} className="mt-5 space-y-4">
-                  <div><Label htmlFor="scanner-email">Security team email</Label><TextInput id="scanner-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="Email used on your application" /></div>
+                  <div><Label htmlFor="scanner-email">Security team email</Label><TextInput id="scanner-email" type="email" autoComplete="email" required value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} placeholder="Email used on your application" /></div>
                   <Button type="submit" loading={sending} className="w-full"><Mail className="h-4 w-4" /> Send secure sign-in link</Button>
                 </form>
               )}
