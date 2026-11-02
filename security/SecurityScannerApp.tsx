@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Camera, Loader2, LogOut, Mail, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Loader2, LogOut, Mail, ShieldCheck } from 'lucide-react';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { CheckInManager } from '../admin/CheckInManager';
 import { Button, Card, Label, TextInput, ToastProvider } from '../admin/ui';
