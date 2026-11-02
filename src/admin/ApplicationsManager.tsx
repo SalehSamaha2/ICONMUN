@@ -23,6 +23,10 @@ export interface Application {
   internal_notes: string;
   track: string;
   details: Record<string, string> | null;
+  head_decision: string | null;
+  head_decision_by: string | null;
+  head_decision_at: string | null;
+  head_notes: string;
 }
 
 const TRACK_TABS = [
@@ -41,19 +45,41 @@ export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   return <Badge tone={s?.tone || 'gray'}>{s?.label || status}</Badge>;
 };
 
-export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrack?: string }> = ({ initialStatus = 'all', initialTrack = 'all' }) => {
+const HeadDecision: React.FC<{ r: Application; compact?: boolean }> = ({ r, compact }) =>
+  r.head_decision ? (
+    <span className="inline-flex flex-col gap-0.5 align-top">
+      <StatusBadge status={r.head_decision} />
+      {!compact && r.head_decision_by && <span className="text-[10px] text-[#8E8678]">{r.head_decision_by}{r.head_decision_at ? ` · ${timeAgo(r.head_decision_at)}` : ''}</span>}
+    </span>
+  ) : <span className="text-xs text-[#6F685B]">{r.track === 'delegate' ? 'n/a' : '—'}</span>;
+
+/** The head's own verdict. 'new' (no verdict yet) is stored as null. */
+const HEAD_OPTIONS = [
+  { value: 'new', label: 'No decision yet' },
+  { value: 'reviewing', label: 'Under review' },
+  { value: 'accepted', label: 'Accept' },
+  { value: 'waitlisted', label: 'Waitlist' },
+  { value: 'rejected', label: 'Reject' },
+];
+
+export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrack?: string; headTrack?: string }> = ({ initialStatus = 'all', initialTrack = 'all', headTrack }) => {
   const toast = useToast();
+  const isHead = !!headTrack;
+  /** What the status chips, column and quick-select work on: the head's own verdict for heads, the final status for the SG. */
+  const stateOf = (r: Application) => (isHead ? r.head_decision || 'new' : r.status);
   const [rows, setRows] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(initialStatus);
-  const [track, setTrack] = useState(TRACK_TABS.some((t) => t.value === initialTrack) ? initialTrack : 'all');
+  const [track, setTrack] = useState(headTrack || (TRACK_TABS.some((t) => t.value === initialTrack) ? initialTrack : 'all'));
   const [committee, setCommittee] = useState('all');
 
   const [openId, setOpenId] = useState<string | null>(null);
   const [draftStatus, setDraftStatus] = useState('new');
   const [draftNotes, setDraftNotes] = useState('');
+  const [draftHead, setDraftHead] = useState('new');
+  const [draftHeadNotes, setDraftHeadNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [toDelete, setToDelete] = useState<Application | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -63,7 +89,9 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
     setError('');
     try {
       const sb = await getSupabase()!;
-      const { data, error: e } = await sb.from('applications').select('*').order('created_at', { ascending: false }).limit(2000);
+      let q = sb.from('applications').select('*').order('created_at', { ascending: false }).limit(2000);
+      if (headTrack) q = q.eq('track', headTrack); // the database enforces this too
+      const { data, error: e } = await q;
       if (e) throw e;
       setRows((data || []) as Application[]);
     } catch (e) {
@@ -71,7 +99,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [headTrack]);
   useEffect(() => { load(); }, [load]);
 
   const trackRows = useMemo(() => (track === 'all' ? rows : rows.filter((r) => r.track === track)), [rows, track]);
@@ -85,18 +113,18 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: trackRows.length };
     APPLICATION_STATUSES.forEach((s) => (c[s.value] = 0));
-    trackRows.forEach((r) => (c[r.status] = (c[r.status] || 0) + 1));
+    trackRows.forEach((r) => { const k = isHead ? r.head_decision || 'new' : r.status; c[k] = (c[k] || 0) + 1; });
     return c;
-  }, [trackRows]);
+  }, [trackRows, isHead]);
 
-  const showCouncilFilter = track === 'all' || track === 'delegate';
+  const showCouncilFilter = !isHead && (track === 'all' || track === 'delegate');
   const committees = useMemo(() => Array.from(new Set(rows.filter((r) => r.track === 'delegate').map((r) => r.committee))).sort(), [rows]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return trackRows.filter(
       (r) =>
-        (status === 'all' || r.status === status) &&
+        (status === 'all' || (isHead ? r.head_decision || 'new' : r.status) === status) &&
         (committee === 'all' || !showCouncilFilter || r.committee === committee) &&
         (!q || [r.full_name, r.email, r.institution, r.first_country, r.committee, r.details?.focus].some((x) => (x || '').toLowerCase().includes(q)))
     );
@@ -104,18 +132,27 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
 
   const open = rows.find((r) => r.id === openId) || null;
   useEffect(() => {
-    if (open) { setDraftStatus(open.status); setDraftNotes(open.internal_notes || ''); }
+    if (open) {
+      setDraftStatus(open.status); setDraftNotes(open.internal_notes || '');
+      setDraftHead(open.head_decision || 'new'); setDraftHeadNotes(open.head_notes || '');
+    }
   }, [openId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateRow = async (id: string, patch: Partial<Application>) => {
     const sb = await getSupabase()!;
-    const { error: e } = await sb.from('applications').update(patch).eq('id', id);
+    const { data, error: e } = await sb.from('applications').update(patch).eq('id', id).select('*').maybeSingle();
     if (e) throw e;
-    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    if (!data) throw new Error('You do not have permission to change this application.');
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...(data as Application) } : r)));
   };
 
+  const headValue = (v: string) => (v === 'new' ? null : v);
+
   const quickStatus = async (row: Application, next: string) => {
-    try { await updateRow(row.id, { status: next }); toast('ok', `${row.full_name}: ${next}`); }
+    try {
+      await updateRow(row.id, isHead ? { head_decision: headValue(next) } : { status: next });
+      toast('ok', `${row.full_name}: ${next}`);
+    }
     catch (e) { toast('err', friendlyError(e)); }
   };
 
@@ -123,7 +160,9 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
     if (!open) return;
     setSaving(true);
     try {
-      await updateRow(open.id, { status: draftStatus, internal_notes: draftNotes });
+      await updateRow(open.id, isHead
+        ? { head_decision: headValue(draftHead), head_notes: draftHeadNotes }
+        : { status: draftStatus, internal_notes: draftNotes });
       toast('ok', 'Application updated.');
       setOpenId(null);
     } catch (e) { toast('err', friendlyError(e)); }
@@ -131,7 +170,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
   };
 
   const confirmDelete = async () => {
-    if (!toDelete) return;
+    if (!toDelete || isHead) return;
     setDeleting(true);
     try {
       const sb = await getSupabase()!;
@@ -147,10 +186,10 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
 
   const exportCsv = () => {
     const csv = toCsv(
-      ['Submitted', 'Track', 'Status', 'Name', 'Email', 'Phone', 'Institution', 'Delegation', 'Council', 'Country preference', 'Experience', 'Team role', 'Availability', 'Message', 'Internal notes'],
+      ['Submitted', 'Track', isHead ? 'Your decision' : 'Final status', 'Name', 'Email', 'Phone', 'Institution', 'Delegation', 'Council', 'Country preference', 'Experience', 'Team role', 'Availability', 'Message', ...(isHead ? ['Your notes'] : ["Head's decision", "Head's notes", 'Internal notes'])],
       filtered.map((r) => {
         const d = r.track === 'delegate';
-        return [r.created_at, TRACK_LABELS[r.track] || r.track, r.status, r.full_name, r.email, r.details?.phone || '', r.institution, d ? DELEGATION_LABELS[r.delegation_type] || r.delegation_type : '', d ? r.committee : '', d ? r.first_country : '', d ? r.experience_level : '', d ? '' : r.details?.focus || '', r.details?.availability || '', r.statement, r.internal_notes];
+        return [r.created_at, TRACK_LABELS[r.track] || r.track, isHead ? r.head_decision || '' : r.status, r.full_name, r.email, r.details?.phone || '', r.institution, d ? DELEGATION_LABELS[r.delegation_type] || r.delegation_type : '', d ? r.committee : '', d ? r.first_country : '', d ? r.experience_level : '', d ? '' : r.details?.focus || '', r.details?.availability || '', r.statement, ...(isHead ? [r.head_notes] : [r.head_decision || '', r.head_notes, r.internal_notes])];
       })
     );
     downloadCsv(`icon-mun-${track === 'all' ? 'applications' : track}-${new Date().toISOString().slice(0, 10)}.csv`, csv);
@@ -160,9 +199,11 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
   return (
     <div>
       <PageHeader
-        eyebrow="Registry"
-        title="Applications"
-        subtitle="Everyone who applied, separated by type. Only organisers can see this page."
+        eyebrow={isHead ? 'Your track' : 'Registry'}
+        title={isHead ? `${TRACK_LABELS[headTrack!] || headTrack} applications` : 'Applications'}
+        subtitle={isHead
+          ? 'Review the people who applied to your team. Your decision is a recommendation: the Secretary-General confirms the final result.'
+          : 'Everyone who applied, separated by type. Each head\'s recommendation is shown next to the final status you set.'}
         actions={
           <>
             <Button variant="subtle" onClick={load}><RefreshCw className={cx('h-4 w-4', loading && 'animate-spin')} /> Refresh</Button>
@@ -172,7 +213,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
       />
 
       {/* one tab per kind of application */}
-      <div className="mb-5 flex flex-wrap gap-1 rounded-2xl border border-[#E8CBA4]/10 bg-[#16080E]/75 p-1.5" role="tablist" aria-label="Application type">
+      {!isHead && <div className="mb-5 flex flex-wrap gap-1 rounded-2xl border border-[#E8CBA4]/10 bg-[#16080E]/75 p-1.5" role="tablist" aria-label="Application type">
         {TRACK_TABS.map((t) => (
           <button
             key={t.value}
@@ -187,11 +228,11 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
             {t.label} <span className="ml-1 text-xs opacity-60">{trackCounts[t.value] ?? 0}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* status chips */}
       <div className="mb-4 flex flex-wrap gap-2">
-        {[{ value: 'all', label: 'All' }, ...APPLICATION_STATUSES].map((s) => (
+        {[{ value: 'all', label: 'All' }, ...(isHead ? HEAD_OPTIONS.map((o) => ({ ...o, label: o.value === 'new' ? 'Undecided' : o.label })) : APPLICATION_STATUSES)].map((s) => (
           <button
             key={s.value}
             onClick={() => setStatus(s.value)}
@@ -236,7 +277,8 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
                   <th className="px-4 py-3 font-medium">Applicant</th>
                   <th className="px-4 py-3 font-medium">{track === 'delegate' ? 'Council' : track === 'all' ? 'Type · council / role' : 'Role'}</th>
                   <th className="px-4 py-3 font-medium">Submitted</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  {!isHead && <th className="px-4 py-3 font-medium">Head's decision</th>}
+                  <th className="px-4 py-3 font-medium">{isHead ? 'Your decision' : 'Final status'}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -249,9 +291,10 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
                     </td>
                     <td className="px-4 py-3 text-[#C4BAA8]">{track === 'all' && <span className="mr-2 rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-[#8E8678]">{TRACK_LABELS[r.track] || r.track}</span>}{roleOf(r)}</td>
                     <td className="px-4 py-3 text-xs text-[#8E8678]" title={formatDate(r.created_at)}>{timeAgo(r.created_at)}</td>
+                    {!isHead && <td className="px-4 py-3"><HeadDecision r={r} /></td>}
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <Select value={r.status} onChange={(e) => quickStatus(r, e.target.value)} aria-label={`Status for ${r.full_name}`} className="!w-auto !py-1.5 text-xs">
-                        {APPLICATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                      <Select value={stateOf(r)} onChange={(e) => quickStatus(r, e.target.value)} aria-label={`${isHead ? 'Your decision' : 'Status'} for ${r.full_name}`} className="!w-auto !py-1.5 text-xs">
+                        {(isHead ? HEAD_OPTIONS : APPLICATION_STATUSES).map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                       </Select>
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-[#D4AF6A]">Open →</td>
@@ -269,8 +312,9 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
                     <div className="truncate font-medium text-[#F4EFE6]">{r.full_name}</div>
                     <div className="truncate text-xs text-[#8E8678]">{r.email}</div>
                   </div>
-                  <StatusBadge status={r.status} />
+                  <StatusBadge status={stateOf(r)} />
                 </div>
+                {!isHead && r.head_decision && <div className="mt-1 text-[11px] text-[#B59B9F]">Head: <HeadDecision r={r} compact /></div>}
                 <div className="mt-1.5 text-xs text-[#6F685B]">{(TRACK_LABELS[r.track] || r.track)} · {roleOf(r)} · {timeAgo(r.created_at)}</div>
               </button>
             ))}
@@ -286,7 +330,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
         subtitle={open ? `Submitted ${formatDate(open.created_at)}` : ''}
         footer={
           <div className="flex items-center justify-between gap-3">
-            <Button variant="danger" size="sm" onClick={() => open && setToDelete(open)}><Trash2 className="h-4 w-4" /> Delete</Button>
+            {isHead ? <span /> : <Button variant="danger" size="sm" onClick={() => open && setToDelete(open)}><Trash2 className="h-4 w-4" /> Delete</Button>}
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => setOpenId(null)} disabled={saving}>Close</Button>
               <Button variant="primary" loading={saving} onClick={saveDetail}>Save</Button>
@@ -326,17 +370,44 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
                 <p className="mt-2 whitespace-pre-wrap break-words rounded-xl border border-[#E8CBA4]/10 bg-[#12070C] p-4 text-sm leading-7 text-[#F0E8E2]">{open.statement}</p>
               </div>
             )}
-            <div>
-              <Label htmlFor="app-status">Status</Label>
-              <Select id="app-status" value={draftStatus} onChange={(e) => setDraftStatus(e.target.value)}>
-                {APPLICATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </Select>
-              <p className="mt-1.5 text-xs text-[#6F685B]">Changing the status does not email the applicant. Contact them yourself.</p>
-            </div>
-            <div>
-              <Label htmlFor="app-notes" hint="Private. Never shown to delegates or on the website.">Internal notes</Label>
-              <TextArea id="app-notes" rows={5} value={draftNotes} maxLength={4000} onChange={(e) => setDraftNotes(e.target.value)} />
-            </div>
+            {isHead ? (
+              <>
+                <div>
+                  <Label htmlFor="head-decision">Your decision</Label>
+                  <Select id="head-decision" value={draftHead} onChange={(e) => setDraftHead(e.target.value)}>
+                    {HEAD_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </Select>
+                  <p className="mt-1.5 text-xs text-[#6F685B]">This is your recommendation. The Secretary-General confirms the final status, and the applicant is not emailed.{open.head_decision_at && <> Last set {timeAgo(open.head_decision_at)}{open.head_decision_by ? ` by ${open.head_decision_by}` : ''}.</>}</p>
+                </div>
+                <div>
+                  <Label htmlFor="head-notes" hint="Visible to you, the other heads of this track and the Secretary-General.">Your notes</Label>
+                  <TextArea id="head-notes" rows={5} value={draftHeadNotes} maxLength={4000} onChange={(e) => setDraftHeadNotes(e.target.value)} />
+                </div>
+              </>
+            ) : (
+              <>
+                {open.track !== 'delegate' && (
+                  <div className="rounded-xl border border-[#E8CBA4]/15 bg-[#12070C] p-4">
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">Head's decision</div>
+                    {open.head_decision ? (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[#F0E8E2]"><StatusBadge status={open.head_decision} /> <span className="text-xs text-[#8E8678]">{open.head_decision_by || 'a head'}{open.head_decision_at ? ` · ${timeAgo(open.head_decision_at)}` : ''}</span></div>
+                    ) : <p className="mt-2 text-sm text-[#8E8678]">The head has not decided yet.</p>}
+                    {open.head_notes && <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-[#F0E8E2]">{open.head_notes}</p>}
+                  </div>
+                )}
+                <div>
+                  <Label htmlFor="app-status">Final status</Label>
+                  <Select id="app-status" value={draftStatus} onChange={(e) => setDraftStatus(e.target.value)}>
+                    {APPLICATION_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </Select>
+                  <p className="mt-1.5 text-xs text-[#6F685B]">Changing the status does not email the applicant. Contact them yourself.</p>
+                </div>
+                <div>
+                  <Label htmlFor="app-notes" hint="Private. Never shown to delegates, heads or on the website.">Internal notes</Label>
+                  <TextArea id="app-notes" rows={5} value={draftNotes} maxLength={4000} onChange={(e) => setDraftNotes(e.target.value)} />
+                </div>
+              </>
+            )}
           </div>
         )}
       </Drawer>

@@ -15,6 +15,10 @@ import { Button, Card, Label, TextInput, ToastProvider, cx } from './ui';
 
 const IDLE_LIMIT_MS = 60 * 60 * 1000; // sign out after 60 minutes without activity
 
+const HEAD_NAV: Array<{ group: string; items: Array<{ route: string; label: string; icon: React.ComponentType<{ className?: string }> }> }> = [
+  { group: 'Your track', items: [{ route: 'applications', label: 'Applications', icon: Inbox }] },
+];
+
 const NAV: Array<{ group: string; items: Array<{ route: string; label: string; icon: React.ComponentType<{ className?: string }> }> }> = [
   { group: 'Overview', items: [{ route: 'dashboard', label: 'Dashboard', icon: LayoutDashboard }] },
   { group: 'Registry', items: [{ route: 'registrations', label: 'Registration', icon: DoorOpen }, { route: 'applications', label: 'Applications', icon: Inbox }] },
@@ -46,12 +50,15 @@ const Backdrop: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </div>
 );
 
-const Brand: React.FC<{ small?: boolean }> = ({ small }) => (
+type Role = { kind: 'owner' } | { kind: 'head'; track: string };
+const HEAD_TITLES: Record<string, string> = { volunteer: 'Head of volunteers', security: 'Head of security', media: 'Head of media' };
+
+const Brand: React.FC<{ small?: boolean; sub?: string }> = ({ small, sub }) => (
   <div className="flex items-center gap-3">
     <span className={cx('flex items-center justify-center rounded-xl bg-[#E7DBC3]', small ? 'h-10 w-10' : 'h-14 w-14')}><img src="/brand/logo-mark.webp" alt="" className={small ? 'h-9 w-9 object-contain' : 'h-12 w-12 object-contain'} /></span>
     <div>
       <div className={cx('font-cinzel font-bold tracking-[0.22em] text-[#FFF5E8]', small ? 'text-sm' : 'text-lg')}>ICON MUN</div>
-      <div className="text-[10px] uppercase tracking-[0.3em] text-[#E8CBA4]">Organiser console</div>
+      <div className="text-[10px] uppercase tracking-[0.3em] text-[#E8CBA4]">{sub || 'Organiser console'}</div>
     </div>
   </div>
 );
@@ -136,6 +143,7 @@ type Phase = 'loading' | 'signedOut' | 'forbidden' | 'ready';
 const AdminInner: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('loading');
   const [session, setSession] = useState<Session | null>(null);
+  const [role, setRole] = useState<Role>({ kind: 'owner' });
   const [nav, setNav] = useState(parseHash());
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -145,7 +153,16 @@ const AdminInner: React.FC = () => {
     try {
       const sb = await getSupabase()!;
       const { data, error } = await sb.from('admins').select('user_id').eq('user_id', s.user.id).maybeSingle();
-      setPhase(!error && data ? 'ready' : 'forbidden');
+      if (!error && data) { setRole({ kind: 'owner' }); return setPhase('ready'); }
+      // not the SG: is this a head of one registration track?
+      const { data: head, error: headErr } = await sb.from('track_heads').select('track').eq('user_id', s.user.id).maybeSingle();
+      if (!headErr && head && HEAD_TITLES[head.track as string]) {
+        setRole({ kind: 'head', track: head.track as string });
+        window.location.hash = '#/applications';
+        setNav(parseHash());
+        return setPhase('ready');
+      }
+      setPhase('forbidden');
     } catch { setPhase('forbidden'); }
   }, []);
 
@@ -214,9 +231,11 @@ const AdminInner: React.FC = () => {
     );
   }
 
-  const route = nav.route;
+  const isHead = role.kind === 'head';
+  const route = isHead ? 'applications' : nav.route; // heads can only ever see their applications
   let page: React.ReactNode;
-  if (route === 'dashboard') page = <Dashboard go={go} />;
+  if (role.kind === 'head') page = <ApplicationsManager key={role.track} headTrack={role.track} />;
+  else if (route === 'dashboard') page = <Dashboard go={go} />;
   else if (route === 'applications') page = <ApplicationsManager key={`${nav.query.get('status') || 'all'}-${nav.query.get('track') || 'all'}`} initialStatus={nav.query.get('status') || 'all'} initialTrack={nav.query.get('track') || 'all'} />;
   else if (route === 'registrations') page = <RegistrationManager go={go} />;
   else if (route === 'settings') page = <SettingsManager />;
@@ -227,9 +246,9 @@ const AdminInner: React.FC = () => {
 
   const sidebar = (
     <nav className="flex h-full flex-col">
-      <div className="px-5 py-6"><Brand small /></div>
+      <div className="px-5 py-6"><Brand small sub={role.kind === 'head' ? HEAD_TITLES[role.track] : undefined} /></div>
       <div className="flex-1 space-y-6 overflow-y-auto px-3 pb-6">
-        {NAV.map((g) => (
+        {(role.kind === 'head' ? HEAD_NAV : NAV).map((g) => (
           <div key={g.group}>
             <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8D737A]">{g.group}</div>
             {g.items.map((it) => {
@@ -271,7 +290,7 @@ const AdminInner: React.FC = () => {
 
       {/* mobile top bar */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[#D4AF6A]/15 bg-[#16080E]/95 px-4 py-3 backdrop-blur lg:hidden">
-        <Brand small />
+        <Brand small sub={role.kind === 'head' ? HEAD_TITLES[role.track] : undefined} />
         <Button variant="ghost" size="sm" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu className="h-5 w-5" /></Button>
       </header>
       {menuOpen && (
