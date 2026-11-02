@@ -81,16 +81,33 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     try {
       const sb = await clientP;
       const normalizedPhone = `${countryCode} ${phone.trim().replace(/^0+/, '')}`;
-      const statement = meta.questions.map((q) => `${q.prompt}\n${(answers[q.id] || '').trim()}`).join('\n\n');
+      // The database limits applications.statement to 2,000 characters and details to 3,000 bytes.
+      // Keep the complete, labelled answers in details and leave statement empty to avoid
+      // duplicating them into the shorter legacy column.
+      const questionAnswers = Object.fromEntries(
+        meta.questions.map((q) => [q.id, { question: q.prompt, answer: (answers[q.id] || '').trim() }]),
+      );
+      const details = {
+        phone: normalizedPhone,
+        phone_country_code: countryCode,
+        phone_local_number: phone.trim(),
+        question_answers: questionAnswers,
+      };
+      const detailsBytes = new TextEncoder().encode(JSON.stringify(details)).length;
+      if (detailsBytes > 2800) {
+        setError('Your answers are too long to submit together. Please shorten them slightly and try again.');
+        return;
+      }
       const { error: err } = await sb.from('applications').insert({
-        track: trackKey, full_name: fullName.trim(), email: email.trim(), institution: institution.trim(), statement,
-        details: { phone: normalizedPhone, phone_country_code: countryCode, phone_local_number: phone.trim() },
+        track: trackKey, full_name: fullName.trim(), email: email.trim(), institution: institution.trim(), statement: '',
+        details,
       });
       if (err) {
         const msg = err.message || '';
         if (/closed/i.test(msg)) setError('Applications for this role are currently closed.');
         else if (/already been used/i.test(msg)) setError('This email has already been used for several applications.');
         else if (/Too many/i.test(msg)) setError('We are receiving many applications right now. Please try again in a few minutes.');
+        else if (err.code === '23514' && /applications_statement_check/i.test(msg)) setError('Your application answers could not be saved because the statement field exceeded its database limit. Please shorten them and try again.');
         else if (err.code === '23514' && /details/i.test(msg)) setError('Your application answers are too long. Please shorten them slightly and try again.');
         else if (err.code === '42501' || /permission|row-level security/i.test(msg)) setError('The application system is not accepting submissions right now. Please contact the organisers.');
         else {
