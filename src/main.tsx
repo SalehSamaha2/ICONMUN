@@ -2,14 +2,16 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// The admin panel is a separate lazy chunk: public visitors never download admin code.
-// (App stays a normal static import so the public site starts with no extra round trip.)
-const routePath = window.location.pathname.replace(/\/+$/, '');
-const isAdminRoute = routePath.startsWith('/admin');
+// Keep operational tools out of the public site's initial JavaScript bundle.
+const routePath = window.location.pathname.replace(/\\/+$/, '') || '/';
 const root = createRoot(document.getElementById('root')!);
 
-if (isAdminRoute) {
+if (routePath === '/admin' || routePath.startsWith('/admin/')) {
   import('./admin/AdminApp').then(({ default: AdminApp }) => root.render(<AdminApp />));
+} else if (routePath === '/pass' || routePath.startsWith('/pass/')) {
+  import('../pass/PassPortal').then(({ default: PassPortal }) => root.render(<PassPortal />));
+} else if (routePath === '/security-scanner' || routePath.startsWith('/security-scanner/')) {
+  import('../security/SecurityScannerApp').then(({ default: SecurityScannerApp }) => root.render(<SecurityScannerApp />));
 } else {
   root.render(<App />);
 }
