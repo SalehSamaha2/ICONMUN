@@ -20,6 +20,11 @@ alter table public.event_passes
 create index if not exists event_passes_inside_idx
   on public.event_passes (inside, last_scanned_at desc);
 
+-- Preserve the old scanner's checked-in state when upgrading from the first pass migration.
+update public.event_passes
+set inside = true
+where checked_in_at is not null and inside = false and last_scanned_at is null;
+
 create table if not exists public.event_pass_scan_logs (
   id uuid primary key default gen_random_uuid(),
   pass_id uuid references public.event_passes(id) on delete set null,
