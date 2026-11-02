@@ -37,16 +37,7 @@ export const CustomCursor: React.FC = () => {
       const target = e.target as HTMLElement | null;
       const interactive =
         target &&
-        (target.closest('button') ||
-          target.closest('a') ||
-          target.closest('input') ||
-          target.closest('select') ||
-          target.closest('textarea') ||
-          target.closest('.interactive') ||
-          target.closest('.gold-card') ||
-          target.closest('.gold-btn') ||
-          target.tagName === 'BUTTON' ||
-          target.tagName === 'A');
+        Boolean(target.closest('button, a, input, select, textarea, .interactive, .gold-card, .gold-btn'));
 
       if (interactive && !isHovered) {
         isHovered = true;

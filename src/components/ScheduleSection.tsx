@@ -20,25 +20,36 @@ export const ScheduleSection: React.FC = () => {
     const dot = dotRef.current;
     if (!container || !trackWrapper || !line || !dot) return;
 
-    const ctx = gsap.context(() => {
-      // 1. Vertical gold line draws downward smoothly once
-      gsap.fromTo(
-        line,
-        { scaleY: 0 },
-        {
-          scaleY: 1,
-          duration: 1.2,
-          ease: 'power2.out',
-          transformOrigin: 'top center',
-          scrollTrigger: {
-            trigger: trackWrapper,
-            start: 'top 75%',
-            once: true,
-          },
-        }
-      );
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
 
-      // 2. Day huge outlined numbers fill with gold once
+    const ctx = gsap.context(() => {
+      // 1. Vertical central gold line & glowing tip dot scrub continuously with scroll
+      const trackHeight = trackWrapper.clientHeight;
+      const lineTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: trackWrapper,
+          start: 'top 75%',
+          end: 'bottom 85%',
+          scrub: 0.6,
+        },
+      });
+
+      lineTl
+        .fromTo(
+          line,
+          { scaleY: 0 },
+          { scaleY: 1, transformOrigin: 'top center', ease: 'none', duration: 1 },
+          0
+        )
+        .fromTo(
+          dot,
+          { y: 0 },
+          { y: trackHeight, ease: 'none', duration: 1 },
+          0
+        );
+
+      // 2. Day huge outlined numbers fill with liquid gold on scroll down, drain on scroll up
       const dayHeadings = container.querySelectorAll('.day-heading-outline');
       dayHeadings.forEach((heading) => {
         gsap.fromTo(
@@ -50,51 +61,54 @@ export const ScheduleSection: React.FC = () => {
           {
             backgroundPosition: '0% 0%',
             opacity: 1,
-            duration: 0.8,
-            ease: 'power2.out',
+            ease: 'none',
             scrollTrigger: {
               trigger: heading,
               start: 'top 85%',
-              once: true,
+              end: 'bottom 45%',
+              scrub: 0.8,
             },
           }
         );
       });
 
-      // 3. Event cards slide in smoothly once and stay visible
+      // 3. Left event cards slide in and focus with scroll scrub
       const leftCards = container.querySelectorAll('.schedule-card-left');
       leftCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { x: -25, opacity: 0 },
+          { x: -35, opacity: 0.15 },
           {
             x: 0,
             opacity: 1,
-            duration: 0.7,
+            force3D: true,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: card,
-              start: 'top 85%',
-              once: true,
+              start: 'top 88%',
+              end: 'top 48%',
+              scrub: 0.8,
             },
           }
         );
       });
 
+      // 4. Right event cards slide in and focus with scroll scrub
       const rightCards = container.querySelectorAll('.schedule-card-right');
       rightCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { x: 25, opacity: 0 },
+          { x: 35, opacity: 0.15 },
           {
             x: 0,
             opacity: 1,
-            duration: 0.7,
+            force3D: true,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: card,
-              start: 'top 85%',
-              once: true,
+              start: 'top 88%',
+              end: 'top 48%',
+              scrub: 0.8,
             },
           }
         );
@@ -139,12 +153,12 @@ export const ScheduleSection: React.FC = () => {
             className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-inkstrong via-gold to-golddeep shadow-[0_0_12px_rgba(231,219,195,0.9)] will-change-transform pointer-events-none"
           />
 
-          {/* Tip Dot (TranslateY Only) */}
+          {/* Glowing Tip Dot that tracks the line tip dynamically */}
           <div
             ref={dotRef}
             className="absolute left-4 md:left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-gold/20 pointer-events-none will-change-transform"
           >
-            <div className="h-2.5 w-2.5 rounded-full bg-inkstrong shadow-[0_0_10px_#F3EAD6]" />
+            <div className="h-2.5 w-2.5 rounded-full bg-inkstrong shadow-[0_0_12px_#F3EAD6]" />
           </div>
 
           {SCHEDULE_GROUPS.map((group) => (
@@ -152,7 +166,7 @@ export const ScheduleSection: React.FC = () => {
               {/* Huge Outlined Day Number */}
               <div className="text-center mb-8 select-none">
                 <span
-                  className="day-heading-outline font-cinzel text-[clamp(2.75rem,8vw,5.5rem)] font-black uppercase tracking-[0.12em] inline-block"
+                  className="day-heading-outline font-cinzel text-[clamp(2.75rem,8vw,5.5rem)] font-black uppercase tracking-[0.12em] inline-block will-change-transform"
                   style={{
                     WebkitTextStroke: '1px rgba(231, 219, 195, 0.4)',
                     backgroundImage: 'linear-gradient(to top, #E7DBC3 50%, transparent 50%)',

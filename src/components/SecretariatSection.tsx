@@ -9,69 +9,75 @@ gsap.registerPlugin(ScrollTrigger);
 export const SecretariatSection: React.FC = () => {
   const { secretariat: SECRETARIAT_TEAM } = useSiteData();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const header = headerRef.current;
+    if (!container || !header) return;
+
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
 
     const ctx = gsap.context(() => {
-      // 1. Portrait SVG rings draw themselves once
-      const rings = container.querySelectorAll('.portrait-stroke-ring');
-      rings.forEach((ring) => {
-        gsap.fromTo(
-          ring,
-          { strokeDashoffset: 600 },
-          {
-            strokeDashoffset: 0,
-            duration: 1.2,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: ring,
-              start: 'top 85%',
-              once: true,
-            },
-          }
-        );
-      });
+      // 1. Header scrubbed entrance
+      gsap.fromTo(
+        header,
+        { opacity: 0.1, y: 50, scale: 0.95 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          force3D: true,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: header,
+            start: 'top 85%',
+            end: 'top 35%',
+            scrub: 0.8,
+          },
+        }
+      );
 
-      // 2. Circular portraits scale up smoothly once
-      const portraits = container.querySelectorAll('.secretariat-portrait-container');
-      portraits.forEach((el) => {
-        gsap.fromTo(
-          el,
-          { scale: 0.9, opacity: 0 },
-          {
-            scale: 1,
-            opacity: 1,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 85%',
-              once: true,
-            },
-          }
-        );
-      });
-
-      // 3. Member card subtle rise once
+      // 2. Each member card scrubs with camera push, SVG ring drawing, and depth reveal
       const cards = container.querySelectorAll('.secretariat-col');
       cards.forEach((col) => {
-        gsap.fromTo(
+        const ring = col.querySelector('.portrait-stroke-ring');
+        const portraitImg = col.querySelector('img');
+
+        const cardTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: col,
+            start: 'top 88%',
+            end: 'top 42%',
+            scrub: 0.8,
+          },
+        });
+
+        cardTl.fromTo(
           col,
-          { opacity: 0, y: 25 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: col,
-              start: 'top 88%',
-              once: true,
-            },
-          }
+          { opacity: 0.15, y: 50, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, force3D: true, ease: 'power2.out', duration: 1 },
+          0
         );
+
+        if (ring) {
+          cardTl.fromTo(
+            ring,
+            { strokeDashoffset: 600 },
+            { strokeDashoffset: 0, ease: 'none', duration: 1 },
+            0.1
+          );
+        }
+
+        if (portraitImg) {
+          cardTl.fromTo(
+            portraitImg,
+            { scale: 1.18 },
+            { scale: 1.05, force3D: true, ease: 'power1.out', duration: 1 },
+            0
+          );
+        }
       });
     }, container);
 
@@ -86,7 +92,7 @@ export const SecretariatSection: React.FC = () => {
     >
       <div className="mx-auto max-w-6xl relative z-10">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+        <div ref={headerRef} className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-gold mb-2">
             <span>Leadership Council</span>
             <span aria-hidden="true" className="text-golddeep">·</span>
@@ -103,10 +109,10 @@ export const SecretariatSection: React.FC = () => {
 
         {/* Circular Portraits with Gold Ring Borders */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
-          {SECRETARIAT_TEAM.map((member, idx) => (
+          {SECRETARIAT_TEAM.map((member) => (
             <div
               key={member.id}
-              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-gold/70 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.5)] will-change-transform ${
+              className={`secretariat-col gold-card group rounded-2xl p-6 sm:p-7 flex flex-col items-center text-center transition-all duration-300 hover:border-gold/70 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.5)] ${
                 member.isConfirmed ? 'border-gold/50 shadow-[0_0_30px_rgba(231,219,195,0.12)]' : 'border-gold/20'
               }`}
             >

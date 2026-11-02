@@ -9,48 +9,96 @@ export const AboutSection: React.FC = () => {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const headingRef = useRef<HTMLDivElement | null>(null);
   const borderPathRef = useRef<SVGRectElement | null>(null);
+  const emblemRef = useRef<HTMLDivElement | null>(null);
+  const statusGridRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     const card = cardRef.current;
     if (!section || !card) return;
 
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
+
     const ctx = gsap.context(() => {
-      // Entrance Timeline that plays once smoothly and locks in place
+      // Scrubbed cinematic timeline that tracks scroll forward AND backward
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          start: 'top 78%',
-          once: true,
+          start: 'top 85%',
+          end: 'top 20%',
+          scrub: 0.8,
         },
       });
 
-      // 1. Heading rises in
+      // 1. Heading rises with scale and focus
       if (headingRef.current) {
         tl.fromTo(
           headingRef.current,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
+          { opacity: 0.1, y: 60, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power2.out', force3D: true },
+          0
         );
       }
 
-      // 2. Card container unmasks with subtle scale
+      // 2. Card container unmasks with depth
       tl.fromTo(
         card,
-        { opacity: 0, y: 25, scale: 0.98 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'power2.out' },
-        '-=0.5'
+        { opacity: 0.15, y: 80, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'power2.out', force3D: true },
+        0.1
       );
 
-      // 3. SVG Gold border draws itself
+      // 3. SVG Gold border draws in lockstep with scrolling
       if (borderPathRef.current) {
         tl.fromTo(
           borderPathRef.current,
           { strokeDashoffset: 2800 },
-          { strokeDashoffset: 0, duration: 1.4, ease: 'power2.out' },
-          '-=0.7'
+          { strokeDashoffset: 0, duration: 1.1, ease: 'none' },
+          0.15
         );
       }
+
+      // 4. Emblem 3D rotation into position
+      if (emblemRef.current) {
+        tl.fromTo(
+          emblemRef.current,
+          { scale: 0.82, rotateY: -20, opacity: 0.3 },
+          { scale: 1, rotateY: 0, opacity: 1, duration: 0.8, ease: 'power2.out', force3D: true },
+          0.2
+        );
+      }
+
+      // 5. Status stats cards stagger in
+      if (statusGridRef.current) {
+        tl.fromTo(
+          statusGridRef.current.children,
+          { opacity: 0.2, y: 25, scale: 0.92 },
+          { opacity: 1, y: 0, scale: 1, stagger: 0.08, duration: 0.6, ease: 'power2.out', force3D: true },
+          0.35
+        );
+      }
+
+      // 6. Seamless camera exit to next scene (Committees)
+      const exitTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'bottom 75%',
+          end: 'bottom 15%',
+          scrub: 0.8,
+        },
+      });
+
+      exitTl.to(
+        [headingRef.current, card],
+        {
+          opacity: 0.2,
+          y: -40,
+          scale: 0.95,
+          force3D: true,
+          ease: 'power2.in',
+        }
+      );
     }, section);
 
     return () => ctx.revert();
@@ -64,7 +112,7 @@ export const AboutSection: React.FC = () => {
     >
       <div className="mx-auto max-w-5xl relative z-10">
         {/* Section Header */}
-        <div ref={headingRef} className="text-center max-w-2xl mx-auto mb-10 md:mb-12 will-change-transform">
+        <div ref={headingRef} className="text-center max-w-2xl mx-auto mb-10 md:mb-12">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-gold mb-2">
             <span>Diplomatic Mandate</span>
             <span aria-hidden="true" className="text-golddeep">·</span>
@@ -79,7 +127,7 @@ export const AboutSection: React.FC = () => {
         {/* Transparent Gold Bordered Card with SVG Stroke Draw */}
         <div
           ref={cardRef}
-          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.6)] will-change-transform"
+          className="relative rounded-2xl p-6 sm:p-10 lg:p-16 bg-transparent border border-gold/30 shadow-[0_0_35px_rgba(0,0,0,0.6)]"
         >
           {/* SVG Frame Drawing on Scroll */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-2xl" fill="none">
@@ -99,8 +147,8 @@ export const AboutSection: React.FC = () => {
           </svg>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Logo Emblem Thumbnail */}
-            <div className="lg:col-span-4 flex flex-col items-center text-center">
+            {/* Logo Emblem Thumbnail with 3D Depth */}
+            <div ref={emblemRef} className="lg:col-span-4 flex flex-col items-center text-center will-change-transform">
               <div className="relative h-56 w-56 sm:h-64 sm:w-64 rounded-full bg-[#E7DBC3]/90 flex items-center justify-center shadow-[0_0_50px_rgba(231,219,195,0.2)]">
                 <img
                   src="/brand/logo-cutout.webp"
@@ -124,7 +172,7 @@ export const AboutSection: React.FC = () => {
               </p>
 
               {/* Status and Information Cards: Explicitly TBA */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-ink/10 text-center">
+              <div ref={statusGridRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-ink/10 text-center will-change-transform">
                 <div className="space-y-1">
                   <div className="font-cinzel text-2xl sm:text-3xl font-bold text-accent font-mono">
                     2027
