@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, Mail, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { getSupabase } from '../lib/supabase';
 import { APPLICATION_STATUSES, DELEGATION_LABELS, TRACK_LABELS } from './config';
+import { TEAM_META } from '../lib/tracks';
 import { downloadCsv, toCsv } from './csv';
 import {
   Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorBox, Label, PageHeader, Select, Spinner, TextArea,
@@ -39,6 +40,22 @@ const TRACK_TABS = [
 
 /** The second column: council for delegates, chosen role for team applications. */
 const roleOf = (r: Application) => (r.track === 'delegate' ? r.committee : r.details?.focus || '—');
+
+/** Rebuild team answers from the exact prompt/answer text saved at submission time.
+ * If a legacy or malformed record cannot be matched safely, show the raw text instead. */
+const getTeamAnswers = (r: Application) => {
+  if (r.track === 'delegate' || !(r.track in TEAM_META)) return null;
+  const questions = TEAM_META[r.track as keyof typeof TEAM_META].questions;
+  const source = (r.statement || '') + (r.details?.statement_overflow || '');
+  const positions = questions.map((q) => source.indexOf(`${q.prompt}\n`));
+  if (positions.some((position) => position < 0)) return null;
+  return questions.map((q, index) => {
+    const start = positions[index] + q.prompt.length + 1;
+    const nextPosition = positions[index + 1];
+    const end = nextPosition >= 0 ? nextPosition : source.length;
+    return { prompt: q.prompt, answer: source.slice(start, end).replace(/\n+$/, '') };
+  });
+};
 
 export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const s = APPLICATION_STATUSES.find((x) => x.value === status);
@@ -364,12 +381,45 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
                 </div>
               ))}
             </dl>
-            {open.statement && (
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">{open.track === 'delegate' ? 'Message from the delegate' : 'Their answer'}</div>
-                <p className="mt-2 whitespace-pre-wrap break-words rounded-xl border border-[#E8CBA4]/10 bg-[#12070C] p-4 text-sm leading-7 text-[#F0E8E2]">{open.statement}{open.details?.statement_overflow || ''}</p>
-              </div>
-            )}
+            {open.track === 'delegate' ? (
+              open.statement && (
+                <section className="space-y-2">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-[#D4AF6A]">Delegate statement</div>
+                  <div className="rounded-xl border border-[#E8CBA4]/15 bg-[#12070C] p-4">
+                    <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#F0E8E2]">{open.statement}{open.details?.statement_overflow || ''}</p>
+                  </div>
+                </section>
+              )
+            ) : (() => {
+              const answers = getTeamAnswers(open);
+              const hasSavedText = !!(open.statement || open.details?.statement_overflow);
+              return hasSavedText ? (
+                <section className="space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-[#D4AF6A]">Written application answers</div>
+                    <span className="text-[10px] text-[#8E8678]">{answers ? `${answers.length} questions · original submitted text` : 'Saved submission text'}</span>
+                  </div>
+                  {answers ? answers.map((item, index) => (
+                    <article key={index} className="overflow-hidden rounded-xl border border-[#E8CBA4]/15 bg-[#12070C]">
+                      <div className="flex items-start gap-3 border-b border-[#E8CBA4]/10 bg-white/[0.025] px-4 py-3">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#D4AF6A]/35 text-[11px] font-semibold text-[#D4AF6A]">{index + 1}</span>
+                        <h4 className="pt-0.5 text-sm font-medium leading-6 text-[#F3DFA2]">{item.prompt}</h4>
+                      </div>
+                      <div className="px-4 py-4">
+                        <div className="mb-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#8E8678]">Applicant's answer</div>
+                        <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#F0E8E2]">{item.answer || <span className="italic text-[#8E8678]">No answer text was saved for this question.</span>}</p>
+                      </div>
+                    </article>
+                  )) : (
+                    <div className="rounded-xl border border-[#E8CBA4]/15 bg-[#12070C] p-4">
+                      <p className="mb-2 text-xs text-[#D4AF6A]">This older submission does not match the current question format, so it is shown without guessing which answer belongs to which question.</p>
+                      <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#F0E8E2]">{open.statement}{open.details?.statement_overflow || ''}</p>
+                    </div>
+                  )}
+                  <p className="text-[10px] leading-5 text-[#8E8678]">These are the text responses stored from the submitted form. Leading and trailing whitespace was trimmed when the application was submitted; the answer wording is otherwise displayed from the saved record.</p>
+                </section>
+              ) : null;
+            })()}
             {isHead ? (
               <>
                 <div>
