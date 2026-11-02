@@ -164,6 +164,11 @@ export const FooterSection: React.FC = () => {
                   Registration & Badging
                 </a>
               </li>
+              <li>
+                <a href="/pass" className="hover:text-accent transition-colors py-1 inline-block">
+                  Already accepted? Access your pass
+                </a>
+              </li>
             </ul>
           </div>
 

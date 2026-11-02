@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, CameraOff, CheckCircle2, CircleAlert, Clock3, RefreshCw, ScanLine, ShieldCheck, UserRound } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { getSupabase } from '../lib/supabase';
-import { Button, Card, ErrorBox, PageHeader, TextInput, friendlyError, useToast } from './ui';
+import { getSupabase } from '../src/lib/supabase';
+import { Button, Card, ErrorBox, PageHeader, TextInput, friendlyError, useToast } from '../src/admin/ui';
 
 type ScanResult = {
   ok?: boolean;
@@ -184,7 +184,7 @@ export const CheckInManager: React.FC = () => {
           </div>
           <div className="my-6 flex items-center gap-3 text-[10px] uppercase tracking-[.2em] text-[#6F685B]"><span className="h-px flex-1 bg-white/10" />Or enter pass code<span className="h-px flex-1 bg-white/10" /></div>
           <form onSubmit={submitManual} className="flex flex-col gap-3 sm:flex-row">
-            <TextInput aria-label="Pass code" placeholder="Paste QR pass code…" value={token} onChange={e => setToken(e.target.value)} />
+            <TextInput aria-label="Pass code" placeholder="Paste QR pass code…" value={token} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToken(e.target.value)} />
             <Button type="submit" loading={busy} disabled={!token.trim()}><ShieldCheck className="h-4 w-4" /> Verify {direction}</Button>
           </form>
           {error && <ErrorBox message={error} onRetry={() => { setError(''); void loadLists(); }} />}

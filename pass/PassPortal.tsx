@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { ArrowLeft, CheckCircle2, Clock3, Loader2, LogOut, Mail, RefreshCw, ShieldCheck, Ticket } from 'lucide-react';
-import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
+import { getSupabase, isSupabaseConfigured } from '../src/lib/supabase';
 
 type PassRow = {
   application_id: string;
@@ -61,7 +61,7 @@ export default function PassPortal() {
       const sb = await getSupabase()!;
       const { data } = await sb.auth.getSession();
       if (alive && data.session) await loadPasses();
-      const { data: listener } = sb.auth.onAuthStateChange((event) => {
+      const { data: listener } = sb.auth.onAuthStateChange((event: string) => {
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
           window.setTimeout(() => { if (alive) void loadPasses(); }, 0);
         }
