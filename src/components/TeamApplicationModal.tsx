@@ -81,18 +81,22 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     try {
       const sb = await clientP;
       const normalizedPhone = `${countryCode} ${phone.trim().replace(/^0+/, '')}`;
-      const questionAnswers = Object.fromEntries(meta.questions.map((q) => [q.prompt, (answers[q.id] || '').trim()]));
       const statement = meta.questions.map((q) => `${q.prompt}\n${(answers[q.id] || '').trim()}`).join('\n\n');
       const { error: err } = await sb.from('applications').insert({
         track: trackKey, full_name: fullName.trim(), email: email.trim(), institution: institution.trim(), statement,
-        details: { phone: normalizedPhone, phone_country_code: countryCode, phone_local_number: phone.trim(), question_answers: questionAnswers },
+        details: { phone: normalizedPhone, phone_country_code: countryCode, phone_local_number: phone.trim() },
       });
       if (err) {
         const msg = err.message || '';
         if (/closed/i.test(msg)) setError('Applications for this role are currently closed.');
         else if (/already been used/i.test(msg)) setError('This email has already been used for several applications.');
         else if (/Too many/i.test(msg)) setError('We are receiving many applications right now. Please try again in a few minutes.');
-        else setError('Something went wrong. Please check your details and try again.');
+        else if (err.code === '23514' && /details/i.test(msg)) setError('Your application answers are too long. Please shorten them slightly and try again.');
+        else if (err.code === '42501' || /permission|row-level security/i.test(msg)) setError('The application system is not accepting submissions right now. Please contact the organisers.');
+        else {
+          console.error('ICON MUN application submission failed:', { code: err.code, message: msg, details: err.details, hint: err.hint });
+          setError('We could not save your application. Please try again, or contact the organisers if the problem continues.');
+        }
         return;
       }
       setDone(true);
