@@ -3,7 +3,7 @@ import App from './App.tsx';
 import './index.css';
 
 // Keep operational tools out of the public site's initial JavaScript bundle.
-const routePath = window.location.pathname.replace(/\\/+$/, '') || '/';
+const routePath = window.location.pathname.replace(/\/+$/, '') || '/';
 const root = createRoot(document.getElementById('root')!);
 
 if (routePath === '/admin' || routePath.startsWith('/admin/')) {
