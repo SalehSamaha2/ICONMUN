@@ -47,13 +47,13 @@ const getTeamAnswers = (r: Application) => {
   if (r.track === 'delegate' || !(r.track in TEAM_META)) return null;
   const questions = TEAM_META[r.track as keyof typeof TEAM_META].questions;
   const source = (r.statement || '') + (r.details?.statement_overflow || '');
-  const positions = questions.map((q) => source.indexOf(`${q.prompt}\\n`));
+  const positions = questions.map((q) => source.indexOf(`${q.prompt}\n`));
   if (positions.some((position) => position < 0)) return null;
   return questions.map((q, index) => {
     const start = positions[index] + q.prompt.length + 1;
     const nextPosition = positions[index + 1];
     const end = nextPosition >= 0 ? nextPosition : source.length;
-    return { prompt: q.prompt, answer: source.slice(start, end).replace(/\\n+$/, '') };
+    return { prompt: q.prompt, answer: source.slice(start, end).replace(/\n+$/, '') };
   });
 };
 
