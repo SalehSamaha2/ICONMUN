@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, CameraOff, CheckCircle2, CircleAlert, Clock3, LogOut, RefreshCw, ScanLine, ShieldCheck, UserRound } from 'lucide-react';
+import { Camera, CameraOff, CheckCircle2, CircleAlert, Clock3, RefreshCw, ScanLine, ShieldCheck, UserRound } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { getSupabase } from '../lib/supabase';
 import { Button, Card, ErrorBox, PageHeader, TextInput, friendlyError, useToast } from './ui';
@@ -39,6 +39,7 @@ export const CheckInManager: React.FC = () => {
   const toast = useToast();
   const scanner = useRef<Html5Qrcode | null>(null);
   const scanBusy = useRef(false);
+  const directionRef = useRef<'entry' | 'exit'>('entry');
   const [token, setToken] = useState('');
   const [direction, setDirection] = useState<'entry' | 'exit'>('entry');
   const [busy, setBusy] = useState(false);
@@ -48,6 +49,8 @@ export const CheckInManager: React.FC = () => {
   const [checkedIn, setCheckedIn] = useState<CheckedInRow[]>([]);
   const [logs, setLogs] = useState<ScanLog[]>([]);
   const [listLoading, setListLoading] = useState(true);
+
+  useEffect(() => { directionRef.current = direction; }, [direction]);
 
   const loadLists = useCallback(async () => {
     setListLoading(true);
@@ -84,6 +87,7 @@ export const CheckInManager: React.FC = () => {
     if (fromCamera) {
       try { scanner.current?.pause(true); } catch {}
     }
+    const scanDirection = directionRef.current;
     setBusy(true);
     setError('');
     setResult(null);
@@ -97,14 +101,14 @@ export const CheckInManager: React.FC = () => {
       const sb = await getSupabase()!;
       const { data, error: rpcError } = await sb.rpc('scan_event_pass', {
         p_token: passToken.trim(),
-        p_direction: direction,
+        p_direction: scanDirection,
       });
       if (rpcError) throw rpcError;
       const row = (Array.isArray(data) ? data[0] : data) as ScanResult | null;
       setResult(row || { ok: false, message: 'No response received from the scanner service.' });
       if (row?.ok) {
         setToken('');
-        toast('ok', row.message || (direction === 'entry' ? 'Entry recorded.' : 'Exit recorded.'));
+        toast('ok', row.message || (scanDirection === 'entry' ? 'Entry recorded.' : 'Exit recorded.'));
       }
       await loadLists();
     } catch (e) {
