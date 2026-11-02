@@ -81,25 +81,26 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     try {
       const sb = await clientP;
       const normalizedPhone = `${countryCode} ${phone.trim().replace(/^0+/, '')}`;
-      // The database limits applications.statement to 2,000 characters and details to 3,000 bytes.
-      // Keep the complete, labelled answers in details and leave statement empty to avoid
-      // duplicating them into the shorter legacy column.
-      const questionAnswers = Object.fromEntries(
-        meta.questions.map((q) => [q.id, { question: q.prompt, answer: (answers[q.id] || '').trim() }]),
-      );
+      // Keep the full labelled response across the two existing database fields:
+      // statement allows 2,000 characters; details allows 3,000 bytes.
+      const completeStatement = meta.questions
+        .map((q) => `${q.prompt}\n${(answers[q.id] || '').trim()}`)
+        .join('\n\n');
+      const statementChars = Array.from(completeStatement);
+      const statement = statementChars.slice(0, 2000).join('');
+      const statementOverflow = statementChars.slice(2000).join('');
       const details = {
         phone: normalizedPhone,
-        phone_country_code: countryCode,
-        phone_local_number: phone.trim(),
-        question_answers: questionAnswers,
+        ...(statementOverflow ? { statement_overflow: statementOverflow } : {}),
       };
+      // Leave headroom for PostgreSQL's JSONB text representation.
       const detailsBytes = new TextEncoder().encode(JSON.stringify(details)).length;
       if (detailsBytes > 2800) {
-        setError('Your answers are too long to submit together. Please shorten them slightly and try again.');
+        setError('Your combined answers exceed the database storage limit. Please shorten them slightly and try again.');
         return;
       }
       const { error: err } = await sb.from('applications').insert({
-        track: trackKey, full_name: fullName.trim(), email: email.trim(), institution: institution.trim(), statement: '',
+        track: trackKey, full_name: fullName.trim(), email: email.trim(), institution: institution.trim(), statement,
         details,
       });
       if (err) {

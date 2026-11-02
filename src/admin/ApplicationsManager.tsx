@@ -189,7 +189,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
       ['Submitted', 'Track', isHead ? 'Your decision' : 'Final status', 'Name', 'Email', 'Phone', 'Institution', 'Delegation', 'Council', 'Country preference', 'Experience', 'Team role', 'Availability', 'Message', ...(isHead ? ['Your notes'] : ["Head's decision", "Head's notes", 'Internal notes'])],
       filtered.map((r) => {
         const d = r.track === 'delegate';
-        return [r.created_at, TRACK_LABELS[r.track] || r.track, isHead ? r.head_decision || '' : r.status, r.full_name, r.email, r.details?.phone || '', r.institution, d ? DELEGATION_LABELS[r.delegation_type] || r.delegation_type : '', d ? r.committee : '', d ? r.first_country : '', d ? r.experience_level : '', d ? '' : r.details?.focus || '', r.details?.availability || '', r.statement, ...(isHead ? [r.head_notes] : [r.head_decision || '', r.head_notes, r.internal_notes])];
+        return [r.created_at, TRACK_LABELS[r.track] || r.track, isHead ? r.head_decision || '' : r.status, r.full_name, r.email, r.details?.phone || '', r.institution, d ? DELEGATION_LABELS[r.delegation_type] || r.delegation_type : '', d ? r.committee : '', d ? r.first_country : '', d ? r.experience_level : '', d ? '' : r.details?.focus || '', r.details?.availability || '', r.statement + (r.details?.statement_overflow || ''), ...(isHead ? [r.head_notes] : [r.head_decision || '', r.head_notes, r.internal_notes])];
       })
     );
     downloadCsv(`icon-mun-${track === 'all' ? 'applications' : track}-${new Date().toISOString().slice(0, 10)}.csv`, csv);
@@ -367,7 +367,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
             {open.statement && (
               <div>
                 <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">{open.track === 'delegate' ? 'Message from the delegate' : 'Their answer'}</div>
-                <p className="mt-2 whitespace-pre-wrap break-words rounded-xl border border-[#E8CBA4]/10 bg-[#12070C] p-4 text-sm leading-7 text-[#F0E8E2]">{open.statement}</p>
+                <p className="mt-2 whitespace-pre-wrap break-words rounded-xl border border-[#E8CBA4]/10 bg-[#12070C] p-4 text-sm leading-7 text-[#F0E8E2]">{open.statement}{open.details?.statement_overflow || ''}</p>
               </div>
             )}
             {isHead ? (
