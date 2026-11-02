@@ -17,6 +17,7 @@ const IDLE_LIMIT_MS = 60 * 60 * 1000; // sign out after 60 minutes without activ
 
 const HEAD_NAV: Array<{ group: string; items: Array<{ route: string; label: string; icon: React.ComponentType<{ className?: string }> }> }> = [
   { group: 'Your track', items: [{ route: 'applications', label: 'Applications', icon: Inbox }] },
+  { group: 'Your account', items: [{ route: 'my-pass', label: 'My Pass', icon: QrCode }] },
 ];
 
 const NAV: Array<{ group: string; items: Array<{ route: string; label: string; icon: React.ComponentType<{ className?: string }> }> }> = [
@@ -34,6 +35,7 @@ const NAV: Array<{ group: string; items: Array<{ route: string; label: string; i
   },
   { group: 'Event operations', items: [{ route: 'check-in', label: 'QR check-in', icon: QrCode }] },
   { group: 'Security', items: [{ route: 'activity', label: 'Activity log', icon: History }] },
+  { group: 'Your account', items: [{ route: 'my-pass', label: 'My Pass', icon: QrCode }] },
 ];
 
 const parseHash = () => {
@@ -256,7 +258,7 @@ const AdminInner: React.FC = () => {
               return (
                 <button
                   key={it.route}
-                  onClick={() => go(it.route)}
+                  onClick={() => { if (it.route === 'my-pass') { window.location.assign('/pass'); return; } go(it.route); }}
                   aria-current={active ? 'page' : undefined}
                   className={cx(
                     'group relative flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 hover:translate-x-0.5',
