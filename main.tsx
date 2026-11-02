@@ -1,5 +1,4 @@
 import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
 import './index.css';
 
 // Keep operational tools out of the public site's initial JavaScript bundle.
@@ -13,5 +12,5 @@ if (routePath.startsWith('/admin')) {
 } else if (routePath === '/security-scanner') {
   import('./security/SecurityScannerApp').then(({ default: SecurityScannerApp }) => root.render(<SecurityScannerApp />));
 } else {
-  root.render(<App />);
+  import('./App').then(({ default: App }) => root.render(<App />));
 }
