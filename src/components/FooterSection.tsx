@@ -27,44 +27,50 @@ export const FooterSection: React.FC = () => {
     const footer = footerRef.current;
     if (!footer) return;
 
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
+
     const ctx = gsap.context(() => {
-      // 1. Contacts and details rise up smoothly once
+      // 1. Contacts and details rise up in synchronization with scroll
       if (contentRef.current) {
         gsap.fromTo(
           contentRef.current.children,
-          { y: 30, opacity: 0 },
+          { y: 45, opacity: 0.15 },
           {
             y: 0,
             opacity: 1,
-            stagger: 0.08,
-            duration: 0.8,
+            stagger: 0.06,
+            force3D: true,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: footer,
               start: 'top 85%',
-              once: true,
+              end: 'top 40%',
+              scrub: 0.8,
             },
           }
         );
       }
 
-      // 2. Giant outlined "ICON MUN" fills with gold smoothly once
+      // 2. Monumental outlined "ICON MUN" fills with liquid gold as you reach the base, drains when you scroll up
       if (giantLogoRef.current) {
         gsap.fromTo(
           giantLogoRef.current,
           {
             backgroundPosition: '0% 100%',
-            opacity: 0.35,
+            opacity: 0.3,
+            scale: 0.95,
           },
           {
             backgroundPosition: '0% 0%',
             opacity: 1,
-            duration: 1.0,
-            ease: 'power2.out',
+            scale: 1,
+            ease: 'none',
             scrollTrigger: {
               trigger: giantLogoRef.current,
               start: 'top 95%',
-              once: true,
+              end: 'bottom 88%',
+              scrub: 0.8,
             },
           }
         );

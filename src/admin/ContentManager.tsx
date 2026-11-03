@@ -7,6 +7,7 @@ import {
   Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorBox, Label, PageHeader, Select, Spinner,
   TextArea, TextInput, Toggle, cx, friendlyError, useToast,
 } from './ui';
+import { normalizeImageUrl } from '../lib/imageUtils';
 
 type Row = Record<string, any>;
 type FormValues = Record<string, any>;
@@ -294,7 +295,7 @@ export const ContentManager: React.FC<{ resourceKey: string }> = ({ resourceKey 
                       </div>
                       {res.key === 'secretariat' ? (
                         <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[#D4AF6A]/40 bg-[#121212]">
-                          {row.image_url ? <img src={row.image_url} alt="" className="h-full w-full object-cover" style={{ objectPosition: row.object_position || 'center' }} /> : <Icon className="m-3 h-5 w-5 text-[#6F685B]" />}
+                          {normalizeImageUrl(row.image_url) ? <img src={normalizeImageUrl(row.image_url)} alt="" className="h-full w-full object-cover" style={{ objectPosition: row.object_position || 'center' }} /> : <Icon className="m-3 h-5 w-5 text-[#6F685B]" />}
                         </div>
                       ) : null}
                       <button className="min-w-0 flex-1 cursor-pointer text-left" onClick={() => openEdit(row)}>

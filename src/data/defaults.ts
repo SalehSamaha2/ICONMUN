@@ -116,13 +116,13 @@ const DEFAULT_SECRETARIAT: SecretariatItem[] = [
   },
   {
     id: 'sec-3',
-    name: 'Lara Alabsi',
+    name: 'Zain Rawashdeh',
     role: 'Under-Secretary-General',
-    image: '/assets/aistudio/WhatsApp_Image_2026-10-21_at_3.25.06_PM_bb8c5329.jpeg',
-    quote: 'Excited to meet you all and make this MUN one to remember, pls don’t make me regret being nice!',
-    bio: 'hiii everyone im lara, your amazing, goated USG!! if you don’t know me yet give it a week, i talk enough for that to change. excited to meet you all and make this MUN one to remember, pls don’t make me regret being nice',
+    image: '/assets/aistudio/zain-rawashdeh.jpg',
+    quote: 'I hope we can all support each other, communicate, and work as one team. I can’t wait to see what we achieve together!!',
+    bio: 'Hiii everyone!! My name is Zain Rawashdeh, and I’m really excited to be serving as an Under-Secretary-General for ICON MUN 2027!! I’m looking forward to working with all of you, gaining more experience, learning new things, and making sure we have an amazing conference together. I hope we can all support each other, communicate, and work as one team. I can’t wait to see what we achieve together!!',
     isConfirmed: true,
-    objectPosition: 'center 32%',
+    objectPosition: 'center 56%',
   },
 ];
 

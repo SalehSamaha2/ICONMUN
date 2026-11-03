@@ -40,9 +40,8 @@ export default function App() {
     });
     lenisRef.current = lenis;
 
-    lenis.on('scroll', ({ scroll }: { scroll: number }) => {
+    lenis.on('scroll', () => {
       ScrollTrigger.update();
-      window.dispatchEvent(new CustomEvent('icon-mun-scroll', { detail: { scroll } }));
     });
 
     const updateTicker = (time: number) => {
@@ -50,7 +49,7 @@ export default function App() {
     };
 
     gsap.ticker.add(updateTicker, false, true);
-    gsap.ticker.lagSmoothing(500, 33);
+    gsap.ticker.lagSmoothing(0);
 
     document.fonts.ready.then(() => {
       ScrollTrigger.refresh();

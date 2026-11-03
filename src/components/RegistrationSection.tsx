@@ -77,44 +77,72 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     };
   }, [isOpenModal, onCloseModal]);
 
+  const joinPanelRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
+
     const ctx = gsap.context(() => {
-      // Smooth one-time entrance without scrub rewinding
+      // 1. Giant Laurel & Celestial Globe scrubs revolution continuously
       if (bgGlobeRef.current) {
         gsap.fromTo(
           bgGlobeRef.current,
-          { scale: 0.9, rotate: -10, opacity: 0.02 },
+          { scale: 0.88, rotate: -25, opacity: 0.02 },
           {
-            scale: 1.1,
-            rotate: 10,
-            opacity: 0.12,
-            duration: 1.5,
-            ease: 'power2.out',
+            scale: 1.15,
+            rotate: 25,
+            opacity: 0.14,
+            ease: 'none',
             scrollTrigger: {
               trigger: container,
-              start: 'top 80%',
-              once: true,
+              start: 'top 85%',
+              end: 'bottom 20%',
+              scrub: 0.8,
             },
           }
         );
       }
 
+      // 2. Headline camera convergence
       if (headlineRef.current) {
         gsap.fromTo(
           headlineRef.current,
-          { opacity: 0, y: 25 },
+          { opacity: 0.15, y: 55, scale: 0.92 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
+            scale: 1,
+            force3D: true,
             ease: 'power2.out',
             scrollTrigger: {
               trigger: container,
-              start: 'top 80%',
-              once: true,
+              start: 'top 85%',
+              end: 'top 35%',
+              scrub: 0.8,
+            },
+          }
+        );
+      }
+
+      // 3. JoinPanel cards rise up
+      if (joinPanelRef.current) {
+        gsap.fromTo(
+          joinPanelRef.current,
+          { opacity: 0.15, y: 60, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: container,
+              start: 'top 75%',
+              end: 'top 20%',
+              scrub: 0.8,
             },
           }
         );
@@ -252,10 +280,12 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
               Join ICON MUN 2027 as a delegate, or help run it as part of the team. Official dates, council allotments, and conference details are To Be Announced (TBA).
             </p>
 
-            <JoinPanel
-              onApplyDelegate={onOpenModal}
-              onApplyTeam={(k) => setTeamTrack(k)}
-            />
+            <div ref={joinPanelRef} className="will-change-transform">
+              <JoinPanel
+                onApplyDelegate={onOpenModal}
+                onApplyTeam={(k) => setTeamTrack(k)}
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -1,7 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CalendarDays, ChevronDown, Clock3, MapPin, ShieldQuestion, BookOpen, ArrowUpRight } from 'lucide-react';
 import { useSiteData } from '../lib/SiteData';
 import { safeUrl } from '../lib/supabase';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const FAQS = [
   { q: 'What happens at a Model United Nations conference?', a: 'Delegates represent countries or other assigned roles, research an issue, deliver speeches, negotiate with other delegates and work together on resolutions.' },
@@ -15,6 +19,13 @@ export const ConferenceInfoSection: React.FC = () => {
   const { settings } = useSiteData();
   const [now, setNow] = useState(Date.now());
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const leftColRef = useRef<HTMLDivElement | null>(null);
+  const rightColRef = useRef<HTMLDivElement | null>(null);
+  const ringA = useRef<HTMLDivElement | null>(null);
+  const ringB = useRef<HTMLDivElement | null>(null);
+
   const conferenceDate = settings.conference_date ? new Date(settings.conference_date) : null;
   const validDate = conferenceDate && !Number.isNaN(conferenceDate.getTime()) ? conferenceDate : null;
   const countdown = useMemo(() => {
@@ -22,42 +33,159 @@ export const ConferenceInfoSection: React.FC = () => {
     const ms = Math.max(0, validDate.getTime() - now);
     return { days: Math.floor(ms / 86400000), hours: Math.floor((ms % 86400000) / 3600000), minutes: Math.floor((ms % 3600000) / 60000) };
   }, [validDate?.getTime(), now]);
+
   useEffect(() => {
     if (!validDate) return;
     const id = window.setInterval(() => setNow(Date.now()), 60000);
     return () => window.clearInterval(id);
   }, [validDate?.getTime()]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const leftCol = leftColRef.current;
+    const rightCol = rightColRef.current;
+    if (!section || !leftCol || !rightCol) return;
+
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Entrance timeline (Scrubbed forward and reverse)
+      const enterTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 25%',
+          scrub: 0.8,
+        },
+      });
+
+      enterTl
+        .fromTo(
+          leftCol,
+          { opacity: 0.15, x: -45 },
+          { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out', force3D: true },
+          0
+        )
+        .fromTo(
+          rightCol,
+          { opacity: 0.15, x: 45 },
+          { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out', force3D: true },
+          0.1
+        );
+
+      if (ringA.current && ringB.current) {
+        enterTl
+          .fromTo(ringA.current, { scale: 0.8, rotate: -20, opacity: 0 }, { scale: 1, rotate: 0, opacity: 1, duration: 1, force3D: true }, 0)
+          .fromTo(ringB.current, { scale: 0.75, rotate: 30, opacity: 0 }, { scale: 1, rotate: 0, opacity: 1, duration: 1, force3D: true }, 0.1);
+      }
+
+      // 2. Seamless exit timeline
+      const exitTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'bottom 75%',
+          end: 'bottom 15%',
+          scrub: 0.8,
+        },
+      });
+
+      exitTl.to(
+        [leftCol, rightCol],
+        {
+          opacity: 0.25,
+          y: -35,
+          scale: 0.96,
+          force3D: true,
+          ease: 'power2.in',
+        }
+      );
+    }, section);
+
+    return () => ctx.revert();
+  }, []);
+
   const guideUrl = safeUrl(settings.delegate_guide_url);
   const venue = settings.venue_name?.trim();
   const address = settings.venue_address?.trim();
 
   return (
-    <section id="conference-info" data-theme="dark" className="relative overflow-hidden border-y border-gold/20 bg-[#080708] px-4 py-20 text-ink2 sm:px-6 sm:py-28 lg:px-12">
-      <div className="pointer-events-none absolute -right-32 top-0 h-96 w-96 rounded-full border border-gold/10" /><div className="pointer-events-none absolute -right-20 top-12 h-72 w-72 rounded-full border border-gold/10" />
+    <section
+      ref={sectionRef}
+      id="conference-info"
+      data-theme="dark"
+      className="relative overflow-hidden border-y border-gold/20 bg-[#080708] px-4 py-20 text-ink2 sm:px-6 sm:py-28 lg:px-12"
+    >
+      <div ref={ringA} className="pointer-events-none absolute -right-32 top-0 h-96 w-96 rounded-full border border-gold/10" />
+      <div ref={ringB} className="pointer-events-none absolute -right-20 top-12 h-72 w-72 rounded-full border border-gold/10" />
       <div className="relative mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[.9fr_1.1fr] lg:gap-16">
-          <div>
+          <div ref={leftColRef}>
             <p className="text-[10px] uppercase tracking-[.32em] text-gold">Before the first gavel</p>
-            <h2 className="mt-4 max-w-xl font-cinzel text-3xl font-semibold leading-tight text-[#F7EFE3] sm:text-5xl">Everything you need to arrive prepared.</h2>
-            <p className="mt-5 max-w-lg text-sm leading-7 text-[#A89D8A]">Conference details, preparation guidance and answers to common questions — kept in one place as ICON MUN 2027 information is confirmed.</p>
+            <h2 className="mt-4 max-w-xl font-cinzel text-3xl font-semibold leading-tight text-[#F7EFE3] sm:text-5xl">
+              Everything you need to arrive prepared.
+            </h2>
+            <p className="mt-5 max-w-lg text-sm leading-7 text-[#A89D8A]">
+              Conference details, preparation guidance and answers to common questions — kept in one place as ICON MUN 2027 information is confirmed.
+            </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-gold/20 bg-white/[.025] p-4"><CalendarDays className="h-5 w-5 text-gold" /><p className="mt-4 text-[10px] uppercase tracking-[.18em] text-[#8E8678]">Conference dates</p>{validDate ? <><p className="mt-1 text-base text-[#F7EFE3]">{validDate.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>{countdown && <p className="mt-2 text-xs text-gold">{countdown.days}d {countdown.hours}h {countdown.minutes}m remaining</p>}</> : <p className="mt-1 text-base text-[#F7EFE3]">To be announced</p>}</div>
-              <div className="rounded-xl border border-gold/20 bg-white/[.025] p-4"><MapPin className="h-5 w-5 text-gold" /><p className="mt-4 text-[10px] uppercase tracking-[.18em] text-[#8E8678]">Venue</p><p className="mt-1 text-base text-[#F7EFE3]">{venue || 'To be announced'}</p>{address && <p className="mt-1 text-xs leading-5 text-[#A89D8A]">{address}</p>}</div>
+              <div className="rounded-xl border border-gold/20 bg-white/[.025] p-4">
+                <CalendarDays className="h-5 w-5 text-gold" />
+                <p className="mt-4 text-[10px] uppercase tracking-[.18em] text-[#8E8678]">Conference dates</p>
+                {validDate ? (
+                  <>
+                    <p className="mt-1 text-base text-[#F7EFE3]">{validDate.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                    {countdown && <p className="mt-2 text-xs text-gold">{countdown.days}d {countdown.hours}h {countdown.minutes}m remaining</p>}
+                  </>
+                ) : (
+                  <p className="mt-1 text-base text-[#F7EFE3]">To be announced</p>
+                )}
+              </div>
+              <div className="rounded-xl border border-gold/20 bg-white/[.025] p-4">
+                <MapPin className="h-5 w-5 text-gold" />
+                <p className="mt-4 text-[10px] uppercase tracking-[.18em] text-[#8E8678]">Venue</p>
+                <p className="mt-1 text-base text-[#F7EFE3]">{venue || 'To be announced'}</p>
+                {address && <p className="mt-1 text-xs leading-5 text-[#A89D8A]">{address}</p>}
+              </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
-              <a href="/portal" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E7DBC3] px-5 text-xs font-semibold uppercase tracking-[.14em] text-[#140D10] transition hover:bg-[#F4E8D1]">Applicant portal <ArrowUpRight size={15} /></a>
-              {guideUrl && <a href={guideUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-gold/30 px-5 text-xs uppercase tracking-[.14em] text-[#E7DBC3] transition hover:bg-gold/10"><BookOpen size={15} /> Delegate guide</a>}
+              <a href="/portal" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E7DBC3] px-5 text-xs font-semibold uppercase tracking-[.14em] text-[#140D10] transition hover:bg-[#F4E8D1]">
+                Applicant portal <ArrowUpRight size={15} />
+              </a>
+              {guideUrl && (
+                <a href={guideUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-gold/30 px-5 text-xs uppercase tracking-[.14em] text-[#E7DBC3] transition hover:bg-gold/10">
+                  <BookOpen size={15} /> Delegate guide
+                </a>
+              )}
             </div>
           </div>
-          <div>
-            <div className="mb-5 flex items-center gap-3"><ShieldQuestion className="h-5 w-5 text-gold" /><p className="text-[10px] uppercase tracking-[.3em] text-gold">Frequently asked questions</p></div>
-            <div className="divide-y divide-white/10 border-y border-white/10">
-              {FAQS.map((faq, i) => <div key={faq.q}>
-                <button type="button" aria-expanded={openFaq === i} onClick={() => setOpenFaq(openFaq === i ? null : i)} className="flex min-h-14 w-full items-center justify-between gap-4 py-4 text-left text-sm text-[#F0E7DC] transition hover:text-[#E7DBC3]"><span>{faq.q}</span><ChevronDown className={'h-4 w-4 shrink-0 transition-transform ' + (openFaq === i ? 'rotate-180' : '')} /></button>
-                {openFaq === i && <p className="max-w-2xl pb-5 pr-8 text-sm leading-6 text-[#A89D8A]">{faq.a}</p>}
-              </div>)}
+          <div ref={rightColRef} className="will-change-transform">
+            <div className="mb-5 flex items-center gap-3">
+              <ShieldQuestion className="h-5 w-5 text-gold" />
+              <p className="text-[10px] uppercase tracking-[.3em] text-gold">Frequently asked questions</p>
             </div>
-            <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[.025] p-4"><Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-gold" /><p className="text-xs leading-5 text-[#8E8678]">Only details confirmed by the organisers will be published. Dates, venue and preparation materials can be managed from the admin console.</p></div>
+            <div className="divide-y divide-white/10 border-y border-white/10">
+              {FAQS.map((faq, i) => (
+                <div key={faq.q}>
+                  <button
+                    type="button"
+                    aria-expanded={openFaq === i}
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="flex min-h-14 w-full items-center justify-between gap-4 py-4 text-left text-sm text-[#F0E7DC] transition hover:text-[#E7DBC3]"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown className={'h-4 w-4 shrink-0 transition-transform ' + (openFaq === i ? 'rotate-180' : '')} />
+                  </button>
+                  {openFaq === i && <p className="max-w-2xl pb-5 pr-8 text-sm leading-6 text-[#A89D8A]">{faq.a}</p>}
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[.025] p-4">
+              <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <p className="text-xs leading-5 text-[#8E8678]">
+                Only details confirmed by the organisers will be published. Dates, venue and preparation materials can be managed from the admin console.
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -34,21 +34,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      // Dramatic cinematic scale-down from large (1.18x with blur) to crisp 1.0x as curtains part
+      // Dramatic cinematic scale-down from large (1.18x) to crisp 1.0x as curtains part
       if (heroWrapperRef.current) {
         if (!introComplete && !isIntroExiting) {
           gsap.set(heroWrapperRef.current, {
             opacity: 0,
             scale: 1.18,
-            filter: 'blur(10px)',
+            force3D: true,
           });
         } else {
           gsap.to(heroWrapperRef.current, {
             opacity: 1,
             scale: 1.0,
-            filter: 'blur(0px)',
             duration: 0.95,
             ease: 'power3.out',
+            force3D: true,
           });
         }
       }
@@ -62,29 +62,88 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           tl.fromTo(
             titleRef.current,
             { opacity: 0, y: 24, letterSpacing: '0.34em' },
-            { opacity: 1, y: 0, letterSpacing: '0.2em', duration: 0.65, ease: 'power4.out' },
+            { opacity: 1, y: 0, letterSpacing: '0.2em', duration: 0.65, ease: 'power4.out', force3D: true },
             0.15
           ).fromTo(
             contentRef.current,
             { opacity: 0, y: 18 },
-            { opacity: 1, y: 0, duration: 0.55, ease: 'power4.out' },
+            { opacity: 1, y: 0, duration: 0.55, ease: 'power4.out', force3D: true },
             0.35
           );
         }
       }
 
-      // Parallax & scroll progress tracking
-      ScrollTrigger.create({
-        trigger: container,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true,
-        onUpdate: (self) => {
-          if (onHeroProgressChange) {
-            onHeroProgressChange(self.progress);
-          }
-        },
-      });
+      // Scroll-scrubbed cinematic camera push & rewind
+      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!isReduced) {
+        const scrollTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: container,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.8,
+            onUpdate: (self) => {
+              if (onHeroProgressChange) {
+                onHeroProgressChange(self.progress);
+              }
+            },
+          },
+        });
+
+        // As you scroll down, camera pushes forward through the title
+        if (heroWrapperRef.current) {
+          scrollTl.to(
+            heroWrapperRef.current,
+            {
+              y: -80,
+              scale: 1.08,
+              opacity: 0.12,
+              force3D: true,
+              ease: 'power1.inOut',
+            },
+            0
+          );
+        }
+
+        if (titleRef.current) {
+          scrollTl.to(
+            titleRef.current,
+            {
+              letterSpacing: '0.36em',
+              scale: 1.15,
+              opacity: 0,
+              force3D: true,
+              ease: 'power2.in',
+            },
+            0
+          );
+        }
+
+        if (contentRef.current) {
+          scrollTl.to(
+            contentRef.current,
+            {
+              y: 70,
+              opacity: 0,
+              force3D: true,
+              ease: 'power2.in',
+            },
+            0
+          );
+        }
+      } else {
+        ScrollTrigger.create({
+          trigger: container,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+          onUpdate: (self) => {
+            if (onHeroProgressChange) {
+              onHeroProgressChange(self.progress);
+            }
+          },
+        });
+      }
     }, container);
 
     return () => ctx.revert();

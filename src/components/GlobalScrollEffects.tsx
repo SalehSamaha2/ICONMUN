@@ -9,12 +9,14 @@ interface GlobalScrollEffectsProps {
 }
 
 const SECTIONS = [
-  { id: 'hero-scroll-container', label: '01. ICON MUN', short: 'Hero' },
-  { id: 'about', label: '02. About (TBA)', short: 'About' },
-  { id: 'committees', label: '03. Councils (TBA)', short: 'Councils' },
-  { id: 'schedule', label: '04. Timeline (TBA)', short: 'Timeline' },
-  { id: 'secretariat', label: '05. High Secretariat', short: 'Secretariat' },
-  { id: 'registration', label: '06. Registry (TBA)', short: 'Register' },
+  { id: 'hero-scroll-container', label: '01. The Prologue', short: 'Hero' },
+  { id: 'constellation', label: '02. The Constellation', short: 'Constellation' },
+  { id: 'about', label: '03. The Mandate', short: 'About' },
+  { id: 'committees', label: '04. The Chambers', short: 'Councils' },
+  { id: 'schedule', label: '05. The Timeline', short: 'Timeline' },
+  { id: 'conference-info', label: '06. Visitor Guide', short: 'Guide' },
+  { id: 'secretariat', label: '07. High Secretariat', short: 'Secretariat' },
+  { id: 'registration', label: '08. The Registry', short: 'Register' },
 ];
 
 export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
@@ -26,54 +28,38 @@ export const GlobalScrollEffects: React.FC<GlobalScrollEffectsProps> = ({
   const activeSectionRef = useRef('hero-scroll-container');
 
   useEffect(() => {
-    let lastSectionCheck = 0;
-    let trailingTimer: ReturnType<typeof setTimeout> | undefined;
-
-    // getBoundingClientRect forces layout, so this runs throttled (see below), not every scroll tick
-    const updateActiveSection = () => {
-      for (let i = SECTIONS.length - 1; i >= 0; i--) {
-        const sec = SECTIONS[i];
-        const el = document.getElementById(sec.id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= window.innerHeight * 0.45) {
-            if (activeSectionRef.current !== sec.id) {
-              activeSectionRef.current = sec.id;
-              setActiveSection(sec.id);
-            }
-            break;
-          }
-        }
-      }
-    };
-
-    // Use GSAP ScrollTrigger so it shares the single Lenis/GSAP loop
-    const trigger = ScrollTrigger.create({
+    // 1. Top progress bar track
+    const barTrigger = ScrollTrigger.create({
       start: 0,
       end: 'max',
       onUpdate: (self) => {
-        const p = self.progress;
-
-        // 1. Direct DOM update of top progress bar using transform ONLY
         if (progressBarRef.current) {
-          progressBarRef.current.style.transform = `scaleX(${p})`;
+          progressBarRef.current.style.transform = `scaleX(${self.progress})`;
         }
-
-        // Track active section at most ~8x/sec while scrolling, plus one final check
-        // after scrolling stops so the dots never end up stale.
-        const now = performance.now();
-        if (now - lastSectionCheck >= 120) {
-          lastSectionCheck = now;
-          updateActiveSection();
-        }
-        clearTimeout(trailingTimer);
-        trailingTimer = setTimeout(updateActiveSection, 150);
       },
     });
 
+    // 2. Pure ScrollTrigger active section listeners (no forced reflows or getBoundingClientRect)
+    const sectionTriggers = SECTIONS.map((sec) => {
+      const el = document.getElementById(sec.id);
+      if (!el) return null;
+
+      return ScrollTrigger.create({
+        trigger: el,
+        start: 'top 50%',
+        end: 'bottom 50%',
+        onToggle: (self) => {
+          if (self.isActive && activeSectionRef.current !== sec.id) {
+            activeSectionRef.current = sec.id;
+            setActiveSection(sec.id);
+          }
+        },
+      });
+    }).filter(Boolean);
+
     return () => {
-      clearTimeout(trailingTimer);
-      trigger.kill();
+      barTrigger.kill();
+      sectionTriggers.forEach((st) => st?.kill());
     };
   }, []);
 

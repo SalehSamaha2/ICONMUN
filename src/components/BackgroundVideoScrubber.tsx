@@ -17,92 +17,39 @@ export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = (
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastScrollYRef = useRef<number>(0);
-  const lastScrollTimeRef = useRef<number>(Date.now());
 
-  // Called when video is ready to play
   const handleCanPlay = useCallback(() => {
     setIsVideoReady(true);
     const video = videoRef.current;
-    if (video) {
-      // Ensure it starts playing smoothly on load
-      const p = video.play();
-      if (p !== undefined) {
-        p.catch(() => {
-          /* browser autoplay restrictions gracefully handled */
-        });
-      }
+    if (video && video.paused) {
+      video.play().catch(() => {});
     }
-  }, []);
-
-  // Handle active scroll: unpauses if paused, modulates speed with velocity, pauses on idle
-  const handleScrollMotion = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const now = Date.now();
-    const currentY = window.pageYOffset ?? document.documentElement.scrollTop ?? window.scrollY ?? 0;
-    const deltaY = Math.abs(currentY - lastScrollYRef.current);
-    const deltaTime = Math.max(now - lastScrollTimeRef.current, 16);
-    const velocity = deltaY / deltaTime; // pixels per ms
-
-    lastScrollYRef.current = currentY;
-    lastScrollTimeRef.current = now;
-
-    // Dynamically adjust playback rate based on scroll velocity (1.0x to 2.2x)
-    const targetRate = Math.min(Math.max(1.0 + velocity * 0.4, 0.9), 2.2);
-    video.playbackRate = targetRate;
-
-    // If currently paused, resume playback immediately
-    if (video.paused) {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {});
-      }
-    }
-
-    // Reset inactivity timer: pause after 350ms of no scrolling
-    if (pauseTimerRef.current) {
-      clearTimeout(pauseTimerRef.current);
-    }
-
-    pauseTimerRef.current = setTimeout(() => {
-      if (video && !video.paused) {
-        video.pause();
-      }
-    }, 350);
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    lastScrollYRef.current =
-      window.pageYOffset ?? document.documentElement.scrollTop ?? window.scrollY ?? 0;
-    lastScrollTimeRef.current = Date.now();
-
-    // Direct scroll and touch listeners
-    const onScroll = () => handleScrollMotion();
-    const onWheel = () => handleScrollMotion();
-    const onTouchMove = () => handleScrollMotion();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('wheel', onWheel, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-
-    // GSAP ScrollTrigger hook
-    const trigger = ScrollTrigger.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (self) => {
-        if (Math.abs(self.getVelocity()) > 5) {
-          handleScrollMotion();
+    // GSAP ScrollTrigger hook: cinematic camera push smoothly tied to scroll position
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let cameraPush: gsap.core.Tween | null = null;
+    if (!isReduced && video) {
+      cameraPush = gsap.fromTo(
+        video,
+        { scale: 1.0, transformOrigin: 'center center', force3D: true },
+        {
+          scale: 1.12,
+          ease: 'none',
+          scrollTrigger: {
+            start: 0,
+            end: 'max',
+            scrub: 1.0,
+          },
         }
-      },
-    });
+      );
+    }
 
-    // Touch/pointer fallback unlocker
+    // Touch/pointer fallback unlocker for mobile autoplay policies
     const unlocker = () => {
       if (video && video.paused) {
         video.play().catch(() => {});
@@ -114,17 +61,11 @@ export const BackgroundVideoScrubber: React.FC<BackgroundVideoScrubberProps> = (
     window.addEventListener('touchstart', unlocker, { once: true });
 
     return () => {
-      trigger.kill();
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('touchmove', onTouchMove);
+      cameraPush?.kill();
       window.removeEventListener('pointerdown', unlocker);
       window.removeEventListener('touchstart', unlocker);
-      if (pauseTimerRef.current) {
-        clearTimeout(pauseTimerRef.current);
-      }
     };
-  }, [handleScrollMotion]);
+  }, []);
 
   return (
     <div

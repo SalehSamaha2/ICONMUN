@@ -1,7 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Shield, Eye, Lock, Activity, Landmark, ArrowRight, X } from 'lucide-react';
 import { useSiteData } from '../lib/SiteData';
 import type { IconKey } from '../data/defaults';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface Committee {
   id: string;
@@ -39,14 +43,81 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
   );
   const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null);
 
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const cardsGridRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const header = headerRef.current;
+    const grid = cardsGridRef.current;
+    if (!section || !header || !grid) return;
+
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
+
+    const ctx = gsap.context(() => {
+      // 1. Entrance timeline (Scrubbed forward and reverse)
+      const enterTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          end: 'top 25%',
+          scrub: 0.8,
+        },
+      });
+
+      enterTl.fromTo(
+        header,
+        { opacity: 0.1, y: 50, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'power2.out', force3D: true },
+        0
+      );
+
+      const cards = grid.children;
+      if (cards.length) {
+        enterTl.fromTo(
+          cards,
+          { opacity: 0.15, y: 60, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, stagger: 0.08, duration: 0.9, ease: 'power2.out', force3D: true },
+          0.1
+        );
+      }
+
+      // 2. Seamless exit timeline into Scene 5 (Schedule)
+      const exitTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'bottom 75%',
+          end: 'bottom 15%',
+          scrub: 0.8,
+        },
+      });
+
+      exitTl.to(
+        [header, grid],
+        {
+          opacity: 0.25,
+          y: -35,
+          scale: 0.96,
+          force3D: true,
+          ease: 'power2.in',
+        }
+      );
+    }, section);
+
+    return () => ctx.revert();
+  }, [COMMITTEES_DATA]);
+
   return (
     <section
+      ref={sectionRef}
       id="committees"
       className="relative w-full py-16 md:py-24 px-4 sm:px-6 lg:px-12 bg-transparent text-ink overflow-hidden"
     >
       <div className="mx-auto max-w-7xl relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+        <div ref={headerRef} className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
           <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.35em] text-gold mb-2">
             <span>Diplomatic Chambers</span>
             <span aria-hidden="true" className="text-golddeep">·</span>
@@ -62,12 +133,12 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
         </div>
 
         {/* Fluid Responsive Council Grid - Continuous Natural Scrolling */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
+        <div ref={cardsGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
           {COMMITTEES_DATA.map((committee) => (
             <div
               key={committee.id}
               onClick={() => setSelectedCommittee(committee)}
-              className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 flex flex-col justify-between border border-gold/30 bg-transparent hover:border-gold hover:scale-[1.02] shadow-[0_0_35px_rgba(0,0,0,0.5)]"
+              className="gold-card group relative cursor-pointer rounded-2xl p-7 transition-all duration-300 flex flex-col justify-between border border-gold/30 bg-transparent hover:border-gold hover:scale-[1.02] shadow-[0_0_35px_rgba(0,0,0,0.5)] will-change-transform"
             >
               {/* Top Info */}
               <div>
