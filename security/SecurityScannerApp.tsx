@@ -12,6 +12,13 @@ function SecurityScannerInner() {
   const [allowed, setAllowed] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = window.setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => window.clearInterval(t);
+  }, [cooldown]);
 
   const verifyAccess = async () => {
     setLoading(true);
@@ -63,6 +70,7 @@ function SecurityScannerInner() {
       });
       if (otpError) throw otpError;
       setNotice('A secure sign-in link has been sent to your email.');
+      setCooldown(60);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not send the sign-in link.');
     } finally { setSending(false); }
@@ -92,7 +100,10 @@ function SecurityScannerInner() {
               {sessionEmail ? <div className="mt-5 rounded-lg border border-white/10 p-3 text-sm text-[#D7C9B4]">Signed in as {sessionEmail}</div> : (
                 <form onSubmit={sendLink} className="mt-5 space-y-4">
                   <div><Label htmlFor="scanner-email">Security team email</Label><TextInput id="scanner-email" type="email" autoComplete="email" required value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} placeholder="Email used on your application" /></div>
-                  <Button type="submit" loading={sending} className="w-full"><Mail className="h-4 w-4" /> Send secure sign-in link</Button>
+                  <Button type="submit" loading={sending} disabled={cooldown > 0} className="w-full">
+                    <Mail className="h-4 w-4" />
+                    {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Send secure sign-in link'}
+                  </Button>
                 </form>
               )}
               {notice && <p className="mt-4 rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-3 text-sm text-emerald-100">{notice}</p>}

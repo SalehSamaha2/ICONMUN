@@ -36,6 +36,15 @@ export const FileUpload: React.FC<{ value: string; onChange: (url: string) => vo
     }
   };
 
+  const handleUrlChange = (raw: string) => {
+    const trimmed = raw.trim();
+    if (/^(javascript|vbscript|data:text\/html):/i.test(trimmed)) {
+      toast('err', 'Invalid image URL: protocol is not permitted.');
+      return;
+    }
+    onChange(raw);
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
@@ -55,7 +64,7 @@ export const FileUpload: React.FC<{ value: string; onChange: (url: string) => vo
           )}
         </div>
       </div>
-      <TextInput value={value} onChange={(e) => onChange(e.target.value)} placeholder="…or paste an image URL / path (e.g. /assets/photo.jpg)" maxLength={500} aria-label="Image URL" />
+      <TextInput value={value} onChange={(e) => handleUrlChange(e.target.value)} placeholder="…or paste an image URL / path (e.g. /assets/photo.jpg)" maxLength={500} aria-label="Image URL" />
     </div>
   );
 };

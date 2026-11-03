@@ -175,6 +175,16 @@ export const FooterSection: React.FC = () => {
                   Already accepted? Access your pass
                 </a>
               </li>
+              <li>
+                <a href="/privacy" className="hover:text-accent transition-colors py-1 inline-block">
+                  Privacy Policy & Minor Protection
+                </a>
+              </li>
+              <li>
+                <a href="/terms" className="hover:text-accent transition-colors py-1 inline-block">
+                  Terms of Participation & Conduct
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -226,7 +236,11 @@ export const FooterSection: React.FC = () => {
           <div>
             © 2027 ICON MUN Directorate. All sovereign rights reserved.
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+            <a href="/privacy" className="hover:text-gold transition-colors">Privacy Policy</a>
+            <span className="hidden sm:inline">·</span>
+            <a href="/terms" className="hover:text-gold transition-colors">Terms & Conduct</a>
+            <span className="hidden sm:inline">·</span>
             <span className="text-gold">ICON MUN 2027</span>
             <span className="hidden sm:inline">·</span>
             <span>Chatham House Rule Preserved</span>

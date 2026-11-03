@@ -81,30 +81,55 @@ const SetupNeeded: React.FC = () => (
 );
 
 /* ------------------------------------------------------------------ login */
+const getStoredLockout = (): number => {
+  try {
+    const val = sessionStorage.getItem('icon_admin_lockout');
+    const until = val ? parseInt(val, 10) : 0;
+    return Number.isFinite(until) && until > Date.now() ? until : 0;
+  } catch {
+    return 0;
+  }
+};
+
+const setStoredLockout = (until: number) => {
+  try {
+    if (until > Date.now()) sessionStorage.setItem('icon_admin_lockout', String(until));
+    else sessionStorage.removeItem('icon_admin_lockout');
+  } catch {}
+};
+
 const Login: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const fails = useRef(0);
-  const lockedUntil = useRef(0);
+  const lockedUntil = useRef(getStoredLockout());
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (Date.now() < lockedUntil.current) {
-      return setError(`Too many attempts. Wait ${Math.ceil((lockedUntil.current - Date.now()) / 1000)} seconds.`);
+    const activeLock = Math.max(lockedUntil.current, getStoredLockout());
+    if (Date.now() < activeLock) {
+      return setError(`Too many attempts. Wait ${Math.ceil((activeLock - Date.now()) / 1000)} seconds.`);
     }
     setBusy(true);
     setError('');
     try {
       const sb = await getSupabase()!;
-      const { error: err } = await sb.auth.signInWithPassword({ email: email.trim(), password });
+      const cleanEmail = email.trim().toLowerCase();
+      const { error: err } = await sb.auth.signInWithPassword({ email: cleanEmail, password });
       if (err) {
         fails.current += 1;
-        if (fails.current >= 5) { lockedUntil.current = Date.now() + 30000; fails.current = 0; }
+        if (fails.current >= 5) {
+          const until = Date.now() + 30000;
+          lockedUntil.current = until;
+          setStoredLockout(until);
+          fails.current = 0;
+        }
         setError('Incorrect email or password.');
       } else {
         fails.current = 0;
+        setStoredLockout(0);
         onDone();
       }
     } catch {

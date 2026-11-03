@@ -88,6 +88,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
   const [uploadExplanation, setUploadExplanation] = useState('');
 
   const [honeypot, setHoneypot] = useState('');
+  const [consent, setConsent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -145,6 +146,12 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     e.preventDefault();
     if (sending || !isOpen) return;
     setError('');
+
+    // Validate consent
+    if (!consent) {
+      setError('Please review and agree to the Privacy Policy and Terms of Participation before submitting.');
+      return;
+    }
 
     // Validate applicant phone
     if (!phone.trim() || phone.replace(/\D/g, '').length < 6) {
@@ -771,6 +778,29 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                     {renderQuestionControl(question, index)}
                   </div>
                 ))}
+              </div>
+
+              {/* Privacy & Legal Consent */}
+              <div className="rounded-2xl border border-[#E8CBA4]/20 bg-[#15070F]/80 p-4 sm:p-5 space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-[#E8CBA4]/40 bg-[#100609] text-[#E8CBA4] focus:ring-[#E8CBA4]/30 cursor-pointer accent-[#D4AF6A]"
+                  />
+                  <span className="text-[11px] sm:text-xs text-[#D8C5C5] leading-relaxed">
+                    I confirm that all details provided are accurate. I have read and agree to the{' '}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[#E8CBA4] underline hover:text-[#FFF5E8]">
+                      Privacy Policy & Minor Protection Terms
+                    </a>{' '}
+                    (including parental/guardian consent if under 18) and the{' '}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#E8CBA4] underline hover:text-[#FFF5E8]">
+                      Terms of Participation
+                    </a>.
+                  </span>
+                </label>
               </div>
 
               {/* Hidden Anti-Bot Honeypot */}
