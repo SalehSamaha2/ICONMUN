@@ -217,7 +217,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             >
               Register Interest (TBA)
             </button>
-            <a href="/portal" onClick={() => setIsMobileMenuOpen(false)} className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-gold/30 text-xs uppercase tracking-[.2em] text-accent transition hover:bg-gold/10">Applicant portal</a>
+            <a href="/pass" onClick={() => setIsMobileMenuOpen(false)} className="flex min-h-[48px] w-full items-center justify-center rounded-xl border border-gold/30 text-xs uppercase tracking-[.2em] text-accent transition hover:bg-gold/10">Access Digital Pass</a>
             <p className="text-center text-[10px] uppercase tracking-[0.25em] text-ink3">
               ICON MUN 2027 · Premier Model UN
             </p>

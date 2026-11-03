@@ -29,7 +29,7 @@ if (routePath === '/admin' || routePath.startsWith('/admin/')) {
   import('./admin/AdminApp')
     .then(({ default: AdminApp }) => root.render(<AdminApp />))
     .catch((err) => renderError('Failed to load Organiser console', err));
-} else if (routePath === '/pass' || routePath.startsWith('/pass/')) {
+} else if (routePath === '/pass' || routePath.startsWith('/pass/') || routePath === '/portal' || routePath.startsWith('/portal/')) {
   import('../pass/PassPortal')
     .then(({ default: PassPortal }) => root.render(<PassPortal />))
     .catch((err) => renderError('Failed to load Delegate Pass Portal', err));
@@ -37,6 +37,14 @@ if (routePath === '/admin' || routePath.startsWith('/admin/')) {
   import('../security/SecurityScannerApp')
     .then(({ default: SecurityScannerApp }) => root.render(<SecurityScannerApp />))
     .catch((err) => renderError('Failed to load Security Scanner', err));
+} else if (routePath === '/privacy' || routePath.startsWith('/privacy/')) {
+  import('./components/LegalPages')
+    .then(({ LegalPages }) => root.render(<LegalPages initialTab="privacy" onBack={() => window.location.assign('/')} />))
+    .catch((err) => renderError('Failed to load Privacy Policy', err));
+} else if (routePath === '/terms' || routePath.startsWith('/terms/')) {
+  import('./components/LegalPages')
+    .then(({ LegalPages }) => root.render(<LegalPages initialTab="terms" onBack={() => window.location.assign('/')} />))
+    .catch((err) => renderError('Failed to load Terms of Participation', err));
 } else {
   root.render(<App />);
 }

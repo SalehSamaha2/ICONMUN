@@ -149,8 +149,8 @@ export const ConferenceInfoSection: React.FC = () => {
               </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
-              <a href="/portal" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E7DBC3] px-5 text-xs font-semibold uppercase tracking-[.14em] text-[#140D10] transition hover:bg-[#F4E8D1]">
-                Applicant portal <ArrowUpRight size={15} />
+              <a href="/pass" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E7DBC3] px-5 text-xs font-semibold uppercase tracking-[.14em] text-[#140D10] transition hover:bg-[#F4E8D1]">
+                Access Digital Pass <ArrowUpRight size={15} />
               </a>
               {guideUrl && (
                 <a href={guideUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-gold/30 px-5 text-xs uppercase tracking-[.14em] text-[#E7DBC3] transition hover:bg-gold/10">

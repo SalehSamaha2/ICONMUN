@@ -26,6 +26,13 @@ export default function PassPortal() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = window.setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => window.clearInterval(t);
+  }, [cooldown]);
 
   const loadPasses = useCallback(async () => {
     setLoading(true);
@@ -90,6 +97,7 @@ export default function PassPortal() {
       });
       if (otpError) throw otpError;
       setNotice('A secure sign-in link has been sent. Open it from the same email address to view your pass.');
+      setCooldown(60);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not send the sign-in link.');
     } finally {
@@ -152,7 +160,10 @@ export default function PassPortal() {
             <div><label htmlFor="icon-pass-email" className="mb-2 block text-sm text-[#E6D6C4]">Application email address</label><input id="icon-pass-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="The email used on your application" className="w-full rounded-lg border border-white/15 bg-black/30 px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF6A]" /></div>
             {notice && <Notice tone="success">{notice}</Notice>}
             {error && <Notice tone="error">{error}</Notice>}
-            <button type="submit" disabled={sending || !email.trim()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#D4AF6A] px-4 py-3 text-sm font-semibold text-[#1A1008] disabled:opacity-50">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />} Send secure sign-in link</button>
+            <button type="submit" disabled={sending || !email.trim() || cooldown > 0} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#D4AF6A] px-4 py-3 text-sm font-semibold text-[#1A1008] disabled:opacity-50">
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Send secure sign-in link'}
+            </button>
             <p className="text-center text-[11px] leading-relaxed text-[#776D60]">Only a verified email matching an ICON MUN application can view its status or pass.</p>
           </form>
         )}

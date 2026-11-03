@@ -49,6 +49,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [honeypot, setHoneypot] = useState(''); // hidden field: real people never fill it
+  const [consent, setConsent] = useState(false);
 
   // Pre-select the council the visitor clicked (matched by code, e.g. "Council II")
   useEffect(() => {
@@ -156,6 +157,11 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     e.preventDefault();
     if (isSending || !fullName.trim() || !email.trim()) return;
     setSubmitError('');
+
+    if (!consent) {
+      setSubmitError('Please review and agree to the Privacy Policy and Terms of Participation.');
+      return;
+    }
 
     // Bots fill hidden fields; pretend success and drop it.
     if (honeypot) {
@@ -483,6 +489,26 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   <p className="text-[11px] leading-relaxed text-ink4">
                     Your details are stored securely and are visible only to the ICON MUN organisers, who use them to contact you about the conference.
                   </p>
+
+                  <label className="flex items-start gap-2.5 text-[11px] sm:text-xs text-ink3 leading-relaxed cursor-pointer select-none rounded-xl border border-gold/20 bg-black/40 p-3">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-ink/20 bg-surface2 text-gold focus:ring-gold/30 cursor-pointer accent-[#D4AF6A]"
+                    />
+                    <span>
+                      I confirm that my details are accurate and agree to the{' '}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-gold underline hover:text-inkstrong">
+                        Privacy Policy & Minor Protection Terms
+                      </a>{' '}
+                      (including parental/guardian consent if under 18) and{' '}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-gold underline hover:text-inkstrong">
+                        Terms of Participation
+                      </a>.
+                    </span>
+                  </label>
 
                   {!registrationOpen && (
                     <p role="alert" className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-accent">
