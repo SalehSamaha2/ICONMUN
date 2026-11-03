@@ -44,7 +44,13 @@ export interface TeamQuestion {
   placeholder?: string;
 }
 
-export interface TrackMeta {\n  title: string;\n  verb: string;\n  questions: TeamQuestion[];\n}\n\n/** Required written questions shown on each team application. */
+export interface TrackMeta {
+  title: string;
+  verb: string;
+  questions: TeamQuestion[];
+}
+
+/** Required written questions shown on each team application. */
 export const TEAM_META: Record<Exclude<TrackKey, 'delegate'>, TrackMeta> = {
   media: {
     title: 'Media',
