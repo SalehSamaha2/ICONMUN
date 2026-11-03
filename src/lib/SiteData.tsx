@@ -11,6 +11,7 @@ import {
   type TrackItem,
   type TrackKey,
 } from '../data/defaults';
+import { normalizeImageUrl } from './imageUtils';
 
 const SiteDataContext = createContext<SiteContent>(DEFAULT_CONTENT);
 
@@ -93,7 +94,7 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               id: r.id,
               name: r.name,
               role: r.role,
-              image: r.image_url || undefined,
+              image: normalizeImageUrl(r.image_url),
               quote: r.quote,
               bio: r.bio,
               isConfirmed: r.is_confirmed,

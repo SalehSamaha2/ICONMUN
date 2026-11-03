@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { UserCheck, Sparkles } from 'lucide-react';
 import { useSiteData } from '../lib/SiteData';
+import { normalizeImageUrl } from '../lib/imageUtils';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -138,9 +139,9 @@ export const SecretariatSection: React.FC = () => {
 
                 {/* Circular Image or TBA Placeholder */}
                 <div className="relative h-36 w-36 rounded-full overflow-hidden border border-gold/40 shadow-xl bg-black/40 flex items-center justify-center">
-                  {member.image ? (
+                  {normalizeImageUrl(member.image) ? (
                     <img
-                      src={member.image}
+                      src={normalizeImageUrl(member.image)}
                       alt={member.name}
                       style={{ objectPosition: member.objectPosition || 'center' }}
                       className="h-full w-full object-cover scale-105 transition-transform duration-500 group-hover:scale-110 will-change-transform"
