@@ -17,6 +17,8 @@ import { getSupabase } from '../lib/supabase';
 import { getTrackStatus, TEAM_META, useNow, type TeamQuestion } from '../lib/tracks';
 import type { TrackKey } from '../data/defaults';
 import { PhoneInput } from './PhoneInput';
+import { ProofUploader } from './ProofUploader';
+import { uploadProofs } from '../lib/proofs';
 
 type TeamKey = Exclude<TrackKey, 'delegate'>;
 
@@ -89,6 +91,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
 
   const [honeypot, setHoneypot] = useState('');
   const [consent, setConsent] = useState(false);
+  const [proofFiles, setProofFiles] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -211,7 +214,19 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
         return;
       }
 
+      const appId = proofFiles.length ? crypto.randomUUID() : '';
+      let proofPaths: string[] = [];
+      if (appId) {
+        try {
+          proofPaths = await uploadProofs(sb, appId, proofFiles);
+        } catch {
+          setError('We could not upload your certificate images. Please check your connection and try again, or remove the images and apply without them.');
+          return;
+        }
+      }
+
       const { error: err } = await sb.from('applications').insert({
+        ...(appId ? { id: appId, proofs: proofPaths } : {}),
         track: trackKey,
         full_name: fullName.trim(),
         email: email.trim(),
@@ -778,6 +793,10 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                     {renderQuestionControl(question, index)}
                   </div>
                 ))}
+              </div>
+
+              <div className="rounded-2xl border border-[#E8CBA4]/20 bg-[#15070F]/80 p-4 sm:p-5">
+                <ProofUploader files={proofFiles} onChange={setProofFiles} disabled={sending} />
               </div>
 
               {/* Privacy & Legal Consent */}

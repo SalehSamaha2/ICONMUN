@@ -28,7 +28,44 @@ export interface Application {
   head_decision_by: string | null;
   head_decision_at: string | null;
   head_notes: string;
+  proofs: string[] | null;
 }
+
+/** Certificate photos the applicant attached. Files are private; each link is a short-lived signed URL. */
+const ProofGallery: React.FC<{ paths: string[] }> = ({ paths }) => {
+  const [urls, setUrls] = useState<Array<{ path: string; url: string }>>([]);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    let alive = true;
+    setUrls([]); setErr('');
+    (async () => {
+      try {
+        const sb = await getSupabase()!;
+        const { data, error } = await sb.storage.from('application-proofs').createSignedUrls(paths, 600);
+        if (error) throw error;
+        if (alive) setUrls((data || []).flatMap((d) => (d.signedUrl ? [{ path: d.path || '', url: d.signedUrl }] : [])));
+      } catch (e) { if (alive) setErr(friendlyError(e)); }
+    })();
+    return () => { alive = false; };
+  }, [paths.join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <section>
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8E8678]">Certificates and proof ({paths.length})</div>
+      {err ? <p className="mt-2 text-xs text-rose-300">{err}</p> : (
+        <div className="mt-2 flex flex-wrap gap-3">
+          {paths.map((p, i) => {
+            const u = urls.find((x) => x.path === p);
+            return u ? (
+              <a key={p} href={u.url} target="_blank" rel="noopener noreferrer" className="block h-24 w-24 overflow-hidden rounded-lg border border-[#E8CBA4]/25 bg-black/30 transition-opacity hover:opacity-80" title="Open full size">
+                <img src={u.url} alt={`Certificate ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+              </a>
+            ) : <div key={p} className="h-24 w-24 animate-pulse rounded-lg border border-white/10 bg-white/5" />;
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
 
 const TRACK_TABS = [
   { value: 'all', label: 'All' },
@@ -193,6 +230,8 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
       const sb = await getSupabase()!;
       const { error: e } = await sb.from('applications').delete().eq('id', toDelete.id);
       if (e) throw e;
+      // also remove the applicant's certificate images (best effort)
+      if (toDelete.proofs?.length) await sb.storage.from('application-proofs').remove(toDelete.proofs).catch(() => undefined);
       setRows((rs) => rs.filter((r) => r.id !== toDelete.id));
       setToDelete(null);
       setOpenId(null);
@@ -420,6 +459,7 @@ export const ApplicationsManager: React.FC<{ initialStatus?: string; initialTrac
                 </section>
               ) : null;
             })()}
+            {open.proofs && open.proofs.length > 0 && <ProofGallery paths={open.proofs} />}
             {isHead ? (
               <>
                 <div>

@@ -4,6 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Award, CheckCircle2, X } from 'lucide-react';
 import { useSiteData } from '../lib/SiteData';
 import { getSupabase } from '../lib/supabase';
+import { uploadProofs } from '../lib/proofs';
+import { ProofUploader } from './ProofUploader';
 import { getTrackStatus, useNow } from '../lib/tracks';
 import { JoinPanel } from './JoinPanel';
 import { TeamApplicationModal } from './TeamApplicationModal';
@@ -45,6 +47,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   const [firstCountry, setFirstCountry] = useState('TBA');
   const [experienceLevel, setExperienceLevel] = useState('TBA');
   const [statement, setStatement] = useState('');
+  const [proofFiles, setProofFiles] = useState<File[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -178,7 +181,19 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     setIsSending(true);
     try {
       const sb = await clientP;
+      // certificate images go up first, into a folder named after the new application's id
+      const appId = proofFiles.length ? crypto.randomUUID() : '';
+      let proofPaths: string[] = [];
+      if (appId) {
+        try {
+          proofPaths = await uploadProofs(sb, appId, proofFiles);
+        } catch {
+          setSubmitError('We could not upload your certificate images. Please check your connection and try again, or remove the images and apply without them.');
+          return;
+        }
+      }
       const { error } = await sb.from('applications').insert({
+        ...(appId ? { id: appId, proofs: proofPaths } : {}),
         track: 'delegate',
         delegation_type: delegationType,
         full_name: fullName.trim(),
@@ -211,6 +226,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     setInstitution('');
     setEmail('');
     setStatement('');
+    setProofFiles([]);
     onCloseModal();
   };
 
@@ -471,6 +487,8 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                       className="w-full rounded-lg border border-ink/10 bg-surface2 px-4 py-3 text-base text-inkstrong  focus:border-gold focus:outline-none"
                     />
                   </div>
+
+                  <ProofUploader files={proofFiles} onChange={setProofFiles} disabled={isSending} />
 
                   {/* Honeypot: invisible to people, tempting to bots */}
                   <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
