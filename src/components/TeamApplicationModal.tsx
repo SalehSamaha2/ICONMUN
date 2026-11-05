@@ -18,6 +18,8 @@ import { getTrackStatus, TEAM_META, useNow, type TeamQuestion } from '../lib/tra
 import type { TrackKey } from '../data/defaults';
 import { PhoneInput } from './PhoneInput';
 import { ProofUploader } from './ProofUploader';
+import { FieldError } from './FieldError';
+import { EMAIL_RE, revealFirstInvalid } from '../lib/formErrors';
 import { uploadProofs } from '../lib/proofs';
 
 type TeamKey = Exclude<TrackKey, 'delegate'>;
@@ -92,6 +94,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
   const [honeypot, setHoneypot] = useState('');
   const [consent, setConsent] = useState(false);
   const [proofFiles, setProofFiles] = useState<File[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -144,45 +147,41 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
     return ['Grade 10', 'Grade 11', 'Grade 12', 'First-year university'];
   }, [trackKey]);
 
+  // Every problem with the form, computed live. Shown only after the first failed submit.
+  const errors: Record<string, string> = {};
+  if (!fullName.trim()) errors.fullName = 'Enter your full name.';
+  if (!email.trim()) errors.email = 'Enter your email address.';
+  else if (!EMAIL_RE.test(email.trim())) errors.email = 'Enter a valid email address, like name@example.com.';
+  if (!institution.trim()) errors.institution = 'Enter your school or university.';
+  if (phone.replace(/\D/g, '').length < 6) errors.phone = 'Enter a valid phone number with the dialing code.';
+  meta.questions.forEach((q) => {
+    if (q.id === 'emergency_contact') {
+      if (emergencyPhone.replace(/\D/g, '').length < 6) errors['q:' + q.id] = 'Enter a valid emergency contact phone number.';
+      else if (emergencyRelationship === 'Other' && !emergencyCustomRel.trim()) errors['q:' + q.id] = 'Say how this person is related to you.';
+      return;
+    }
+    const answer = (answers[q.id] || '').trim();
+    if (!answer) errors['q:' + q.id] = 'Answer this question.';
+    else if (q.minWords !== undefined && countWords(answer) < q.minWords) {
+      errors['q:' + q.id] = `Write at least ${q.minWords} words (you have ${countWords(answer)}).`;
+    }
+  });
+  if (proofFiles.length === 0) errors.proofs = 'Attach at least one certificate or photo that proves your experience.';
+  if (!consent) errors.consent = 'Tick this box to agree before submitting.';
+  const errorCount = Object.keys(errors).length;
+  const bad = (k: string) => showErrors && !!errors[k];
+  const fieldMsg = (k: string) => (showErrors ? errors[k] : undefined);
+
   // Form submission handler
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (sending || !isOpen) return;
     setError('');
 
-    // Validate consent
-    if (!consent) {
-      setError('Please review and agree to the Privacy Policy and Terms of Participation before submitting.');
-      return;
-    }
-
-    // Validate applicant phone
-    if (!phone.trim() || phone.replace(/\D/g, '').length < 6) {
-      setError('Please provide a valid personal phone number with dialing code.');
-      return;
-    }
-
-    // Validate emergency phone
-    if (!emergencyPhone.trim() || emergencyPhone.replace(/\D/g, '').length < 6) {
-      setError('Please provide a valid emergency contact phone number and relationship.');
-      return;
-    }
-
-    // Validate all required questions and word counts
-    const missing = meta.questions.find((q) => {
-      const answer = (answers[q.id] || '').trim();
-      if (!answer) return true;
-      if (q.minWords !== undefined && countWords(answer) < q.minWords) return true;
-      return false;
-    });
-
-    if (missing) {
-      const answer = (answers[missing.id] || '').trim();
-      if (!answer) {
-        setError(`Please answer the question: “${missing.prompt}”`);
-      } else if (missing.minWords !== undefined) {
-        setError(`“${missing.prompt}” requires at least ${missing.minWords} words (currently ${countWords(answer)}).`);
-      }
+    // Check everything at once: every problem is highlighted together
+    if (errorCount > 0) {
+      setShowErrors(true);
+      revealFirstInvalid();
       return;
     }
 
@@ -238,6 +237,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
       if (err) {
         const msg = err.message || '';
         if (/closed/i.test(msg)) setError('Applications for this role are currently closed.');
+        else if (/proof image/i.test(msg)) setError('Please attach at least one certificate or proof image.');
         else if (/already been used/i.test(msg)) setError('This email has already been used for several applications.');
         else if (/Too many/i.test(msg)) setError('We are receiving many applications right now. Please try again in a few minutes.');
         else if (err.code === '23514' && /applications_statement_check/i.test(msg)) {
@@ -304,7 +304,6 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
         <div className="relative max-w-md">
           <select
             id={`team-question-${question.id}`}
-            required
             value={rawAnswer}
             onChange={(e) => setAnswerValue(question.id, e.target.value)}
             className="w-full appearance-none rounded-xl border border-[#E8CBA4]/25 bg-[#12050A] px-4 py-3 min-h-[46px] text-sm text-[#FFF5E8] transition-all duration-200 focus:border-[#E8CBA4] focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.1] cursor-pointer"
@@ -333,7 +332,6 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
             <input
               id={`team-question-${question.id}`}
               type="date"
-              required
               min="1990-01-01"
               max="2016-12-31"
               value={rawAnswer}
@@ -392,7 +390,6 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
               <div className="mt-2.5">
                 <input
                   type="text"
-                  required
                   placeholder="Specify relationship (e.g. Uncle, Mentor, Teacher)"
                   value={emergencyCustomRel}
                   onChange={(e) => setEmergencyCustomRel(e.target.value)}
@@ -546,7 +543,6 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
 
         <textarea
           id={`team-question-${question.id}`}
-          required
           rows={isWrittenQuestion ? 5 : 3}
           maxLength={4000}
           value={rawAnswer}
@@ -672,7 +668,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
               </div>
             </div>
           ) : (
-            <form id="team-application-form" onSubmit={submit} className="space-y-6">
+            <form id="team-application-form" onSubmit={submit} noValidate className="space-y-6">
               {!isOpen && status && (
                 <div role="alert" className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-xs text-amber-200 flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 shrink-0 text-amber-400" />
@@ -694,13 +690,12 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                  <div data-invalid={bad('fullName')}>
                     <label htmlFor="applicant-full-name" className="text-[10px] uppercase tracking-[0.16em] text-[#D8C5C5] block mb-2 font-semibold">
                       Full Name *
                     </label>
                     <input
                       id="applicant-full-name"
-                      required
                       maxLength={120}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
@@ -708,16 +703,16 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                       autoComplete="name"
                       className="w-full rounded-xl border border-[#E8CBA4]/25 bg-[#100609] px-4 py-3 min-h-[46px] text-sm text-[#FFF5E8] placeholder-[#8D737A] transition-all duration-200 focus:border-[#E8CBA4] focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.08]"
                     />
+                    <FieldError message={fieldMsg('fullName')} />
                   </div>
 
-                  <div>
+                  <div data-invalid={bad('email')}>
                     <label htmlFor="applicant-email" className="text-[10px] uppercase tracking-[0.16em] text-[#D8C5C5] block mb-2 font-semibold">
                       Email Address *
                     </label>
                     <input
                       id="applicant-email"
                       type="email"
-                      required
                       maxLength={160}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -725,26 +720,27 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                       autoComplete="email"
                       className="w-full rounded-xl border border-[#E8CBA4]/25 bg-[#100609] px-4 py-3 min-h-[46px] text-sm text-[#FFF5E8] placeholder-[#8D737A] transition-all duration-200 focus:border-[#E8CBA4] focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.08]"
                     />
+                    <FieldError message={fieldMsg('email')} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                  <div data-invalid={bad('institution')}>
                     <label htmlFor="applicant-school" className="text-[10px] uppercase tracking-[0.16em] text-[#D8C5C5] block mb-2 font-semibold">
                       School / University *
                     </label>
                     <input
                       id="applicant-school"
-                      required
                       maxLength={160}
                       value={institution}
                       onChange={(e) => setInstitution(e.target.value)}
                       placeholder="e.g. King Saud University / British Int. School"
                       className="w-full rounded-xl border border-[#E8CBA4]/25 bg-[#100609] px-4 py-3 min-h-[46px] text-sm text-[#FFF5E8] placeholder-[#8D737A] transition-all duration-200 focus:border-[#E8CBA4] focus:outline-none focus:ring-4 focus:ring-[#E8CBA4]/[0.08]"
                     />
+                    <FieldError message={fieldMsg('institution')} />
                   </div>
 
-                  <div>
+                  <div data-invalid={bad('phone')}>
                     <PhoneInput
                       id="applicant-phone"
                       countryCode={countryCode}
@@ -756,6 +752,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                       placeholder="5X XXX XXXX"
                       helperText="Default set to Saudi Arabia (+966 🇸🇦). Search for international codes."
                     />
+                    <FieldError message={fieldMsg('phone')} />
                   </div>
                 </div>
               </div>
@@ -772,7 +769,8 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                 {meta.questions.map((question, index) => (
                   <div
                     key={question.id}
-                    className="rounded-2xl border border-[#E8CBA4]/15 bg-[#14060E]/60 p-4 sm:p-5 transition-all duration-200 hover:border-[#E8CBA4]/30 space-y-3"
+                    data-invalid={bad('q:' + question.id)}
+                    className={`invalid-box rounded-2xl border border-[#E8CBA4]/15 bg-[#14060E]/60 p-4 sm:p-5 transition-all duration-200 hover:border-[#E8CBA4]/30 space-y-3`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <label
@@ -791,20 +789,21 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                     </div>
 
                     {renderQuestionControl(question, index)}
+                    <FieldError message={fieldMsg('q:' + question.id)} />
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-2xl border border-[#E8CBA4]/20 bg-[#15070F]/80 p-4 sm:p-5">
-                <ProofUploader files={proofFiles} onChange={setProofFiles} disabled={sending} />
+              <div data-invalid={bad('proofs')} className="invalid-box rounded-2xl border border-[#E8CBA4]/20 bg-[#15070F]/80 p-4 sm:p-5">
+                <ProofUploader files={proofFiles} onChange={setProofFiles} disabled={sending} label="Certificates or proof of experience *" />
+                <FieldError message={fieldMsg('proofs')} />
               </div>
 
               {/* Privacy & Legal Consent */}
-              <div className="rounded-2xl border border-[#E8CBA4]/20 bg-[#15070F]/80 p-4 sm:p-5 space-y-3">
+              <div data-invalid={bad('consent')} className="invalid-box rounded-2xl border border-[#E8CBA4]/20 bg-[#15070F]/80 p-4 sm:p-5 space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    required
                     checked={consent}
                     onChange={(e) => setConsent(e.target.checked)}
                     className="mt-0.5 h-4 w-4 rounded border-[#E8CBA4]/40 bg-[#100609] text-[#E8CBA4] focus:ring-[#E8CBA4]/30 cursor-pointer accent-[#D4AF6A]"
@@ -820,6 +819,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
                     </a>.
                   </span>
                 </label>
+                <FieldError message={fieldMsg('consent')} />
               </div>
 
               {/* Hidden Anti-Bot Honeypot */}
@@ -842,6 +842,12 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
         {/* Modal Bottom Footer (Fixed at bottom) */}
         {!done && (
           <div className="shrink-0 p-4 sm:p-6 border-t border-[#E8CBA4]/15 bg-[#14060E]/95 backdrop-blur-md">
+            {showErrors && errorCount > 0 && !error && (
+              <div role="alert" className="mb-4 rounded-xl border border-rose-400/40 bg-rose-500/10 p-3.5 text-xs text-rose-200 flex items-start gap-2.5 animate-in fade-in duration-150">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-300 mt-0.5" />
+                <span className="leading-relaxed">{errorCount === 1 ? '1 field needs your attention.' : `${errorCount} fields need your attention.`} They are outlined in red above.</span>
+              </div>
+            )}
             {error && (
               <div
                 role="alert"

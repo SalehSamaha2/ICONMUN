@@ -91,6 +91,16 @@ html.lenis, html.lenis body { height: auto; }
    so without this the wheel/touch scrolls the background. */
 html:has(.fixed[data-lenis-prevent]) { overflow: hidden !important; }
 
+/* Fields flagged by the application forms after a failed submit */
+[data-invalid="true"] input:not([type="checkbox"]),
+[data-invalid="true"] select,
+[data-invalid="true"] textarea {
+  border-color: #fb7185 !important;
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.18);
+}
+[data-invalid="true"] input[type="checkbox"] { outline: 2px solid #fb7185; outline-offset: 2px; }
+[data-invalid="true"].invalid-box { border-color: #fb7185 !important; box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.14); }
+
 /* Fullscreen dvh with 100vh fallback */
 .h-screen-dvh {
   height: 100vh;

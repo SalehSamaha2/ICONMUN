@@ -6,6 +6,8 @@ import { useSiteData } from '../lib/SiteData';
 import { getSupabase } from '../lib/supabase';
 import { uploadProofs } from '../lib/proofs';
 import { ProofUploader } from './ProofUploader';
+import { FieldError } from './FieldError';
+import { EMAIL_RE, revealFirstInvalid } from '../lib/formErrors';
 import { getTrackStatus, useNow } from '../lib/tracks';
 import { JoinPanel } from './JoinPanel';
 import { TeamApplicationModal } from './TeamApplicationModal';
@@ -48,6 +50,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   const [experienceLevel, setExperienceLevel] = useState('TBA');
   const [statement, setStatement] = useState('');
   const [proofFiles, setProofFiles] = useState<File[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -58,6 +61,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
   useEffect(() => {
     if (!isOpenModal) return;
     setSubmitError('');
+    setShowErrors(false);
     setCommittee(committees.some((c) => c.code === preselectedCommittee) ? preselectedCommittee : 'TBA');
   }, [isOpenModal, preselectedCommittee, committees]);
 
@@ -156,13 +160,26 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
     return () => ctx.revert();
   }, []);
 
+  // Every problem with the form, computed live. Shown only after the first failed submit.
+  const errors: Record<string, string> = {};
+  if (!fullName.trim()) errors.fullName = 'Enter your full name.';
+  if (!institution.trim()) errors.institution = 'Enter your school or institution.';
+  if (!email.trim()) errors.email = 'Enter your email address.';
+  else if (!EMAIL_RE.test(email.trim())) errors.email = 'Enter a valid email address, like name@example.com.';
+  if (proofFiles.length === 0) errors.proofs = 'Attach at least one certificate or photo that proves your experience.';
+  if (!consent) errors.consent = 'Tick this box to agree before submitting.';
+  const errorCount = Object.keys(errors).length;
+  const bad = (k: string) => showErrors && !!errors[k];
+  const msg = (k: string) => (showErrors ? errors[k] : undefined);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSending || !fullName.trim() || !email.trim()) return;
+    if (isSending) return;
     setSubmitError('');
 
-    if (!consent) {
-      setSubmitError('Please review and agree to the Privacy Policy and Terms of Participation.');
+    if (errorCount > 0) {
+      setShowErrors(true);
+      revealFirstInvalid();
       return;
     }
 
@@ -208,6 +225,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
         const msg = error.message || '';
         if (/closed/i.test(msg)) setSubmitError('Registration is currently closed.');
         else if (/already been used/i.test(msg)) setSubmitError('This email has already been used for several applications.');
+        else if (/proof image/i.test(msg)) setSubmitError('Please attach at least one certificate or proof image.');
         else if (/Too many/i.test(msg)) setSubmitError('We are receiving many applications right now. Please try again in a few minutes.');
         else setSubmitError('Something went wrong. Please check your details and try again.');
         return;
@@ -358,7 +376,7 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} noValidate className="space-y-5">
                   <div>
                     <label className="text-xs uppercase tracking-wider text-ink2 block mb-2 font-medium">
                       Delegation Status (TBA)
@@ -384,47 +402,47 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                    <div data-invalid={bad('fullName')}>
                       <label className="text-xs uppercase tracking-wider text-ink2 block mb-1.5 font-medium">
                         Full Name *
                       </label>
                       <input
                         type="text"
-                        required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="Your full name"
                         className="w-full rounded-lg border border-ink/10 bg-surface2 px-4 py-3 min-h-[44px] text-base text-inkstrong  focus:border-gold focus:outline-none"
                       />
+                      <FieldError message={msg('fullName')} />
                     </div>
-                    <div>
+                    <div data-invalid={bad('institution')}>
                       <label className="text-xs uppercase tracking-wider text-ink2 block mb-1.5 font-medium">
                         School / Institution *
                       </label>
                       <input
                         type="text"
-                        required
                         value={institution}
                         onChange={(e) => setInstitution(e.target.value)}
                         placeholder="Your institution name"
                         className="w-full rounded-lg border border-ink/10 bg-surface2 px-4 py-3 min-h-[44px] text-base text-inkstrong  focus:border-gold focus:outline-none"
                       />
+                      <FieldError message={msg('institution')} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
+                    <div data-invalid={bad('email')}>
                       <label className="text-xs uppercase tracking-wider text-ink2 block mb-1.5 font-medium">
                         Contact Email *
                       </label>
                       <input
                         type="email"
-                        required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="your.email@example.com"
                         className="w-full rounded-lg border border-ink/10 bg-surface2 px-4 py-3 min-h-[44px] text-base text-inkstrong  focus:border-gold focus:outline-none"
                       />
+                      <FieldError message={msg('email')} />
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-ink2 block mb-1.5 font-medium">
@@ -488,7 +506,10 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                     />
                   </div>
 
-                  <ProofUploader files={proofFiles} onChange={setProofFiles} disabled={isSending} />
+                  <div data-invalid={bad('proofs')} className={`rounded-xl transition-shadow ${bad('proofs') ? 'ring-2 ring-rose-400/70 p-3 -m-3' : ''}`}>
+                    <ProofUploader files={proofFiles} onChange={setProofFiles} disabled={isSending} label="Certificates or proof of experience *" />
+                    <FieldError message={msg('proofs')} />
+                  </div>
 
                   {/* Honeypot: invisible to people, tempting to bots */}
                   <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
@@ -508,10 +529,10 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                     Your details are stored securely and are visible only to the ICON MUN organisers, who use them to contact you about the conference.
                   </p>
 
+                  <div data-invalid={bad('consent')}>
                   <label className="flex items-start gap-2.5 text-[11px] sm:text-xs text-ink3 leading-relaxed cursor-pointer select-none rounded-xl border border-gold/20 bg-black/40 p-3">
                     <input
                       type="checkbox"
-                      required
                       checked={consent}
                       onChange={(e) => setConsent(e.target.checked)}
                       className="mt-0.5 h-4 w-4 rounded border-ink/20 bg-surface2 text-gold focus:ring-gold/30 cursor-pointer accent-[#D4AF6A]"
@@ -527,10 +548,17 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
                       </a>.
                     </span>
                   </label>
+                  <FieldError message={msg('consent')} />
+                  </div>
 
                   {!registrationOpen && (
                     <p role="alert" className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-accent">
                       {delegateStatus?.state === 'upcoming' ? `${delegateStatus.detail}.` : 'Delegate registration is currently closed.'}
+                    </p>
+                  )}
+                  {showErrors && errorCount > 0 && (
+                    <p role="alert" className="rounded-lg border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                      {errorCount === 1 ? '1 field needs your attention.' : `${errorCount} fields need your attention.`} They are outlined in red above.
                     </p>
                   )}
                   {submitError && (
