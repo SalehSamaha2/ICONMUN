@@ -226,7 +226,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
             </div>
 
             {/* Scrollable List */}
-            <div className="overflow-y-auto p-1.5 space-y-0.5 overscroll-contain max-h-60">
+            <div data-lenis-prevent className="overflow-y-auto p-1.5 space-y-0.5 overscroll-contain max-h-60">
               {filteredCountries.length === 0 ? (
                 <div className="p-4 text-center text-xs text-[#8D737A] flex flex-col items-center gap-1.5">
                   <Globe2 className="h-4 w-4 text-[#8D737A]/50" />

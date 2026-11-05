@@ -324,11 +324,11 @@ export const RegistrationSection: React.FC<RegistrationSectionProps> = ({
               onCloseModal();
             }
           }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 animate-in fade-in duration-200"
+          data-lenis-prevent className="fixed inset-0 z-[9999] flex items-center justify-center overscroll-contain p-3 sm:p-6 bg-black/85 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] overflow-y-auto border border-gold/50 bg-[#0C0C0C] relative shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
+            data-lenis-prevent className="max-w-3xl w-full rounded-2xl p-6 sm:p-10 max-h-[90vh] max-h-[90dvh] overflow-y-auto overscroll-contain border border-gold/50 bg-[#0C0C0C] relative shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
           >
             {/* Primary Close Button (X) */}
             <button

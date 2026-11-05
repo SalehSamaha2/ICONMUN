@@ -37,6 +37,11 @@ export default function App() {
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       syncTouch: false,
+      // never hijack scrolling inside popups, drawers or anything marked data-lenis-prevent
+      // (also while any popup is open, so wheeling over the header above it cannot move the page)
+      prevent: (node: Element) =>
+        !!node.closest?.('[data-lenis-prevent], [role="dialog"], [aria-modal="true"]') ||
+        !!document.querySelector('.fixed[data-lenis-prevent], [aria-modal="true"]'),
     });
     lenisRef.current = lenis;
 

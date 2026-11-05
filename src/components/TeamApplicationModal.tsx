@@ -209,7 +209,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
       };
 
       const detailsBytes = new TextEncoder().encode(JSON.stringify(details)).length;
-      if (detailsBytes > 2800) {
+      if (detailsBytes > 19000) {
         setError('Your combined answers exceed the database storage limit. Please shorten them slightly and try again.');
         return;
       }
@@ -598,7 +598,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
       aria-modal="true"
       aria-label={`${meta.title} application`}
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-[#070305]/92 p-2.5 sm:p-5 backdrop-blur-md animate-in fade-in duration-200"
+      data-lenis-prevent className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto overscroll-contain bg-[#070305]/92 p-2.5 sm:p-5 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -640,7 +640,7 @@ export const TeamApplicationModal: React.FC<{ trackKey: TeamKey; onClose: () => 
         </div>
 
         {/* Modal Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6 overscroll-contain">
+        <div data-lenis-prevent className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6 overscroll-contain">
           {done ? (
             <div className="py-10 text-center space-y-4">
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#E8CBA4] bg-[#E8CBA4]/10 shadow-[0_0_40px_rgba(212,175,106,0.3)] animate-in zoom-in-75 duration-300">

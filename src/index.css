@@ -86,6 +86,11 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-stopped { overflow: clip; }
 
+/* While a popup (registration, committee, team form, mobile menu) is open, freeze the page behind it.
+   html carries overflow-x:hidden, which stops body{overflow:hidden} from reaching the viewport,
+   so without this the wheel/touch scrolls the background. */
+html:has(.fixed[data-lenis-prevent]) { overflow: hidden !important; }
+
 /* Fullscreen dvh with 100vh fallback */
 .h-screen-dvh {
   height: 100vh;

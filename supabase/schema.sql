@@ -359,7 +359,7 @@ begin
   end if;
   if not exists (select 1 from pg_constraint where conname = 'applications_details_size') then
     alter table public.applications add constraint applications_details_size
-      check (jsonb_typeof(details) = 'object' and octet_length(details::text) <= 3000);
+      check (jsonb_typeof(details) = 'object' and octet_length(details::text) <= 20000);
   end if;
 end $$;
 create index if not exists applications_track_idx on public.applications(track, created_at desc);

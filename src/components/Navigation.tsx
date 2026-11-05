@@ -156,7 +156,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       {/* Full-Screen Mobile Navigation Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 md:hidden flex flex-col justify-between bg-paper/98 backdrop-blur-2xl text-ink pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] px-6 overflow-y-auto min-h-screen-dvh"
+          data-lenis-prevent className="fixed inset-0 z-50 md:hidden flex flex-col justify-between bg-paper/98 backdrop-blur-2xl text-ink pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] px-6 overflow-y-auto overscroll-contain min-h-screen-dvh"
         >
           {/* Header Row in Mobile Menu */}
           <div className="flex items-center justify-between border-b border-gold/20 pb-4">

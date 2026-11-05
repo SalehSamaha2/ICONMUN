@@ -197,11 +197,11 @@ export const CommitteesSection: React.FC<CommitteesSectionProps> = ({
               setSelectedCommittee(null);
             }
           }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200"
+          data-lenis-prevent className="fixed inset-0 z-[9999] flex items-center justify-center overscroll-contain p-4 bg-black/85 animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="gold-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto border border-gold/60 bg-[#0C0C0C] relative shadow-[0_20px_80px_rgba(0,0,0,0.85)]"
+            data-lenis-prevent className="gold-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 max-h-[90vh] max-h-[90dvh] overflow-y-auto overscroll-contain border border-gold/60 bg-[#0C0C0C] relative shadow-[0_20px_80px_rgba(0,0,0,0.85)]"
           >
             {/* Close Button */}
             <button

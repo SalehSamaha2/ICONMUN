@@ -199,7 +199,7 @@ export const Drawer: React.FC<{ open: boolean; title: string; subtitle?: string;
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+        <div data-lenis-prevent className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
         {footer && <div className="border-t border-white/10 bg-[#0B0B0B] px-5 py-3 sm:px-6">{footer}</div>}
       </div>
     </div>
