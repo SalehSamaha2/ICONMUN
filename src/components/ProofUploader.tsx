@@ -3,7 +3,7 @@ import { ImagePlus, X } from 'lucide-react';
 import { ACCEPTED_TYPES, MAX_PROOFS, checkProofFile } from '../lib/proofs';
 
 /**
- * Lets an applicant attach up to 5 photos of certificates / awards as proof of experience.
+ * Lets an applicant attach up to 10 photos of certificates / awards as proof of experience.
  * The whole box is a button (tap or click to choose photos) and also accepts dropped files.
  * Files stay on the device until the form is submitted.
  */

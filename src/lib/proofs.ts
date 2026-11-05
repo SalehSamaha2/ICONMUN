@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const PROOF_BUCKET = 'application-proofs';
-export const MAX_PROOFS = 5;
+export const MAX_PROOFS = 10;
 export const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_INPUT_BYTES = 15 * 1024 * 1024; // what a person may pick (phones take big photos)
 const MAX_SIDE = 1800;                    // longest edge after shrinking
