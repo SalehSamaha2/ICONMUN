@@ -1,3 +1,6 @@
+-- ICON MUN: admin-account QR passes (FIXED copy: adds '#variable_conflict use_column'
+-- so output-column names like application_id / inside / checked_in_at no longer clash
+-- with real table columns inside the functions).
 -- ICON MUN: issue a personal QR pass to organiser accounts that do not have
 -- an accepted application. Applicant passes remain unchanged.
 -- Apply after 20261102000000_qr_pass_security_scanner.sql.
@@ -43,6 +46,7 @@ language plpgsql
 security definer
 set search_path = public, auth, pg_temp
 as $$
+#variable_conflict use_column
 declare
   verified_email text;
   email_confirmed timestamptz;
@@ -150,6 +154,7 @@ language plpgsql
 security definer
 set search_path = public, auth, pg_temp
 as $$
+#variable_conflict use_column
 declare
   pass_row public.event_passes%rowtype;
   account_pass_row public.event_account_passes%rowtype;
@@ -309,6 +314,7 @@ language plpgsql
 security definer
 set search_path = public, auth, pg_temp
 as $$
+#variable_conflict use_column
 begin
   if not public.can_scan_event_pass() then
     raise exception 'Scanner access required' using errcode = '42501';
@@ -350,6 +356,7 @@ language plpgsql
 security definer
 set search_path = public, auth, pg_temp
 as $$
+#variable_conflict use_column
 begin
   if not public.can_scan_event_pass() then
     raise exception 'Scanner access required' using errcode = '42501';
