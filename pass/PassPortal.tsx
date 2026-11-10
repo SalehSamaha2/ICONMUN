@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, CheckCircle2, Clock3, Loader2, LogOut, Mail, RefreshCw, ShieldCheck, Ticket } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock3, LayoutDashboard, Loader2, LogOut, Mail, RefreshCw, ScanLine, ShieldCheck, Ticket } from 'lucide-react';
 import { getSupabase, isSupabaseConfigured } from '../src/lib/supabase';
 
 type PassRow = {
@@ -18,10 +18,15 @@ type PassRow = {
   last_scanned_at: string | null;
 };
 
+type Staff = { admin: boolean; headTrack: string | null; canScan: boolean };
+const NO_STAFF: Staff = { admin: false, headTrack: null, canScan: false };
+const STAFF_TITLES: Record<string, string> = { volunteers: 'Head of Volunteers', security: 'Head of Security', media: 'Head of Media' };
+
 export default function PassPortal() {
   const [email, setEmail] = useState('');
   const [sessionEmail, setSessionEmail] = useState('');
   const [rows, setRows] = useState<PassRow[]>([]);
+  const [staff, setStaff] = useState<Staff>(NO_STAFF);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -43,12 +48,27 @@ export default function PassPortal() {
       if (!sessionData.session) {
         setSessionEmail('');
         setRows([]);
+        setStaff(NO_STAFF);
         return;
       }
       setSessionEmail(sessionData.session.user.email || '');
-      const { data, error: rpcError } = await sb.rpc('my_event_passes');
-      if (rpcError) throw rpcError;
-      setRows((data || []) as PassRow[]);
+      // Staff (admins, heads, security) don't apply as delegates, so they have no pass of their own.
+      // Look up their role in parallel; a missing function just means "not staff".
+      const [passRes, adminRes, headRes, scanRes] = await Promise.allSettled([
+        sb.rpc('my_event_passes'),
+        sb.rpc('is_admin'),
+        sb.rpc('head_track'),
+        sb.rpc('can_scan_event_pass'),
+      ]);
+      if (passRes.status === 'rejected') throw passRes.reason;
+      if (passRes.value.error) throw passRes.value.error;
+      setRows((passRes.value.data || []) as PassRow[]);
+      const val = (r: PromiseSettledResult<{ data: unknown; error: unknown }>) => (r.status === 'fulfilled' && !r.value.error ? r.value.data : null);
+      setStaff({
+        admin: val(adminRes) === true,
+        headTrack: typeof val(headRes) === 'string' ? (val(headRes) as string) : null,
+        canScan: val(scanRes) === true,
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load your ICON MUN pass.');
     } finally {
@@ -109,9 +129,13 @@ export default function PassPortal() {
     const sb = await getSupabase()!;
     await sb.auth.signOut();
     setRows([]);
+    setStaff(NO_STAFF);
     setSessionEmail('');
     setNotice('');
   };
+
+  const isStaff = staff.admin || !!staff.headTrack || staff.canScan;
+  const staffTitle = staff.headTrack ? (STAFF_TITLES[staff.headTrack] || 'Track head') : staff.admin ? 'Administrator' : 'Security team';
 
   const trackLabel = (track: string) => track === 'delegate' ? 'Delegate' : track.charAt(0).toUpperCase() + track.slice(1);
 
@@ -137,7 +161,18 @@ export default function PassPortal() {
               <p className="text-[10px] uppercase tracking-[.2em] text-[#8E8678]">Verified email</p>
               <p className="mt-1 text-sm text-[#FFF3D6]">{sessionEmail}</p>
             </div>
-            {rows.length === 0 ? <Notice tone="info">No ICON MUN application is linked to this verified email address yet.</Notice> : rows.map((row) => (
+            {isStaff && (
+              <article className="rounded-xl border border-[#D4AF6A]/25 bg-[#D4AF6A]/5 p-5">
+                <p className="text-[10px] uppercase tracking-[.18em] text-[#D4AF6A]">Staff access</p>
+                <h2 className="mt-1 font-cinzel text-xl text-[#FFF3D6]">{staffTitle}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-[#A89D8A]">You're signed in as ICON MUN staff, so you don't need an applicant pass. Use your tools below.</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {staff.canScan && <a href="/security-scanner" className="flex items-center justify-center gap-2 rounded-lg bg-[#D4AF6A] px-4 py-3 text-sm font-semibold text-[#1A1008]"><ScanLine className="h-4 w-4" /> Open QR scanner</a>}
+                  {(staff.admin || staff.headTrack) && <a href="/admin" className="flex items-center justify-center gap-2 rounded-lg border border-[#D4AF6A]/30 px-4 py-3 text-sm text-[#E8CBA4] hover:bg-[#D4AF6A]/10"><LayoutDashboard className="h-4 w-4" /> Open admin panel</a>}
+                </div>
+              </article>
+            )}
+            {rows.length === 0 ? (isStaff ? null : <Notice tone="info">No ICON MUN application is linked to this verified email address yet.</Notice>) : rows.map((row) => (
               <article key={row.application_id} className="rounded-xl border border-[#D4AF6A]/20 bg-black/20 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div><p className="text-[10px] uppercase tracking-[.18em] text-[#D4AF6A]">{trackLabel(row.track)} application</p><h2 className="mt-1 font-cinzel text-xl text-[#FFF3D6]">{row.full_name}</h2><p className="mt-1 text-xs text-[#A89D8A]">{row.role || row.committee || 'ICON MUN'}</p></div>
